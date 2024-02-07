@@ -1,3 +1,3 @@
 export const EnvVars = {
-  SITE_NAME: 'Rraf-Project',
+  SITE_NAME: 'SatriaMudaLogistic',
 };
