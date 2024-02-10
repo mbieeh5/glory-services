@@ -17,7 +17,7 @@ interface FeaturesArray {
   desc: string;
 }
 
-export default function FeaturesEditor() {
+export default function ExperienceEditor() {
   const [features, setFeatures] = useState<FeaturesArray[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState(false);
   const [title2, setTitle2] = useState("");

@@ -1,3 +1,4 @@
+/* eslint-disable import/order */
 import { signOut } from 'firebase/auth';
 import dynamic from 'next/dynamic';
 import NextLink from 'next/link';
@@ -141,10 +142,9 @@ const HamburgerMenuWrapper = styled.div`
 
 const LogoWrapper = styled.div`
   display: flex;
-  justify-content: flex-start;
-  padding: 0.5rem;
   text-decoration: none;
-  margin-top: auto;
+  padding: 2rem;
+  margin-top: -55px;
   color: rgb(var(--logoColor));
 `;
 

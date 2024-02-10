@@ -1,7 +1,8 @@
+/* eslint-disable import/order */
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { child as childDb, ref, get, getDatabase, update, remove } from 'firebase/database';
-import { ref as storageRef, getDownloadURL, uploadBytes } from 'firebase/storage';
+import { child as childDb, get, getDatabase, ref, remove,  update  } from 'firebase/database';
+import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
 import { storage } from '../../../firebase';
 import Button from 'components/Button';
 import ButtonGroup from 'components/ButtonGroup';

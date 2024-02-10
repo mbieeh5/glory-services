@@ -1,17 +1,25 @@
+/* eslint-disable import/order */
 import React, { useEffect, useState } from "react";
-import { getDatabase, ref, child, get } from "@firebase/database";
+import { child, get, getDatabase, ref,  } from "@firebase/database";
 import styled from "styled-components";
 import BasicSection from "components/BasicSection";
 
+interface DataRes {
+    namaU: string;
+    services: string;
+    timeMake: string;
+    status: string;
+}
+
 export default function Admin() { 
 
-    const [DataResi, setDataResi] = useState([]);
+    const [DataResi, setDataResi] = useState<DataRes[]>([]);
 
     useEffect(() => {
         const DB = ref(getDatabase());
         get(child(DB, "dataInput/resi")).then(async(datas) => {
             const Data = datas.val() || {};
-            const Array = Object.values(Data);
+            const Array:DataRes[] = Object.values(Data);
             setDataResi(Array);
         }).catch((err) => {
             console.error(err);
@@ -28,11 +36,11 @@ export default function Admin() {
                             {Object.values(a).map((data) => {
                                 console.log(data)
                                 return(
-                                            <Wrapper key={i}>
-                                                    <p>
-                                                       {i}. {data.namaU} | {data.services} | {data.timeMake} | {data.status};
-                                                    </p>
-                                            </Wrapper>
+                                <Wrapper key={i}>
+                                    <p>
+                                        {i}. {data.namaU} | {data.goodsName} | {data.timeMake} | {data.status};
+                                    </p>
+                                </Wrapper>
                                 )
                             })}
                     </Wrapper>

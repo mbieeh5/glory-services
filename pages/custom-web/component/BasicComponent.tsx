@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { child as childDb, ref, get, getDatabase, update, remove } from 'firebase/database';
+import { child as childDb, get, getDatabase, ref, remove, update, } from 'firebase/database';
 import Container from 'components/Container';
 import Button from 'components/Button';
 import ButtonGroup from 'components/ButtonGroup';
@@ -126,7 +126,6 @@ export default function BasicComponentEdit() {
                         <li>{a.li3}</li>
                         <li>{a.li4}</li>
                         <li>{a.li5}</li>
-                        {/* li Should be in Array for better renderin */}
                       </ul>
                       <ButtonDelete onClick={() => handleDelete(index)}>Hapus</ButtonDelete>
                   </BasicSection>
