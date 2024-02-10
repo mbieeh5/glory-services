@@ -111,7 +111,6 @@ function MyAppContents({Component, pageProps}:{Component: React.ComponentType; p
                 Cookie.set('firebase', CookieID(), { expires: 24 * 60* 60 * 1000});
                 Cookie.set('theme-state', CookieID(), { expires: 24 * 60* 60 * 1000});
                 setIsLoggedIn(true);
-                console.log(accessToken);
             }).catch((err) => {
                 console.log(err)
                 alert('You are not admin')
