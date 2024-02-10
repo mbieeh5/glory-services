@@ -40,8 +40,8 @@ export default function Settings() {
         const emailInput = formData.get('email');
         const passwordInput = formData.get('password');
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-          
-            if (!passwordRegex.test(passwordInput)) {
+        const strings = passwordInput?.toString() || "";
+            if (!passwordRegex.test(strings)) {
                 console.log('Password harus memiliki huruf besar, angka, dan minimal 8 karakter.');
                 return;
             }
