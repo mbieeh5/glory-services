@@ -18,19 +18,19 @@ export default function InputBerita() {
         const handleSubmit = (e: any) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const beritaId = formData.get('beritaId');
+            const beritaID = formData.get('beritaId');
             const inputDate = formData.get('inputDate');
             const titleNews = formData.get('titleNews');
             const photos = formData.get('Photo');
                 const newData = {
                     [beritaId] : {
-                        beritaId,
+                        beritaID,
                         inputDate,
                         photos,
                         titleNews,
                     }
                 };
-                const resiRef = ref(getDatabase(), `dataInput/berita/${beritaId}`);
+                const resiRef = ref(getDatabase(), `dataInput/berita/${beritaID}`);
             push(resiRef, newData)
             .then(() => {
                 alert('Resi Berhasil di Input')
