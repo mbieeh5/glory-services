@@ -2,18 +2,37 @@
 import React, { useEffect, useState } from "react";
 import { child, get, getDatabase, ref,  } from "@firebase/database";
 import styled from "styled-components";
-import BasicSection from "components/BasicSection";
+import BasicSection2 from "components/BasicSection2";
+import Button from "components/Button";
 
 interface DataRes {
+    ATA: string;
+    ATD: string;
+    ETA: string;
+    ETD: string;
+    deliveryFrom: string;
+    destination: string;
+    goodsName: string;
     namaU: string;
-    services: string;
-    timeMake: string;
+    noResi: string;
     status: string;
+    timeMake: string;
 }
 
 export default function Admin() { 
 
     const [DataResi, setDataResi] = useState<DataRes[]>([]);
+    const [startIndex, setStartIndex] = useState(0);
+
+    const loadNextFiveItems = () => {
+    setStartIndex(prevIndex => prevIndex + 5);
+    };
+    
+    const loadPreviousFiveItems = () => {
+    setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
+    };
+
+
 
     useEffect(() => {
         const DB = ref(getDatabase());
@@ -28,25 +47,50 @@ export default function Admin() {
 
     return(
         <MainWrapper>
-            <BasicSection title="Recent Resi Data">
-            {DataResi.map((a, index) => {
-                const i = index + 1;
-                return(
-                    <Wrapper key={i}>
-                            {Object.values(a).map((data) => {
-                                console.log(data)
+            <BasicSection2 title="Recent Resi Data">
+                    <Wrapper>
+                        <Table>
+                            <thead>
+                                <TableRow>
+                                    <TableHeader>Resi ID</TableHeader>
+                                    <TableHeader>Customer Name</TableHeader>
+                                    <TableHeader>Goods Name</TableHeader>
+                                    <TableHeader>POD Time</TableHeader>
+                                    <TableHeader>Delivery From</TableHeader>
+                                    <TableHeader>Delivery To</TableHeader>
+                                    <TableHeader>ETA</TableHeader>
+                                    <TableHeader>ETD</TableHeader>
+                                    <TableHeader>ATD</TableHeader>
+                                    <TableHeader>ATA</TableHeader>
+                                    <TableHeader>Status</TableHeader>
+                                </TableRow>
+                             </thead>
+                        {DataResi.slice(startIndex, startIndex + 5).map((a) => (
+                            Object.values(a).map((data, index) => {
                                 return(
-                                <Wrapper key={i}>
-                                    <p>
-                                        {i}. {data.namaU} | {data.goodsName} | {data.timeMake} | {data.status};
-                                    </p>
-                                </Wrapper>
+                                <tbody key={index}>
+                                    <TableRow>
+                                        <TableData>{data.noResi}</TableData>
+                                        <TableData>{data.namaU}</TableData>
+                                        <TableData>{data.goodsName}</TableData>
+                                        <TableData>{data.timeMake}</TableData>
+                                        <TableData>{data.deliveryFrom}</TableData>
+                                        <TableData>{data.destination}</TableData>
+                                        <TableData>{data.ETA || "N/A"}</TableData>
+                                        <TableData>{data.ETD || "N/A"}</TableData>
+                                        <TableData>{data.ATD || "N/A"}</TableData>
+                                        <TableData>{data.ATA || "N/A"}</TableData>
+                                        <TableData>{data.status}</TableData>
+                                    </TableRow>
+                                </tbody>
                                 )
-                            })}
-                    </Wrapper>
-                )
-            })}
-            </BasicSection>
+                            })
+                        ))}
+                    </Table>
+            </Wrapper>
+                    <Buttons2 onClick={loadPreviousFiveItems}>Previous</Buttons2>
+                    <Buttons2 onClick={loadNextFiveItems}>Next</Buttons2>
+            </BasicSection2>
         </MainWrapper>
     )
 }
@@ -56,5 +100,41 @@ margin-top: 3rem;
 `
 
 const Wrapper = styled.div`
+overflow-x: auto;
+align-items: center;
+max-width: 100%;
+`
 
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const TableRow = styled.tr`
+  &:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+`;
+
+const TableHeader = styled.th`
+  padding: 12px;
+  text-align: left;
+  background-color: #4caf50;
+  color: rgb(0,0,0);
+  `;
+  
+  const TableData = styled.td`
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  color: rgb(var(--text));
+`;
+
+
+const Buttons2 = styled(Button)`
+padding: 1rem;
+margin-top: 2rem;
+width: 15rem;
+height: 7rem;
+margin-left: 2rem;
+font-size: 100%;
 `

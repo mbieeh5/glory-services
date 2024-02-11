@@ -13,13 +13,14 @@ import { media } from 'utils/media';
 
 interface FeaturesArray {
   title: string;
+  overTitle: string;
   url: string;
   desc: string;
 }
 
 export default function ExperienceEditor() {
-  const [features, setFeatures] = useState<FeaturesArray[]>([]);
-  const [selectedFeatures, setSelectedFeatures] = useState(false);
+  const [experience, setExperience] = useState<FeaturesArray[]>([]);
+  const [selectedExperience, setSelectedExperience] = useState(false);
   const [title2, setTitle2] = useState("");
   const [desc, setDesc] = useState("");
   const [photo, setPhoto] = useState(null);
@@ -32,9 +33,9 @@ export default function ExperienceEditor() {
   const fetchData = async () => {
     try {
       const DB = ref(getDatabase());
-      const dataSnapshot = await get(childDb(DB, 'MainSection/Features'));
+      const dataSnapshot = await get(childDb(DB, 'MainSection/Experience'));
       const data = dataSnapshot.val() || {};
-      setFeatures(Object.values(data));
+      setExperience(Object.values(data));
     } catch (error) {
      alert('Error fetching partners');
     }
@@ -67,12 +68,13 @@ export default function ExperienceEditor() {
               setUploading(false);
             }, async() => {
               const downloadURL = await getDownloadURL(DBS);
+              const TitleRandom = title2 + angkaRandom4digit;
               setUploading(false);
-              setSelectedFeatures(false);
+              setSelectedExperience(false);
               await uploadBytes(DBS, photo);
                 const DB = getDatabase();
-                const partnerRef = ref(DB, `MainSection/Features/${title2}`);
-                update(partnerRef, { title: title2, url: downloadURL, desc: desc });
+                const partnerRef = ref(DB, `MainSection/Experience/${TitleRandom}`);
+                update(partnerRef, { title: title2, overTitle: TitleRandom ,url: downloadURL, desc: desc });
               alert("Berhasil di upload");
               await fetchData()
             })
@@ -83,22 +85,22 @@ export default function ExperienceEditor() {
   };
 
   function handleEdit() {
-    setSelectedFeatures(true);
+    setSelectedExperience(true);
 
   }
   
   function handleDelete(i: number) {
-    const partnerToDelete = features[i];
-    const titleToDelete = partnerToDelete.title;
+    const partnerToDelete = experience[i];
+    const titleToDelete = partnerToDelete.overTitle;
     const confirmDelete = window.confirm(`Apakah Kamu Yakin Akan Menghapus ${titleToDelete} ?`)
 
     if(confirmDelete){
       try {
         const DB = getDatabase();
-        const featuresRef = ref(DB, `MainSection/Features/${titleToDelete}`);
+        const featuresRef = ref(DB, `MainSection/Experience/${titleToDelete}`);
         remove(featuresRef);
-        const updatedFeatures = features.filter((features) => features.title !== titleToDelete);
-        setFeatures(updatedFeatures);
+        const updatedFeatures = experience.filter((exp) => exp.title !== titleToDelete);
+        setExperience(updatedFeatures);
         alert(`Banner telah dihapus: ${titleToDelete}`);
       } catch (error) {
         console.error('Error deleting partner:', error);
@@ -110,7 +112,7 @@ export default function ExperienceEditor() {
     <Wrapper>
         <Container>
             <CustomAutofitGrid>
-                {features.map((a, index) => (
+                {experience.map((a, index) => (
                   <AnimatedElement key={index}>
                       <BasicCard title={a.title} imageUrl={a.url} description={a.desc} />
                       <ButtonGroup>
@@ -121,7 +123,7 @@ export default function ExperienceEditor() {
                     <Button onClick={() => handleEdit()}>Tambah Banner Lain</Button>
                   </CustomAutofitGrid>
                 </Container>
-        {selectedFeatures && (
+        {selectedExperience && (
           <Modal>
             <h2>Edit Partner</h2>
             <InputTextWrapper>
@@ -133,7 +135,7 @@ export default function ExperienceEditor() {
               <InputFile type='file' onChange={handleFileChange} />
               <ButtonGroup>
                 <Button onClick={handleSubmit} disabled={uploading}>Submit</Button>
-                <ButtonTutup onClick={() => setSelectedFeatures(false)} disabled={uploading}>Tutup</ButtonTutup>
+                <ButtonTutup onClick={() => setSelectedExperience(false)} disabled={uploading}>Tutup</ButtonTutup>
               </ButtonGroup>
               {uploading && <p>Uploading... {Math.floor(uploadProgress)}%</p>}
           </Modal>

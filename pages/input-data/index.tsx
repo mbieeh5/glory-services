@@ -63,7 +63,7 @@ height: 100%;
 align-item: center;
 justify-content: center;
 text-align: center;
-
+padding-bottom: 12rem;
 `
 const Buttons = styled(Button)`
 font-size: 2rem;

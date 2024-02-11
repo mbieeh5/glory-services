@@ -7,7 +7,6 @@ import PartnerEditor from "./component/Partners";
 import VidBannerEditor from "./component/VidBanner";
 import Button from "components/Button";
 import BasicSection from "components/BasicSection";
-import BannerHero2 from "./component/BannerHero2";
 import FeaturesEditor from "./component/Features";
 import ExperienceEditor from "./component/Experience";
 import { media } from "utils/media";
@@ -18,7 +17,6 @@ export default function Panel() {
     const [title, setTitle] = useState("")
     const [isPartner, setIsPartner] = useState(false);
     const [isVidBanner, setIsVidBanner] = useState(false);
-    const [isBannerH2, setIsBannerH2] = useState(false);
     const [isService, setIsService] = useState(false);
     const [isExperience, setIsExperience] = useState(false);
 
@@ -32,7 +30,6 @@ export default function Panel() {
     const handleEditor = (editorType:string, title:string) => {
         setIsPartner(false);
         setIsVidBanner(false);
-        setIsBannerH2(false);
         setIsService(false);
         setIsExperience(false);
     
@@ -42,9 +39,6 @@ export default function Panel() {
                 break;
             case "vidBanner":
                 setIsVidBanner(true);
-                break;
-            case "bannerH2":
-                setIsBannerH2(true);
                 break;
             case "services":
                 setIsService(true);
@@ -64,7 +58,6 @@ export default function Panel() {
             <ButtonGroup>
                 <Buttons onClick={() => handleEditor("partner", "Partner Editor")} transparent>Partner Editor</Buttons>
                 <Buttons onClick={() => handleEditor("vidBanner", "Video Banner Editor")} transparent>Video Banner Editor</Buttons>
-                <Buttons onClick={() => handleEditor("bannerH2", "Banner H2")} transparent>Banner H2</Buttons>
                 <Buttons onClick={() => handleEditor("services", "Services Card Editor")} transparent>Services Card Editor</Buttons>
                 <Buttons onClick={() => handleEditor("experience", "Experience Card Editor")} transparent>Experience Card Editor</Buttons>
             </ButtonGroup>
@@ -72,7 +65,6 @@ export default function Panel() {
             <WrapperContent>
                 <BasicSection title={title}>
                     {isVidBanner && (<VidBannerEditor />)}
-                    {isBannerH2 && (<BannerHero2 />)}
                     {isPartner && (<PartnerEditor/>)}
                     {isService && (<FeaturesEditor/>)}
                     {isExperience && (<ExperienceEditor/>)}
@@ -92,7 +84,7 @@ height: 100%;
 align-item: center;
 justify-content: center;
 text-align: center;
-
+padding-bottom: 12rem;
 `
 const Buttons = styled(Button)`
 font-size: 2rem;

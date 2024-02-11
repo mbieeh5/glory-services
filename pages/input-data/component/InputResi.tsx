@@ -1,5 +1,6 @@
 /* eslint-disable import/order */
 import Button from "components/Button"
+import ButtonGroup from "components/ButtonGroup";
 import { getDatabase, ref, update } from "firebase/database";
 import React, { useState } from "react"
 import styled from "styled-components"
@@ -23,7 +24,7 @@ export default function InputResi() {
             const randomIndex = Math.floor(Math.random() * characters.length);
             resi += characters[randomIndex];
         }
-        return `${resi}`;
+        return `SML${resi}`;
     };
     
         const handleSubmit = (e: any) => {
@@ -66,7 +67,7 @@ export default function InputResi() {
             });
         }
 
-    const [resiId] = useState(resiID);
+    const [resiId, setResiId] = useState("");
 
     return(
         <Wrapper>
@@ -74,12 +75,12 @@ export default function InputResi() {
             <Form onSubmit={handleSubmit}>
                 <Label>
                     Resi Number:
-                    <Input type="text" value={resiId} name="noResi" required/>
+                    <Input type="text" placeholder="Resi ID" value={resiId.toUpperCase()} onChange={(e) => setResiId(e.target.value)} name="noResi" required/>
                 </Label>
                 <Splitter>
                 <Label>
                     POD Date:
-                    <Input type="date" placeholder="01/01/2022" name="inputDate" required/>
+                    <Input type="datetime-local" placeholder="01/01/2022" name="inputDate" required/>
                 </Label>
                 <Label>
                     Customer Name:
@@ -103,25 +104,30 @@ export default function InputResi() {
                 <Splitter>
                 <Label>
                 Estimated Time Departure:
-                    <Input type="date" placeholder="ETD" name="ETD"/>
+                    <Input type="datetime-local" placeholder="ETD" name="ETD"/>
                 </Label>
                 <Label>
                 Estimated Time Arrival:
-                    <Input type="date" placeholder="ETA" name="ETA"/>
+                    <Input type="datetime-local" placeholder="ETA" name="ETA"/>
                 </Label>
                 </Splitter>
                 <Splitter>
                 <Label>
                 Actual Time Departure:
-                    <Input type="date" placeholder="ATD" name="ATD"/>
+                    <Input type="datetime-local" placeholder="ATD" name="ATD"/>
                 </Label>
                 <Label>
                 Actual Time Arrival:
-                    <Input type="date" placeholder="ATA" name="ATA"/>
+                    <Input type="datetime-local" placeholder="ATA" name="ATA"/>
                 </Label>
                 </Splitter>
+                <ButtonGroup>
                 <Buttons type="submit">Submit</Buttons>
+                </ButtonGroup>
             </Form>
+                <ButtonGroup>
+                <Buttons onClick={() => setResiId(resiID)}>Generate Resi ID</Buttons>
+                </ButtonGroup>
             </FormCard>
         </Wrapper>
     )
@@ -186,5 +192,5 @@ const Input = styled.input`
 `;
 
 const Buttons = styled(Button)`
-
+margin: 0 auto;
 `;
