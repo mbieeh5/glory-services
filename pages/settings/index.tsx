@@ -4,26 +4,26 @@ import { useEffect, useState } from "react"
 import Cookies from "js-cookie";
 import Button from "components/Button";
 import styled from "styled-components";
-import BasicSection from "components/BasicSection";
+import BasicSection2 from "components/BasicSection2";
 import ButtonGroup from "components/ButtonGroup";
+import { createUserWithEmailAndPassword, EmailAuthProvider, getAuth, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 
 export default function Settings() {
-    const Auth:any = Cookies.get('_IDs')
-    const [isError] = useState("")
+    const [isError, setIsError] = useState("")
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showModalAdd, setShowModalAdd] = useState(false);
     const [showModalCp, setShowModalCp] = useState(false);
     const route:any = useRouter();
-
+    const auth = getAuth();
+    const router = useRouter();
+    
     useEffect(() => {
-        if(!Auth){
-            setIsLoggedIn(false)
-            alert('You Not Supposed to here before login ?');
-            route.push('/');
-        }else{
-            setIsLoggedIn(true)
+        const auth = getAuth();
+        const Auth:any = Cookies.get('_IDs')
+        if (auth.currentUser && Auth) {
+          setIsLoggedIn(true);
         }
-    }, [Auth, route])
+      }, []);
 
     
     const handleShowModalAdd = () => {
@@ -35,18 +35,36 @@ export default function Settings() {
     };
 
     const handleSubmitFormAdd = (e: any) => {
+        const auth = getAuth();
         e.preventDefault();
         const formData = new FormData(e.target);
         const emailInput = formData.get('email');
         const passwordInput = formData.get('password');
+        const confirmPassword = formData.get('confirmPassword');
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-        const strings = passwordInput?.toString() || "";
-            if (!passwordRegex.test(strings)) {
-                console.log('Password harus memiliki huruf besar, angka, dan minimal 8 karakter.');
-                return;
-            }
-            console.log({emailInput, passwordInput});
-            //setShowModalAdd(false);
+        const stringsEmail = emailInput?.toString() || "";
+        const stringsPassword = passwordInput?.toString() || "";
+        const stringsConfirmPassword = confirmPassword?.toString() || "";
+        if (!passwordRegex.test(stringsPassword)) {
+            setIsError('Password harus memiliki huruf besar, angka, dan minimal 8 karakter.');
+            return;
+        }
+        if (stringsPassword !== stringsConfirmPassword){
+            setIsError("konfirmasi Password harus sama dengan password.");
+            return;
+        }
+        setIsError("")
+
+        createUserWithEmailAndPassword(auth, stringsEmail, stringsPassword)
+            .then((userCredential) => {
+                const user = userCredential.user
+                alert(`${user.email} Berhasil di daftarkan!`)
+                setShowModalAdd(false);
+                window.location.reload();
+                router.push('/');
+            }).catch((error) => {
+                setIsError('Akun Sudah Terdaftar sebelumnya');
+            })
     };
 
     const handleShowModalCp = () => {
@@ -57,10 +75,50 @@ export default function Settings() {
         setShowModalCp(false);
     };
 
-    const handleSubmitFormCp = (e: any) => {
+    const handleSubmitFormCp = async (e: any) => {
         e.preventDefault();
-            console.log(e);
-        setShowModalCp(false);
+        const formData = new FormData(e.target);
+        const oldPassword = formData.get('passOld')?.toString();
+        const newPassword = formData.get('passNew')?.toString();
+        const confirmPassword = formData.get('passNewConfirm')?.toString();
+
+        if(oldPassword === null || oldPassword === undefined){
+            alert('password Tidak valid');
+            return;
+        }
+
+        if(newPassword === null || newPassword === undefined){
+            alert('password Tidak valid');
+            return;
+        }
+
+        const user = auth.currentUser;
+        if(user?.email === null || user?.email === undefined){
+            alert('You Should Login first')
+            return;
+        }
+
+        const credential = EmailAuthProvider.credential(user?.email, oldPassword);
+
+        try {
+            await reauthenticateWithCredential(user, credential);
+
+            if (newPassword !== confirmPassword){
+                alert('Password baru dan konfirmasi password harus sama');
+                return;
+            }
+
+            updatePassword(user, newPassword)
+                .then(() => {
+                    alert('password berhasil di rubah silahkan login ulang!')
+                    Logout();
+                }).catch((err) => {
+                    alert('gagal mengubah password')
+                })
+            
+        } catch (error) {
+             alert('Password lama tidak valid.');
+        }
     };
 
 
@@ -70,8 +128,8 @@ export default function Settings() {
         Cookies.remove('_IDs');
         Cookies.remove('_theme');
         Cookies.remove('_uID');
+        auth.signOut();
         route.push('/');
-        window.location.reload();
     }
 
     return(
@@ -79,19 +137,22 @@ export default function Settings() {
             {isLoggedIn ? (
                 <Wrapper>
                     <Card>
-                        <BasicSection title="Settings">
-                            <ButtonGroup>
-                                <Buttons transparent onClick={() => handleShowModalAdd()}>Add Admin Account</Buttons>
+                        <BasicSection2 title={`Login As : `}>
+                            <h2>{auth.currentUser?.email}</h2>
+                            <ButtonWrapper>
+                                {auth.currentUser?.email === "admin@admin.com" && (
+                                    <Buttons transparent onClick={() => handleShowModalAdd()}>Add Admin Account</Buttons>
+                                )}
                                 <Buttons transparent onClick={() => handleShowModalCp()}>Change Password</Buttons>
-                                <Buttons onClick={(e) => Logout()}>LogOut</Buttons>
-                            </ButtonGroup>
-                        </BasicSection>
+                                <ButtonsLogout onClick={(e) => Logout()}>LogOut</ButtonsLogout>
+                            </ButtonWrapper>
+                        </BasicSection2>
                     </Card>
                     {showModalAdd && (
                 <ModalWrapper>
                     <ModalCard>
                         <ModalHeader>Add Admin Account</ModalHeader>
-                            <p>{isError}</p>
+                            <Error>{isError}</Error>
                         <Form onSubmit={handleSubmitFormAdd}>
                             <Label>
                                 Email:
@@ -103,7 +164,7 @@ export default function Settings() {
                             </Label>
                             <Label>
                                Confirm Password:
-                                <Input type="password" placeholder="Password Here" name="ConfirmPassword" required />
+                                <Input type="password" placeholder="Password Here" name="confirmPassword" required />
                             </Label>
                             <ButtonGroup>
                                 <Button type="submit">Submit</Button>
@@ -120,15 +181,15 @@ export default function Settings() {
                         <Form onSubmit={handleSubmitFormCp}>
                             <Label>
                                 Old Password:
-                                <Input type="password" placeholder="Password Here" required />
+                                <Input type="password" placeholder="current Password" name="passOld" required />
                             </Label>
                             <Label>
                                 Password:
-                                <Input type="password" placeholder="Password Here" required />
+                                <Input type="password" placeholder=" new Password" name="passNew" required />
                             </Label>
                             <Label>
                                 Confirm Password:
-                                <Input type="password" placeholder="Password Here" required />
+                                <Input type="password" placeholder="Confirm new Password" name="passNewConfirm" required />
                             </Label>
                             <ButtonGroup>
                                 <Button type="submit">Submit</Button>
@@ -148,6 +209,11 @@ export default function Settings() {
     )
 
 }
+
+const Error = styled.h2`
+color: rgb(var(--errorColor));
+text-align: center;
+`
 
 const Wrapper = styled.div`
 padding: 2rem;
@@ -169,8 +235,24 @@ background: rgb(var(--cardBackground));
 box-shadow: 0px 7px 5px rgba(100,100,100, 0.2)
 `;
 
+const ButtonWrapper = styled(ButtonGroup)` 
+display: flex;
+flex-direction: column;
+align-items: center;
+`;
+
+const ButtonsLogout = styled(Button)`
+padding-bottom: 2rem;
+margin-top: 9rem;
+background: red;
+border: none;
+width: 12rem;
+`;
+
 const Buttons = styled(Button)`
 padding-bottom: 2rem;
+margin-top: 2rem;
+
 `;
 
 

@@ -4,6 +4,7 @@ import { child, get, getDatabase, ref,  } from "@firebase/database";
 import styled from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
+import Cookies from "js-cookie";
 
 interface DataRes {
     ATA: string;
@@ -23,18 +24,23 @@ export default function Admin() {
 
     const [DataResi, setDataResi] = useState<DataRes[]>([]);
     const [startIndex, setStartIndex] = useState(0);
-
+    
     const loadNextFiveItems = () => {
-    setStartIndex(prevIndex => prevIndex + 5);
+        setStartIndex(prevIndex => prevIndex + 5);
     };
     
     const loadPreviousFiveItems = () => {
-    setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
+        setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
     };
 
-
-
     useEffect(() => {
+    const Auth:any = Cookies.get('_IDs')
+
+        if(!Auth){
+            alert('You Not Supposed to here before login ?')
+            window.location.reload();
+        }
+
         const DB = ref(getDatabase());
         get(child(DB, "dataInput/resi")).then(async(datas) => {
             const Data = datas.val() || {};
