@@ -35,17 +35,18 @@ export default function UpdateResi() {
     const [dest, setDest] = useState("");
     const [from, setFrom] = useState("");
     const [status, setStatus] = useState("");
-    const [locations, setLocations] = useState<{ [key: string]: string }>({});
+    const [locations, setLocations] = useState({});
     const [startIndex, setStartIndex] = useState(0);
     const fakeKey = 1;
-
+    
     const loadNextFiveItems = () => {
-    setStartIndex(prevIndex => prevIndex + 5);
+        setStartIndex(prevIndex => prevIndex + 5);
     };
     const loadPreviousFiveItems = () => {
-    setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
+        setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
     };
-
+    
+    
     const isSearchResi = () => {
         setIsSearch(true)
         if (!noResiSearch) {
@@ -76,28 +77,42 @@ export default function UpdateResi() {
                     console.error("Error fetching resi data:", error);
                     setIsError("Terjadi kesalahan saat mencari resi");
                 });
-        }
+            }
     };
-
+    
     const removeLocation = (index: number) => {
-        const newLocations = { ...locations };
+        const newLocations:any = { ...locations };
         delete newLocations[`${index + 1}loct`];
+        delete newLocations[`${index + 1}dateTime`];
         setLocations(newLocations);
-      };
-
+    };
+    
     const addLocation = () => {
         const newIndex = Object.keys(locations).length + 1;
         setLocations(prevLocations => ({
-          ...prevLocations,
-          [`${newIndex}loct`]: ""
+            ...prevLocations,
+            [`${newIndex}loct`]: ""
         }));
+    };
+    
+    const setTimes = (newValue: string, index: number) => {
+        const newLocations:any = { ...locations };
+        const locationKey = `${index + 1}loct`;
+        newLocations[locationKey] = { 
+            ...newLocations[locationKey],
+            dateTime: newValue
+          };
+          setLocations(newLocations)
       };
 
-      const handleLocationChange = (value: string, index: number) => {
-        const newLocations = { ...locations };
+    const handleLocationChange = (value: string, index: number) => {
+        const newLocations:any = { ...locations };
         const locationKey = `${index + 1}loct`;
-        newLocations[locationKey] = value;
-        setLocations(newLocations);
+        newLocations[locationKey] = { 
+            ...newLocations[locationKey],
+            loct: value
+          };
+          setLocations(newLocations); 
       };
 
     const handleSubmit = (e: any) => {
@@ -130,7 +145,7 @@ export default function UpdateResi() {
                     locations,
                 }
             };
-            console.log(newData);
+        //console.log(newData);
         const resiRef = ref(getDatabase(), `dataInput/resi/${noResi}`);
         update(resiRef, newData)
         .then(() => {
@@ -246,13 +261,21 @@ export default function UpdateResi() {
                         <Splitter>
                         <Label>
                             Location Update:
-                            {Object.entries(locations).map(([key, value], index) => (
+                            {Object.entries(locations).map(([key, value]:any, index) => (
                                 <div key={key}>
                                 <Input
                                     type="text"
                                     placeholder={`Location ${index + 1}`}
-                                    value={value}
+                                    value={value.loct}
                                     onChange={(e) => handleLocationChange(e.target.value, index)}
+                                    required
+                                    />
+                                <Input
+                                    type="datetime-local"
+                                    placeholder={`Date Time for Location ${index + 1}`}
+                                    value={value.dateTime}
+                                    onChange={(e) => setTimes(e.target.value, index)}
+                                    required
                                 />
                                 <Buttons3 type="button" onClick={() => removeLocation(index)}>X</Buttons3>
                                 </div>
@@ -294,7 +317,6 @@ export default function UpdateResi() {
                                             </thead>
                             {recentResiData.slice(startIndex, startIndex + 5).map((a) => (
                                     Object.values(a).map((data, i) => {
-                                        console.log(data.locations)
                                         return(
                                                 <tbody key={i}>
                                                 <TableRow>
@@ -309,7 +331,7 @@ export default function UpdateResi() {
                                                     <TableData key={i}>{data.ATD || "N/A"}</TableData>
                                                     <TableData key={i}>{data.ATA || "N/A"}</TableData>
                                                     <TableData key={i}>
-                                                    {data.locations && Object.values(data.locations).slice(-1)[0] || "N/A"}
+                                                    {data.locations && (Object.values(data.locations) as any[]).slice(-1)[0].loct || "N/A"}
                                                     </TableData>
                                                     <TableData key={i}>{data.status}</TableData>
                                                     <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(data.noResi)}>Delete?</Buttons3></TableData>
@@ -360,7 +382,7 @@ const Input = styled.input`
   background: rgb(var(--inputBackground));
   color: rgb(var(--text));
   border-radius: 0.6rem;
-  max-width: 20rem;
+  max-width: 25rem;
   max-height: 2rem;
   text-align: center;
   font-size: 1.6rem;

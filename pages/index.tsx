@@ -89,7 +89,7 @@ export default function Admin() {
                                         <TableData>{data.ATD || "N/A"}</TableData>
                                         <TableData>{data.ATA || "N/A"}</TableData>
                                         <TableData key={index}>
-                                        {data.locations && Object.values(data.locations).slice(-1)[0] || "N/A"}
+                                        {data.locations && (Object.values(data.locations) as any[]).slice(-1)[0].loct || "N/A"}
                                         </TableData>                                        
                                         <TableData>{data.status}</TableData>
                                     </TableRow>
