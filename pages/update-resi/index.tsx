@@ -35,6 +35,7 @@ export default function UpdateResi() {
     const [dest, setDest] = useState("");
     const [from, setFrom] = useState("");
     const [status, setStatus] = useState("");
+    const [locations, setLocations] = useState<{ [key: string]: string }>({});
     const [startIndex, setStartIndex] = useState(0);
     const fakeKey = 1;
 
@@ -60,13 +61,16 @@ export default function UpdateResi() {
                     setAtd(Data[noResiSearch].ATD);
                     setAta(Data[noResiSearch].ATA);
                     setNamaU(Data[noResiSearch].namaU);
+                    setStatus(Data[noResiSearch].status);
                     setGoods(Data[noResiSearch].goodsName);
                     setDest(Data[noResiSearch].destination);
                     setFrom(Data[noResiSearch].deliveryFrom);
+                    setLocations(Data[noResiSearch].locations || {});
                     const Array:DataRes[] = Object.values(Data);
                     setResiDataToEdit(Array);
                     setIsError("");
                     setRecentResiData([]);
+
                 })
                 .catch((error) => {
                     console.error("Error fetching resi data:", error);
@@ -75,7 +79,27 @@ export default function UpdateResi() {
         }
     };
 
-    
+    const removeLocation = (index: number) => {
+        const newLocations = { ...locations };
+        delete newLocations[`${index + 1}loct`];
+        setLocations(newLocations);
+      };
+
+    const addLocation = () => {
+        const newIndex = Object.keys(locations).length + 1;
+        setLocations(prevLocations => ({
+          ...prevLocations,
+          [`${newIndex}loct`]: ""
+        }));
+      };
+
+      const handleLocationChange = (value: string, index: number) => {
+        const newLocations = { ...locations };
+        const locationKey = `${index + 1}loct`;
+        newLocations[locationKey] = value;
+        setLocations(newLocations);
+      };
+
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -103,6 +127,7 @@ export default function UpdateResi() {
                     ATD,
                     ATA,
                     status,
+                    locations,
                 }
             };
             console.log(newData);
@@ -134,6 +159,7 @@ export default function UpdateResi() {
     }
 
     useEffect(() => {
+
             const DB = ref(getDatabase());
             get(child(DB, `dataInput/resi`))
                 .then(async (snapshot) => {
@@ -192,6 +218,10 @@ export default function UpdateResi() {
                             Delivery From:
                             <Input type="text" placeholder="Delivery From" value={from} onChange={(e) => setFrom(e.target.value)} name="deliveryFrom" required/>
                         </Label>
+                        <Label>
+                        Status:
+                            <Input type="text" placeholder="Delivery Status ?" value={status} onChange={(e) =>  setStatus(e.target.value)}/>
+                        </Label>
                         </Splitter>
                         <Splitter>
                         <Label>
@@ -215,12 +245,20 @@ export default function UpdateResi() {
                         </Splitter>
                         <Splitter>
                         <Label>
-                        Status:
-                            <Select name="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                                <option value={"OnProcess"}>On Process</option>
-                                <option value={"Delivered"}>Delivered</option>
-                            </Select>
-                        </Label>
+                            Location Update:
+                            {Object.entries(locations).map(([key, value], index) => (
+                                <div key={key}>
+                                <Input
+                                    type="text"
+                                    placeholder={`Location ${index + 1}`}
+                                    value={value}
+                                    onChange={(e) => handleLocationChange(e.target.value, index)}
+                                />
+                                <Buttons3 type="button" onClick={() => removeLocation(index)}>X</Buttons3>
+                                </div>
+                            ))}
+                            <ButtonsAdd type="button" onClick={addLocation}>+</ButtonsAdd>
+                            </Label>
                         </Splitter>
                         <Splitter>
                             <Buttons type="submit">Update</Buttons>
@@ -249,12 +287,14 @@ export default function UpdateResi() {
                                                 <TableHeader>ETD</TableHeader>
                                                 <TableHeader>ATD</TableHeader>
                                                 <TableHeader>ATA</TableHeader>
+                                                <TableHeader>Latest Location</TableHeader>
                                                 <TableHeader>Status</TableHeader>
                                                 <TableHeader>Action</TableHeader>
                                             </TableRow>
                                             </thead>
                             {recentResiData.slice(startIndex, startIndex + 5).map((a) => (
                                     Object.values(a).map((data, i) => {
+                                        console.log(data.locations)
                                         return(
                                                 <tbody key={i}>
                                                 <TableRow>
@@ -268,6 +308,9 @@ export default function UpdateResi() {
                                                     <TableData key={i}>{data.ETD || "N/A"}</TableData>
                                                     <TableData key={i}>{data.ATD || "N/A"}</TableData>
                                                     <TableData key={i}>{data.ATA || "N/A"}</TableData>
+                                                    <TableData key={i}>
+                                                    {data.locations && Object.values(data.locations).slice(-1)[0] || "N/A"}
+                                                    </TableData>
                                                     <TableData key={i}>{data.status}</TableData>
                                                     <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(data.noResi)}>Delete?</Buttons3></TableData>
                                                 </TableRow>
@@ -330,21 +373,9 @@ const Input = styled.input`
   }
 `;
 
-const Select = styled.select`
-width: 16rem;
-height: 5rem;
-border-radius: 12px;
-background: rgb(var(--cardBackground));
-color: rgb(var(--text));
-text-align: center;
-
-`;
-
 const Buttons = styled(Button)`
 padding: 1rem;
-width: 10rem;
-height: 4rem;
-margin-left: 2rem;
+font-size: 2rem;
 `
 
 const Buttons2 = styled(Button)`
@@ -360,6 +391,16 @@ const Buttons3 = styled(Button)`
 padding: 1rem;
 font-size: 100%;
 background-color: red;
+border: none;
+`
+
+const ButtonsAdd = styled(Button)`
+padding: 1rem;
+width: 5rem;
+margin-top: 2rem;
+margin-bottom: 2rem;
+font-size: 2rem;
+background-color: green;
 border: none;
 `
 

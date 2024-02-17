@@ -15,6 +15,7 @@ interface DataRes {
     destination: string;
     goodsName: string;
     namaU: string;
+    locations: string;
     noResi: string;
     status: string;
     timeMake: string;
@@ -68,6 +69,7 @@ export default function Admin() {
                                     <TableHeader>ETD</TableHeader>
                                     <TableHeader>ATD</TableHeader>
                                     <TableHeader>ATA</TableHeader>
+                                    <TableHeader>Latest Locations</TableHeader>
                                     <TableHeader>Status</TableHeader>
                                 </TableRow>
                              </thead>
@@ -86,6 +88,9 @@ export default function Admin() {
                                         <TableData>{data.ETD || "N/A"}</TableData>
                                         <TableData>{data.ATD || "N/A"}</TableData>
                                         <TableData>{data.ATA || "N/A"}</TableData>
+                                        <TableData key={index}>
+                                        {data.locations && Object.values(data.locations).slice(-1)[0] || "N/A"}
+                                        </TableData>                                        
                                         <TableData>{data.status}</TableData>
                                     </TableRow>
                                 </tbody>
