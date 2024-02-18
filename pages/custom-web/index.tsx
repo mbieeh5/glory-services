@@ -94,10 +94,10 @@ const ButtonGroup = styled.div`
   margin-top: 3rem;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  flex-direction: space-bettwen;
 
-  & > *:not(:last-child) {
-    margin-right: 13rem;
-  }
 
   ${media('<=tablet')} {
     & > * {

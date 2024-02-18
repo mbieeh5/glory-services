@@ -15,6 +15,10 @@ interface DataRes {
     destination: string;
     goodsName: string;
     namaU: string;
+    locations: {
+        loct: string;
+        dateTime: string;
+    };
     noResi: string;
     status: string;
     timeMake: string;
@@ -193,8 +197,11 @@ export default function UpdateResi() {
         <Wrapper>
             <>
             <SearchWrapper>
-                <Input placeholder="Cari Nomor Resi" onChange={(e) => setNoResiSearch(e.target.value.toUpperCase())} />
-                <Buttons onClick={isSearchResi}>Cari Resi</Buttons>
+                <LabelSearch>
+                    Cari Resi:
+                <Input type="text" placeholder="Cari Nomor Resi" onChange={(e) => setNoResiSearch(e.target.value.toUpperCase())} />
+                </LabelSearch>
+                <ButtonSearch onClick={(isSearchResi)}>Cari Resi</ButtonSearch>
             </SearchWrapper>
             <ErrorText>{isError}</ErrorText>
             <Divider />
@@ -357,9 +364,10 @@ export default function UpdateResi() {
 
 
 const SearchWrapper = styled.div`
-display: relative;
+display: flex;
 padding: 2rem;
-left: 50%;
+align-items: center;
+flex-direction: column;
 `;
 
 
@@ -398,6 +406,19 @@ const Input = styled.input`
 const Buttons = styled(Button)`
 padding: 1rem;
 font-size: 2rem;
+`
+
+const ButtonSearch = styled(Button)`
+padding: 1rem;
+margin-top: 1rem;
+font-size: 1.5rem;
+`
+
+const LabelSearch = styled.label`
+display: flex;
+font-size: 1.8rem;
+flex-direction: column;
+padding: 1rem;
 `
 
 const Buttons2 = styled(Button)`
