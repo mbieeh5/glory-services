@@ -2,10 +2,8 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import Cookies from "js-cookie";
-import Button from "components/Button";
 import styled from "styled-components";
 import BasicSection from "components/BasicSection";
-import { media } from "utils/media";
 import InputResi from "./component/InputResi";
 
 export default function Undangan() {
@@ -50,30 +48,6 @@ justify-content: center;
 text-align: center;
 padding-bottom: 12rem;
 `
-const Buttons = styled(Button)`
-font-size: 2rem;
-`
-
-const ButtonGroup = styled.div`
-  margin-top: 3rem;
-  display: flex;
-  flex-wrap: wrap;
-
-  & > *:not(:last-child) {
-    margin-right: 13rem;
-  }
-
-  ${media('<=tablet')} {
-    & > * {
-      width: 100%;
-    }
-
-    & > *:not(:last-child) {
-      margin-bottom: 2rem;
-      margin-right: 0rem;
-    }
-  }
-`;
 
 const WrapperHeader =  styled.div`
 
@@ -83,10 +57,3 @@ const WrapperContent = styled.div`
 padding-top: 5rem;
 
 `
-
-const Divider = styled.div`
-    width: 100%;
-    height: 1px;
-    background-color: rgb(var(--text));
-    margin-top: 1rem;
-`;

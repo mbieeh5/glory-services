@@ -31,10 +31,10 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Admin Panel SML</title>
+        <title>Glory Services</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="icon" type="image/png" href="/Logo-SML.png" />
+        <link rel="icon" type="image/png" href="/Logo-GC.png" />
       </Head>
       <LoginProvider>
         <ColorModeScript />

@@ -69,9 +69,8 @@ export default function InputResi() {
         }
     const [hargaBaru, setHargaBaru] = useState<number>(0);
     const [notaId, setNotaId] = useState("");
-    const [error, setError] = useState('No Nota Harap Di Isi')
+    const [error] = useState('No Nota Harap Di Isi')
     const [isError, setIsError] = useState(false);
-
     return(
         <Wrapper>
             <FormCard>
@@ -196,30 +195,6 @@ const Input = styled.input`
 
 const Buttons = styled(Button)`
 margin: 0 auto;
-`;
-const Buttons2 = styled.button`
-border: none;
-background: none;
-text-decoration: none;
-text-align: center;
-background: rgb(var(--primary));
-padding: 0.75rem 0.25rem;
-font-size: 1.2rem;
-color: rgb(var(--textSecondary));
-text-transform: uppercase;
-font-family: var(--font);
-font-weight: bold;
-border-radius: 2rem;
-cursor: pointer;
-width: 12rem;
-
-span {
-  margin-left: 2rem;
-}
-
-&:hover {
-  transform: scale(1.025);
-}
 `;
 
 const Select = styled.select`

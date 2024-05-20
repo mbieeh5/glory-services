@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 import BasicSection2 from "components/BasicSection2"
-import { child, get, getDatabase, ref, remove, update } from "firebase/database";
+import { child, get, getDatabase, ref, update } from "firebase/database";
 import Button from "components/Button";
 import { useEffect, useState } from "react"
 import styled from "styled-components"
@@ -27,10 +27,10 @@ export default function UpdateResi() {
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
     const [isError, setIsError] = useState("");
     const [isModalOpen, setIsModalOpen] = useState<Boolean>(false);
-    const [status, setStatus] = useState("");
+    const [status] = useState("");
     const [searchFilter, setSearchFilter] = useState('');
     const [buttonDisabled, setButtonDisabled] = useState(false);
-    const [locations, setLocations] = useState({});
+    const [locations] = useState({});
     const [startIndex, setStartIndex] = useState(0);
     const fakeKey = 1;
     
@@ -119,10 +119,10 @@ export default function UpdateResi() {
         const confirmDelete = window.confirm(`Apakah Kamu Yakin Akan Menghapus ${i} ?`)
         if(confirmDelete){
           try {
-            const DB = getDatabase();
+            /*const DB = getDatabase();
             const featuresRef = ref(DB, `dataInput/resi/${i}`);
             remove(featuresRef);
-            window.location.reload();
+            window.location.reload();*/
             alert(`Resi telah dihapus: ${i}`);
           } catch (error) {
             console.error('Error deleting partner:', error);
@@ -308,7 +308,7 @@ export default function UpdateResi() {
                                                     <TableData key={i}>{a.Harga.toLocaleString()}</TableData>
                                                     <TableData key={i}>{a.Teknisi}</TableData>
                                                     <TableData key={i}>{a.status}</TableData>
-                                                    <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(a.noResi)}>Delete?</Buttons3></TableData>
+                                                    <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(a.NoNota)}>Delete?</Buttons3></TableData>
                                                 </TableRow>
                                                 </tbody>
                                     ))}
