@@ -7,18 +7,17 @@ import Button from "components/Button";
 import Cookies from "js-cookie";
 
 interface DataRes {
-    ATA: string;
-    ATD: string;
-    ETA: string;
-    ETD: string;
-    deliveryFrom: string;
-    destination: string;
-    goodsName: string;
-    namaU: string;
-    locations: string;
-    noResi: string;
+    NoNota: string;
+    NamaUser: string;
+    NoHpUser: string;
+    TglMasuk: string;
+    TglKeluar: string;
+    MerkHp: string;
+    Kerusakan: string;
+    Penerima: string;
+    Harga: number;
+    Teknisi: string;
     status: string;
-    timeMake: string;
 }
 
 export default function Admin() { 
@@ -34,6 +33,21 @@ export default function Admin() {
         setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
     };
 
+    const dateFormater = (date:string) => {
+        const TglObj = new Date(date);
+        const tgl = TglObj.getDate();
+        const bln = TglObj.getMonth() + 1;
+        const thn = TglObj.getFullYear();
+        const jam = TglObj.getHours();
+        const mnt = TglObj.getMinutes();
+        const tanggalWaktuBaru = ("0" + tgl).slice(-2) + "/" + ("0" + bln).slice(-2) + "/" + thn + " @" + ("0" + jam).slice(-2) + ":" + ("0" + mnt).slice(-2);
+        if(!isNaN(tgl)){
+            return tanggalWaktuBaru
+        }else{
+            return 'Belum Di Ambil'
+        }
+    }
+
     useEffect(() => {
     const Auth:any = Cookies.get('_IDs')
 
@@ -43,7 +57,7 @@ export default function Admin() {
         }
 
         const DB = ref(getDatabase());
-        get(child(DB, "dataInput/resi")).then(async(datas) => {
+        get(child(DB, "Service/sandboxDS")).then(async(datas) => {
             const Data = datas.val() || {};
             const Array:DataRes[] = Object.values(Data);
             setDataResi(Array);
@@ -54,53 +68,45 @@ export default function Admin() {
 
     return(
         <MainWrapper>
-            <BasicSection2 title="Recent Resi Data">
+            <BasicSection2 title="Data Service yang kamu Terima Hari ini">
                     <Wrapper>
                         <Table>
                             <thead>
                                 <TableRow>
-                                    <TableHeader>Resi ID</TableHeader>
-                                    <TableHeader>Customer Name</TableHeader>
-                                    <TableHeader>Goods Name</TableHeader>
-                                    <TableHeader>POD Time</TableHeader>
-                                    <TableHeader>Delivery From</TableHeader>
-                                    <TableHeader>Delivery To</TableHeader>
-                                    <TableHeader>ETA</TableHeader>
-                                    <TableHeader>ETD</TableHeader>
-                                    <TableHeader>ATD</TableHeader>
-                                    <TableHeader>ATA</TableHeader>
-                                    <TableHeader>Latest Locations</TableHeader>
+                                    <TableHeader>No Nota</TableHeader>
+                                    <TableHeader>Nama user</TableHeader>
+                                    <TableHeader>Nomor HP User</TableHeader>
+                                    <TableHeader>Tanggal Masuk</TableHeader>
+                                    <TableHeader>Tanggal Keluar</TableHeader>
+                                    <TableHeader>Merk HP</TableHeader>
+                                    <TableHeader>Kerusakan</TableHeader>
+                                    <TableHeader>Penerima</TableHeader>
+                                    <TableHeader>Estimasi Harga</TableHeader>
+                                    <TableHeader>Teknisi</TableHeader>
                                     <TableHeader>Status</TableHeader>
                                 </TableRow>
                              </thead>
-                        {DataResi.slice(startIndex, startIndex + 5).map((a) => (
-                            Object.values(a).map((data, index) => {
-                                return(
-                                <tbody key={index}>
+                        {DataResi.slice(startIndex, startIndex + 5).map((a, i) => (
+                                <tbody key={i}>
                                     <TableRow>
-                                        <TableData>{data.noResi}</TableData>
-                                        <TableData>{data.namaU}</TableData>
-                                        <TableData>{data.goodsName}</TableData>
-                                        <TableData>{data.timeMake}</TableData>
-                                        <TableData>{data.deliveryFrom}</TableData>
-                                        <TableData>{data.destination}</TableData>
-                                        <TableData>{data.ETA || "N/A"}</TableData>
-                                        <TableData>{data.ETD || "N/A"}</TableData>
-                                        <TableData>{data.ATD || "N/A"}</TableData>
-                                        <TableData>{data.ATA || "N/A"}</TableData>
-                                        <TableData key={index}>
-                                        {data.locations && (Object.values(data.locations) as any[]).slice(-1)[0].loct || "N/A"}
-                                        </TableData>                                        
-                                        <TableData>{data.status}</TableData>
+                                        <TableData>{a.NoNota}</TableData>
+                                        <TableData>{a.NamaUser}</TableData>
+                                        <TableData>{a.NoHpUser}</TableData>
+                                        <TableData>{dateFormater(a.TglMasuk)}</TableData>
+                                        <TableData>{dateFormater(a.TglKeluar)}</TableData>
+                                        <TableData>{a.MerkHp}</TableData>
+                                        <TableData>{a.Kerusakan}</TableData>
+                                        <TableData>{a.Penerima}</TableData>
+                                        <TableData>{a.Harga.toLocaleString()}</TableData>
+                                        <TableData>{a.Teknisi || a.status}</TableData>
+                                        <TableData>{a.status}</TableData>                                     
                                     </TableRow>
                                 </tbody>
-                                )
-                            })
                         ))}
                     </Table>
             </Wrapper>
-                    <Buttons2 onClick={loadPreviousFiveItems}>Previous</Buttons2>
-                    <Buttons2 onClick={loadNextFiveItems}>Next</Buttons2>
+                    <Buttons2 onClick={loadPreviousFiveItems}>Sebelumnya</Buttons2>
+                    <Buttons2 onClick={loadNextFiveItems}>Selanjutnya</Buttons2>
             </BasicSection2>
         </MainWrapper>
     )

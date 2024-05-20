@@ -10,129 +10,132 @@ import styled from "styled-components"
 
 export default function InputResi() {
 
-    const resiID = () => {
+    const NoNota = () => {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const numbers = '0123456789';
         const lengthText = 3;
-        const lengthNum = 7;
-        let resi = '';
+        const lengthNum = 3;
+        let notaID = '';
         for (let i = 0; i < lengthNum; i++) {
             const randomIndex = Math.floor(Math.random() * numbers.length);
-            resi += numbers[randomIndex];
+            notaID += numbers[randomIndex];
         }
         for (let i = 0; i < lengthText; i++) {
             const randomIndex = Math.floor(Math.random() * characters.length);
-            resi += characters[randomIndex];
+            notaID += characters[randomIndex];
         }
-        return `SML${resi}`;
+        return `GL${notaID}`;
     };
     
         const handleSubmit = (e: any) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const noResi = formData.get('noResi');
-            const namaU = formData.get('custName');
-            const timeMake = formData.get('inputDate');
-            const goodsName = formData.get('goodsName');
-            const deliveryFrom = formData.get('deliveryFrom');
-            const destination = formData.get('destination');
-            const ETD = formData.get('ETD');
-            const ETA = formData.get('ETA');
-            const ATD = formData.get('ATD');
-            const ATA = formData.get('ATA');
+            const Harga = hargaBaru;
+            const Kerusakan = formData.get('kerusakan');
+            const MerkHp = formData.get('merkHp');
+            const NamaUser = formData.get('namaUser');
+            const NoHpUser = formData.get('noHpUser');
+            const NoNota = formData.get('noNota');
+            const Penerima = formData.get('penerima');
+            const TglMasuk = formData.get('tglMasuk');
                 const newData = {
-                    [resiId] : {
-                        noResi,
-                        namaU,
-                        timeMake,
-                        goodsName,
-                        deliveryFrom, 
-                        destination,
-                        ETD,
-                        ETA,
-                        ATD,
-                        ATA,
-                        status: 'onProcess',
+                    [notaId] : {
+                        Harga,
+                        Kerusakan,
+                        MerkHp,
+                        NamaUser,
+                        NoHpUser, 
+                        NoNota,
+                        Penerima,
+                        TglMasuk,
+                        status: 'process',
                     }
                 };
-                const resiRef = ref(getDatabase(), `dataInput/resi/${noResi}`);
+            if(notaId === ''){
+                setIsError(true);
+                alert('No Nota Harap Di Isi')
+            }
+            const resiRef = ref(getDatabase(), `Service/sandboxDS`);
             update(resiRef, newData)
             .then(() => {
-                alert('Resi Berhasil di Input')
+                alert('Service Berhasil di Input')
                 e.target.reset();
                 window.location.reload();
             })
             .catch((error) => {
                 console.error('Gagal menyimpan data:', error);
             });
+            console.log(newData);
         }
-
-    const [resiId, setResiId] = useState("");
+    const [hargaBaru, setHargaBaru] = useState<number>(0);
+    const [notaId, setNotaId] = useState("");
+    const [error, setError] = useState('No Nota Harap Di Isi')
+    const [isError, setIsError] = useState(false);
 
     return(
         <Wrapper>
             <FormCard>
             <Form onSubmit={handleSubmit}>
+                <ErrEvent>{isError ? error : ''}</ErrEvent>
                 <Label>
-                    Resi Number:
-                    <Input type="text" placeholder="Resi ID" value={resiId.toUpperCase()} onChange={(e) => setResiId(e.target.value)} name="noResi" required/>
+                    No Nota:
+                    <Input type="text" onClick={() => setNotaId(NoNota)} placeholder="Klik Buat No Nota" value={notaId.toUpperCase()} onChange={(e) => setNotaId(e.target.value)} name="noNota" required readOnly/>
+                <Splitter>
+                    {/*<Buttons2 type='button' onClick={() => setNotaId(NoNota)}>Buat No Nota</Buttons2>*/}
+                </Splitter>
                 </Label>
                 <Splitter>
                 <Label>
-                    POD Date:
-                    <Input type="datetime-local" placeholder="01/01/2022" name="inputDate" required/>
+                    Nama User:
+                    <Input type="text" placeholder="Masukan Nama User" name="namaUser" required/>
                 </Label>
                 <Label>
-                    Customer Name:
-                    <Input type="text" placeholder="Customer Name" name="custName" required/>
-                </Label>
-                <Label>
-                    Goods Name:
-                    <Input type="text" placeholder="Goods Name" name="goodsName" required/>
+                    No Hp User:
+                    <Input type="number" placeholder="08xxxxxx" name="noHpUser" required/>
                 </Label>
                 </Splitter>
                 <Splitter>
                 <Label>
-                    Delivery To:
-                    <Input type="text" placeholder="Destination" name="destination" required/>
+                    Merk Hp:
+                    <Input type="text" placeholder="Masukan Tipe HP LENGKAP" name="merkHp" required/>
                 </Label>
                 <Label>
-                    Delivery From:
-                    <Input type="text" placeholder="Delivery From" name="deliveryFrom" required/>
-                </Label>
-                </Splitter>
-                <Splitter>
-                <Label>
-                Estimated Time Departure:
-                    <Input type="datetime-local" placeholder="ETD" name="ETD"/>
+                    Kerusakan:
+                    <Input type="text" placeholder="Curhat Kerusakannya" name="kerusakan" required/>
                 </Label>
                 <Label>
-                Estimated Time Arrival:
-                    <Input type="datetime-local" placeholder="ETA" name="ETA"/>
+                    Tanggal Masuk:
+                    <Input type="datetime-local" placeholder="Tanggal Masuk" name="tglMasuk" required/>
                 </Label>
                 </Splitter>
                 <Splitter>
                 <Label>
-                Actual Time Departure:
-                    <Input type="datetime-local" placeholder="ATD" name="ATD"/>
+                    Estimasi Harga:
+                    <Input type="number" placeholder="Masukan estimasi Harga" onChange={(e) => setHargaBaru(parseInt(e.target.value))} name="harga" required/>
                 </Label>
                 <Label>
-                Actual Time Arrival:
-                    <Input type="datetime-local" placeholder="ATA" name="ATA"/>
+                Penerima:
+                    <Select placeholder="Penerima Service" name="penerima" required>
+                        <option>Sindi</option>
+                        <option>Tiara</option>
+                        <option>Vina</option>
+                        <option>Yuni</option>
+                    </Select>
                 </Label>
                 </Splitter>
                 <ButtonGroup>
                 <Buttons type="submit">Submit</Buttons>
                 </ButtonGroup>
             </Form>
-                <ButtonGroup>
-                <Buttons onClick={() => setResiId(resiID)}>Generate Resi ID</Buttons>
-                </ButtonGroup>
             </FormCard>
         </Wrapper>
     )
 
 }
+
+const ErrEvent = styled.p`
+color: red;
+`
 
 const Wrapper = styled.div`
     position: relative;
@@ -194,3 +197,37 @@ const Input = styled.input`
 const Buttons = styled(Button)`
 margin: 0 auto;
 `;
+const Buttons2 = styled.button`
+border: none;
+background: none;
+text-decoration: none;
+text-align: center;
+background: rgb(var(--primary));
+padding: 0.75rem 0.25rem;
+font-size: 1.2rem;
+color: rgb(var(--textSecondary));
+text-transform: uppercase;
+font-family: var(--font);
+font-weight: bold;
+border-radius: 2rem;
+cursor: pointer;
+width: 12rem;
+
+span {
+  margin-left: 2rem;
+}
+
+&:hover {
+  transform: scale(1.025);
+}
+`;
+
+const Select = styled.select`
+width: 13rem;
+background: rgb(var(--inputBackground));
+color: rgb(var(--text));
+text-align: center;
+border-radius: 12px;
+border: none;
+padding-top: 1rem;
+`

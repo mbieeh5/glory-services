@@ -7,38 +7,29 @@ import styled from "styled-components"
 
 
 interface DataRes {
-    ATA: string;
-    ATD: string;
-    ETA: string;
-    ETD: string;
-    deliveryFrom: string;
-    destination: string;
-    goodsName: string;
-    namaU: string;
-    locations: {
-        loct: string;
-        dateTime: string;
-    };
-    noResi: string;
+    NoNota: string;
+    NamaUser: string;
+    NoHpUser: string;
+    TglMasuk: string;
+    TglKeluar: string;
+    MerkHp: string;
+    Kerusakan: string;
+    Penerima: string;
+    Harga: number;
+    Teknisi: string;
     status: string;
-    timeMake: string;
 }
 
 export default function UpdateResi() {
-    const [noResiSearch, setNoResiSearch] = useState("");
-    const [recentResiData, setRecentResiData] = useState<DataRes[]>([]);
+    const [noNotaSearch, setNoNotaSearch] = useState("");
+    const [recentServiceData, setRecentServiceData] = useState<DataRes[]>([]);
     const [isSearch, setIsSearch] = useState(false);
-    const [resiDataToEdit, setResiDataToEdit] = useState<DataRes[]>([]);
+    const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
     const [isError, setIsError] = useState("");
-    const [etd, setEtd] = useState("");
-    const [eta, setEta] = useState("");
-    const [atd, setAtd] = useState("");
-    const [ata, setAta] = useState("");
-    const [namaU, setNamaU] = useState("");
-    const [goods, setGoods] = useState("");
-    const [dest, setDest] = useState("");
-    const [from, setFrom] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState<Boolean>(false);
     const [status, setStatus] = useState("");
+    const [searchFilter, setSearchFilter] = useState('');
+    const [buttonDisabled, setButtonDisabled] = useState(false);
     const [locations, setLocations] = useState({});
     const [startIndex, setStartIndex] = useState(0);
     const fakeKey = 1;
@@ -51,31 +42,28 @@ export default function UpdateResi() {
     };
     
     
-    const isSearchResi = () => {
+    const isSearchService = () => {
         setIsSearch(true)
-        if (!noResiSearch) {
-            setIsError("Silahkan Masukan Nomor Resi");
+        if (!noNotaSearch) {
+            setIsError("Silahkan Masukan Nomor Nota");
             setIsSearch(false);
         } else {
             const DB = ref(getDatabase());
-            get(child(DB, `dataInput/resi/${noResiSearch}`))
+            get(child(DB, `Service/sandboxDS/${noNotaSearch}`))
                 .then(async (data) => {
                     const Data = data.val() || {};
-                    setEtd(Data[noResiSearch].ETD);
-                    setEta(Data[noResiSearch].ETA);
-                    setAtd(Data[noResiSearch].ATD);
-                    setAta(Data[noResiSearch].ATA);
-                    setNamaU(Data[noResiSearch].namaU);
-                    setStatus(Data[noResiSearch].status);
-                    setGoods(Data[noResiSearch].goodsName);
-                    setDest(Data[noResiSearch].destination);
-                    setFrom(Data[noResiSearch].deliveryFrom);
-                    setLocations(Data[noResiSearch].locations || {});
-                    const Array:DataRes[] = Object.values(Data);
-                    setResiDataToEdit(Array);
+                    console.log(Data);
+                    const Array:DataRes[] = Object.values({Data});
+                    setServiceDataToEdit(Array);
                     setIsError("");
-                    setRecentResiData([]);
-
+                    setRecentServiceData([]);
+                    const statusBool = Data.status;
+                    console.log(statusBool)
+                    if(statusBool === 'process'){
+                        setButtonDisabled(false);
+                    }else{
+                        setButtonDisabled(true);
+                    }
                 })
                 .catch((error) => {
                     console.error("Error fetching resi data:", error);
@@ -84,40 +72,6 @@ export default function UpdateResi() {
             }
     };
     
-    const removeLocation = (index: number) => {
-        const newLocations:any = { ...locations };
-        delete newLocations[`${index + 1}loct`];
-        delete newLocations[`${index + 1}dateTime`];
-        setLocations(newLocations);
-    };
-    
-    const addLocation = () => {
-        const newIndex = Object.keys(locations).length + 1;
-        setLocations(prevLocations => ({
-            ...prevLocations,
-            [`${newIndex}loct`]: ""
-        }));
-    };
-    
-    const setTimes = (newValue: string, index: number) => {
-        const newLocations:any = { ...locations };
-        const locationKey = `${index + 1}loct`;
-        newLocations[locationKey] = { 
-            ...newLocations[locationKey],
-            dateTime: newValue
-          };
-          setLocations(newLocations)
-      };
-
-    const handleLocationChange = (value: string, index: number) => {
-        const newLocations:any = { ...locations };
-        const locationKey = `${index + 1}loct`;
-        newLocations[locationKey] = { 
-            ...newLocations[locationKey],
-            loct: value
-          };
-          setLocations(newLocations); 
-      };
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
@@ -149,7 +103,6 @@ export default function UpdateResi() {
                     locations,
                 }
             };
-        //console.log(newData);
         const resiRef = ref(getDatabase(), `dataInput/resi/${noResi}`);
         update(resiRef, newData)
         .then(() => {
@@ -177,14 +130,48 @@ export default function UpdateResi() {
         }
     }
 
-    useEffect(() => {
-
+    const handleSearchFilter1 = (i:string) => {
+        if(i === ''){
+            alert('silahkan masukan kata Kunci Terlebih dahulu');
+        }else{
             const DB = ref(getDatabase());
-            get(child(DB, `dataInput/resi`))
+            get(child(DB, `Service/sandboxDS`))
                 .then(async (snapshot) => {
                     const Data = snapshot.val() || {};
                     const Array:DataRes[] = Object.values(Data);
-                    setRecentResiData(Array);
+                    const filterData = Array.filter(items => 
+                        items.NoNota.toLowerCase().includes(i.toLowerCase()) ||
+                        items.NamaUser.toLowerCase().includes(i.toLowerCase()) ||
+                        items.MerkHp.toLowerCase().includes(i.toLowerCase()) ||
+                        items.Kerusakan.toLowerCase().includes(i.toLowerCase()) ||
+                        items.Penerima.toLowerCase().includes(i.toLowerCase()) ||
+                        items.status.toLowerCase().includes(i.toLowerCase()) ||
+                        items.status.toLowerCase().includes(i.toLowerCase())
+                    )
+                    setRecentServiceData(filterData);
+                    setIsError("");
+                })
+                .catch((error) => {
+                    console.error("Error fetching recent resi data:", error);
+                    setIsError("Terjadi kesalahan saat mengambil data resi terbaru");
+                });
+        }
+    } 
+
+    const popUpModalFilter = () => {
+        setIsModalOpen(true);
+    }
+
+    const closePopUpModalFilter = () => {
+        setIsModalOpen(false);
+    }
+    useEffect(() => {
+            const DB = ref(getDatabase());
+            get(child(DB, `Service/sandboxDS`))
+                .then(async (snapshot) => {
+                    const Data = snapshot.val() || {};
+                    const Array:DataRes[] = Object.values(Data);
+                    setRecentServiceData(Array);
                     setIsError("");
                 })
                 .catch((error) => {
@@ -198,100 +185,74 @@ export default function UpdateResi() {
             <>
             <SearchWrapper>
                 <LabelSearch>
-                    Cari Resi:
-                <Input type="text" placeholder="Cari Nomor Resi" onChange={(e) => setNoResiSearch(e.target.value.toUpperCase())} />
+                    Cari Service:
+                <Input type="text" placeholder="Cari Nomor Nota" onChange={(e) => setNoNotaSearch(e.target.value.toUpperCase())} />
                 </LabelSearch>
-                <ButtonSearch onClick={(isSearchResi)}>Cari Resi</ButtonSearch>
+                <ButtonSearch onClick={(isSearchService)}>Cari Service</ButtonSearch>
             </SearchWrapper>
             <ErrorText>{isError}</ErrorText>
             <Divider />
             <WrapperContent>
                 {isSearch ? (
-                    <BasicSection2 title="Update Resi Data">
+                    <BasicSection2 title="Update Data Service">
                 <Wrapper2>
-                    {resiDataToEdit.map((a) => {
+                    {serviceDataToEdit.map((a) => {
                         return(
                     <FormCard key={fakeKey}>
                     <Form onSubmit={handleSubmit}>
                         <Label>
-                            Resi Number:
-                            <Input type="text" placeholder="Resi ID" value={a.noResi} name="noResi" readOnly/>
+                            No Nota:
+                            <Input type="text" placeholder="Resi ID" value={a.NoNota} name="noNota" readOnly/>
                         </Label>
                         <Splitter>
                         <Label>
-                            POD Date:
-                            <Input type="datetime-local" value={a.timeMake} name="inputDate" readOnly/>
+                            Nama User:
+                            <Input type="text" value={a.NamaUser} name="namaUser" readOnly/>
                         </Label>
                         <Label>
-                            Customer Name:
-                            <Input type="text" placeholder="Customer Name" value={namaU} onChange={(e) => setNamaU(e.target.value)} name="custName" required/>
-                        </Label>
-                        <Label>
-                            Goods Name:
-                            <Input type="text" placeholder="Goods Name" value={goods} onChange={(e) => setGoods(e.target.value)} name="goodsName" required/>
+                            No Hp User:
+                            <Input type="text" value={a.NoHpUser} name="noHpUser" readOnly/>
                         </Label>
                         </Splitter>
                         <Splitter>
                         <Label>
-                            Delivery To:
-                            <Input type="text" placeholder="Destination" value={dest} onChange={(e) => setDest(e.target.value)} name="destination" required/>
+                            Merk Hp:
+                            <Input type="text" value={a.MerkHp} name="merkHp" readOnly/>
                         </Label>
                         <Label>
-                            Delivery From:
-                            <Input type="text" placeholder="Delivery From" value={from} onChange={(e) => setFrom(e.target.value)} name="deliveryFrom" required/>
+                            Kerusakan:
+                            <Input type="text" placeholder="Kerusakannya apa" value={a.Kerusakan} name="kerusakan" required/>
+                        </Label>
+                        <Label>
+                            Estimasi Harga:
+                            <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
+                        </Label>
+                        </Splitter>
+                        <Label>
+                            Harga Akhir:
+                            <Input type="number" placeholder="Masukan Harga Akhir" name="harga" required/>
+                        </Label>
+                        <Splitter>
+                        <Label>
+                            Teknisi:
+                            <Select placeholder="Kerjaan Siapa ?" name="teknisi" required>
+                                <option>Amri</option>
+                                <option>Ibnu</option>
+                                <option>Rafi</option>
+                            </Select>
                         </Label>
                         <Label>
                         Status:
-                            <Input type="text" placeholder="Delivery Status ?" value={status} onChange={(e) =>  setStatus(e.target.value)}/>
+                            <Select name='status' required>
+                            <option>cancel</option>
+                            <option>sudah diambil</option>
+                            </Select>
                         </Label>
                         </Splitter>
                         <Splitter>
-                        <Label>
-                        Estimated Time Departure:
-                            <Input type="datetime-local" placeholder="ETD" value={etd} onChange={(e) => setEtd(e.target.value)} name="ETD"/>
-                        </Label>
-                        <Label>
-                        Estimated Time Arrival:
-                            <Input type="datetime-local" placeholder="ETA" value={eta} onChange={(e) => setEta(e.target.value)} name="ETA"/>
-                        </Label>
                         </Splitter>
                         <Splitter>
-                        <Label>
-                        Actual Time Departure:
-                            <Input type="datetime-local" placeholder="ATD" value={atd} onChange={(e) => setAtd(e.target.value)} name="ATD"/>
-                        </Label>
-                        <Label>
-                        Actual Time Arrival:
-                            <Input type="datetime-local" placeholder="ATA" value={ata} onChange={(e) => setAta(e.target.value)} name="ATA"/>
-                        </Label>
-                        </Splitter>
-                        <Splitter>
-                        <Label>
-                            Location Update:
-                            {Object.entries(locations).map(([key, value]:any, index) => (
-                                <div key={key}>
-                                <Input
-                                    type="text"
-                                    placeholder={`Location ${index + 1}`}
-                                    value={value.loct}
-                                    onChange={(e) => handleLocationChange(e.target.value, index)}
-                                    required
-                                    />
-                                <Input
-                                    type="datetime-local"
-                                    placeholder={`Date Time for Location ${index + 1}`}
-                                    value={value.dateTime}
-                                    onChange={(e) => setTimes(e.target.value, index)}
-                                    required
-                                />
-                                <Buttons3 type="button" onClick={() => removeLocation(index)}>X</Buttons3>
-                                </div>
-                            ))}
-                            <ButtonsAdd type="button" onClick={addLocation}>+</ButtonsAdd>
-                            </Label>
-                        </Splitter>
-                        <Splitter>
-                            <Buttons type="submit">Update</Buttons>
+                            <Buttons type="submit" disabled={buttonDisabled}>Update</Buttons>
                         </Splitter>
                     </Form>
                     </FormCard>
@@ -301,51 +262,55 @@ export default function UpdateResi() {
                     </BasicSection2>
                 ) : (
                     <>
-                    {recentResiData && (
-                        <BasicSection2 title="Update Data Resi">
+                    {recentServiceData && (
+                        <BasicSection2 title="Recent Data Service">
+                            <FilterWrapper>
+                                <SearchWrapper>
+                                    <Search>
+                                        <Input placeholder="Masukan Kata Kunci" onChange={(e) => setSearchFilter(e.target.value)} />
+                                            <ButtonSearch onClick={() => handleSearchFilter1(searchFilter)}>Cari</ButtonSearch>
+                                    </Search>
+                                    <FilterSearch>
+                                        <ButtonFilter onClick={() => popUpModalFilter()}>...</ButtonFilter>
+                                    </FilterSearch>
+                                </SearchWrapper>
+                            </FilterWrapper>
                                     <TableWrapper>
+                                        <div>Total Service Total : {recentServiceData.length}</div>
                                         <Table>
                                             <thead>
                                             <TableRow>
-                                                <TableHeader>Resi ID</TableHeader>
-                                                <TableHeader>Customer Name</TableHeader>
-                                                <TableHeader>Goods Name</TableHeader>
-                                                <TableHeader>POD Time</TableHeader>
-                                                <TableHeader>Delivery From</TableHeader>
-                                                <TableHeader>Delivery To</TableHeader>
-                                                <TableHeader>ETA</TableHeader>
-                                                <TableHeader>ETD</TableHeader>
-                                                <TableHeader>ATD</TableHeader>
-                                                <TableHeader>ATA</TableHeader>
-                                                <TableHeader>Latest Location</TableHeader>
+                                                <TableHeader>No Nota</TableHeader>
+                                                <TableHeader>Nama user</TableHeader>
+                                                <TableHeader>Nomor HP User</TableHeader>
+                                                <TableHeader>Tanggal Masuk</TableHeader>
+                                                <TableHeader>Tanggal Keluar</TableHeader>
+                                                <TableHeader>Merk HP</TableHeader>
+                                                <TableHeader>Kerusakan</TableHeader>
+                                                <TableHeader>Penerima</TableHeader>
+                                                <TableHeader>Estimasi Harga</TableHeader>
+                                                <TableHeader>Teknisi</TableHeader>
                                                 <TableHeader>Status</TableHeader>
-                                                <TableHeader>Action</TableHeader>
+                                                <TableHeader>Hapus</TableHeader>
                                             </TableRow>
                                             </thead>
-                            {recentResiData.slice(startIndex, startIndex + 5).map((a) => (
-                                    Object.values(a).map((data, i) => {
-                                        return(
+                            {recentServiceData.slice(startIndex, startIndex + 5).map((a, i) => (
                                                 <tbody key={i}>
                                                 <TableRow>
-                                                    <TableData key={i}>{data.noResi}</TableData>
-                                                    <TableData key={i}>{data.namaU}</TableData>
-                                                    <TableData key={i}>{data.goodsName}</TableData>
-                                                    <TableData key={i}>{data.timeMake}</TableData>
-                                                    <TableData key={i}>{data.deliveryFrom}</TableData>
-                                                    <TableData key={i}>{data.destination}</TableData>
-                                                    <TableData key={i}>{data.ETA || "N/A"}</TableData>
-                                                    <TableData key={i}>{data.ETD || "N/A"}</TableData>
-                                                    <TableData key={i}>{data.ATD || "N/A"}</TableData>
-                                                    <TableData key={i}>{data.ATA || "N/A"}</TableData>
-                                                    <TableData key={i}>
-                                                    {data.locations && (Object.values(data.locations) as any[]).slice(-1)[0].loct || "N/A"}
-                                                    </TableData>
-                                                    <TableData key={i}>{data.status}</TableData>
-                                                    <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(data.noResi)}>Delete?</Buttons3></TableData>
+                                                    <TableData key={i}>{a.NoNota}</TableData>
+                                                    <TableData key={i}>{a.NamaUser}</TableData>
+                                                    <TableData key={i}>{a.NoHpUser}</TableData>
+                                                    <TableData key={i}>{a.TglMasuk}</TableData>
+                                                    <TableData key={i}>{a.TglKeluar}</TableData>
+                                                    <TableData key={i}>{a.MerkHp}</TableData>
+                                                    <TableData key={i}>{a.Kerusakan}</TableData>
+                                                    <TableData key={i}>{a.Penerima}</TableData>
+                                                    <TableData key={i}>{a.Harga.toLocaleString()}</TableData>
+                                                    <TableData key={i}>{a.Teknisi}</TableData>
+                                                    <TableData key={i}>{a.status}</TableData>
+                                                    <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(a.noResi)}>Delete?</Buttons3></TableData>
                                                 </TableRow>
                                                 </tbody>
-                                            )
-                                        })   
                                     ))}
                             </Table>
                         </TableWrapper>
@@ -358,10 +323,111 @@ export default function UpdateResi() {
                 )}
             </WrapperContent>
             </>
+            {/* Modal Section*/}
+                {isModalOpen ? 
+                <>
+                <Modal isOpen={isModalOpen} onClose={closePopUpModalFilter}>
+                    <h2>Filter Data</h2>
+                    <div>
+                        <Label>Tanggal Masuk Awal:
+                        <Input type="date" />
+                        </Label>
+                    </div>
+                    <div>
+                        <Label>Tanggal Masuk Akhir:
+                        <Input type="date" />
+                        </Label>
+                    </div>
+                    <div>
+                        <Label>Tanggal Keluar Awal:
+                        <Input type="date" />
+                        </Label>
+                    </div>
+                    <div>
+                        <Label>Tanggal Keluar Akhir:
+                        <Input type="date" />
+                        </Label>
+                    </div>
+                    <div>
+                        <Label>Teknisi:
+                            <Select>
+                                <option value="rafi">Rafi</option>
+                                <option value="amri">Amri</option>
+                                <option value="ibnu">Ibnu</option>
+                            </Select>
+                        </Label>
+                    </div>
+                    <div>
+                        <Label>Penerima:
+                            <Select>
+                                <option value="sindi">Sindi</option>
+                                <option value="tiara">Tiara</option>
+                                <option value="vina">Vina</option>
+                                <option value="yuniska">Yuniska</option>
+                            </Select>
+                        </Label>
+                    </div>
+                    <div>
+                        <Label>Status:
+                            <Select>
+                                <option value="sudah diambil">Sudah Diambil</option>
+                                <option value="cancel">Cancel</option>
+                                <option value="process">Process</option>
+                            </Select>
+                        </Label>
+                    </div>
+                    <button onClick={closePopUpModalFilter}>Tutup</button>
+                    <button onClick={closePopUpModalFilter}>Filter Data</button>
+                </Modal>
+                </> 
+                : 
+                <>
+                </>}
         </Wrapper>
     );
 }
 
+const Modal = ({isOpen, onClose, children}:any) => {
+    if(!isOpen) return null;
+
+    return (
+        <WrapperModal>
+            <WrapperModalContent>
+                <SpanClose onClick={onClose}>&times;</SpanClose>
+                {children}
+            </WrapperModalContent>
+        </WrapperModal>
+    );
+};
+
+const WrapperModal = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    z-index: 999;
+`;
+
+const WrapperModalContent = styled.div`
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Efek bayangan untuk modal */
+`;
+
+const SpanClose = styled.span`
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    color: #555;
+`;
 
 const SearchWrapper = styled.div`
 display: flex;
@@ -434,16 +500,6 @@ const Buttons3 = styled(Button)`
 padding: 1rem;
 font-size: 100%;
 background-color: red;
-border: none;
-`
-
-const ButtonsAdd = styled(Button)`
-padding: 1rem;
-width: 5rem;
-margin-top: 2rem;
-margin-bottom: 2rem;
-font-size: 2rem;
-background-color: green;
 border: none;
 `
 
@@ -540,3 +596,35 @@ const Label = styled.label`
     margin-bottom: 1rem;
     align-items: center;
 `;
+
+const Select = styled.select`
+width: 15rem;
+background: rgb(var(--inputBackground));
+color: rgb(var(--text));
+text-align: center;
+border-radius: 12px;
+border: none;
+padding-top: 1rem;
+`
+
+const FilterWrapper = styled.div`
+
+`
+
+const FilterSearch = styled.div`
+padding-top: 1rem;
+`
+
+const Search = styled.div`
+
+`
+const ButtonFilter = styled.button`
+background: rgb(var(--inputBackground));
+color: rgb(var(--text));
+border: none;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+border-radius: 1rem;
+width: 4.5rem;
+font-size: 3rem;
+padding: 0.5rem;
+`

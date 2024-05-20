@@ -21,7 +21,6 @@ import Button from 'components/Button';
 import styled from 'styled-components';
 
 const NavbarAdm: NavItems = [
-  { title: "Custom Web Page", href: "/custom-web" },
   { title: "Input Data", href: "/input-data" },
   { title: "Update Resi", href: "/update-resi" },
   { title: "Settings", href: "settings" },

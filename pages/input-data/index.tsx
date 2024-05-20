@@ -6,7 +6,6 @@ import Button from "components/Button";
 import styled from "styled-components";
 import BasicSection from "components/BasicSection";
 import { media } from "utils/media";
-import InputBerita from "./component/InputBerita";
 import InputResi from "./component/InputResi";
 
 export default function Undangan() {
@@ -14,7 +13,6 @@ export default function Undangan() {
     const route:any = useRouter();
     const [title, setTitle] = useState("")
     const [isResi, setIsResi] = useState(false);
-    const [isBeria, setIsBerita] = useState(false);
 
     useEffect(() => {
         if(!Auth){
@@ -27,27 +25,14 @@ export default function Undangan() {
     const handleInputResi = () => {
         setTitle("Input Resi")
         setIsResi(true);
-        setIsBerita(false);
-    }
-    
-    const handleInputBerita = () => {
-        setTitle("Input Berita")
-        setIsBerita(true);
-        setIsResi(false);
     }
 
     return(
         <Wrapper>
             <WrapperHeader>
-                <ButtonGroup>
-                    <Buttons onClick={handleInputResi} transparent>Input Resi</Buttons>
-                    <Buttons onClick={handleInputBerita} transparent>Input Berita</Buttons>
-                </ButtonGroup>
-                < Divider/>
             <WrapperContent>
                 <BasicSection title={title}>
                     {isResi && (<InputResi />)}
-                    {isBeria && (<InputBerita />)}
                 </BasicSection>
             </WrapperContent>
             </WrapperHeader>
