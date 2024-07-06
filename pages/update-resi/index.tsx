@@ -1,10 +1,9 @@
 /* eslint-disable import/order */
-import BasicSection2 from "components/BasicSection2"
 import { child, get, getDatabase, ref, update } from "firebase/database";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
-import { useEffect, useState } from "react"
-import styled from "styled-components"
-
 
 interface DataRes {
     NoNota: string;
@@ -27,12 +26,22 @@ export default function UpdateResi() {
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
     const [isError, setIsError] = useState("");
     const [isModalOpen, setIsModalOpen] = useState<Boolean>(false);
-    const [status] = useState("");
     const [searchFilter, setSearchFilter] = useState('');
     const [buttonDisabled, setButtonDisabled] = useState(false);
-    const [locations] = useState({});
     const [startIndex, setStartIndex] = useState(0);
     const fakeKey = 1;
+
+    /*function DateNow():string {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const hours = String(currentDate.getHours()).padStart(2, '0');
+        const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+
+        const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+        return formattedDate;
+    }*/
     
     const loadNextFiveItems = () => {
         setStartIndex(prevIndex => prevIndex + 5);
@@ -40,7 +49,6 @@ export default function UpdateResi() {
     const loadPreviousFiveItems = () => {
         setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
     };
-    
     
     const isSearchService = () => {
         setIsSearch(true)
@@ -75,44 +83,65 @@ export default function UpdateResi() {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        const formData = new FormData(e.target);
-        const noResi = formData.get('noResi');
-        const noResiString:string = noResi?.toString() || "";
-        const namaU = formData.get('custName');
-        const timeMake = formData.get('inputDate');
-        const goodsName = formData.get('goodsName');
-        const deliveryFrom = formData.get('deliveryFrom');
-        const destination = formData.get('destination');
-        const ETD = formData.get('ETD');
-        const ETA = formData.get('ETA');
-        const ATD = formData.get('ATD');
-        const ATA = formData.get('ATA');
+        const formData = new FormData(e.target) || "Null";
+        const DB = ref(getDatabase());
+        const NoNota = formData.get('noNota')?.toString() || "null";
+        const TglMasuk = formData.get('tanggalMasuk')?.toString() || "null";  
+        const TglKeluar = formData.get('tanggalKeluar')?.toString() || "null";  
+        const NamaUser = formData.get('namaUser')?.toString() || "null";
+        const Penerima = formData.get('penerima')?.toString() || "null";
+        const NoHpUser = formData.get('noHpUser')?.toString() || "null";
+        const MerkHp = formData.get('merkHp')?.toString() || "null";
+        const Kerusakan = formData.get('kerusakan')?.toString() || "null";
+        const Harga = formData.get('hargaAkhir')?.toString() || "null";
+        const Teknisi = formData.get('teknisi')?.toString() || "null";
+        const status = formData.get('status')?.toString() || "null";
+
             const newData = {
-                [noResiString] : {
-                    noResi,
-                    namaU,
-                    timeMake,
-                    goodsName,
-                    deliveryFrom, 
-                    destination,
-                    ETD,
-                    ETA,
-                    ATD,
-                    ATA,
-                    status,
-                    locations,
+                [NoNota] : {
+                    NoNota,
+                    NamaUser,
+                    TglMasuk,
+                    TglKeluar,
+                    NoHpUser,
+                    MerkHp,
+                    Penerima, 
+                    Kerusakan, 
+                    Harga,
+                    Teknisi,
+                    status
                 }
             };
-        const resiRef = ref(getDatabase(), `dataInput/resi/${noResi}`);
-        update(resiRef, newData)
-        .then(() => {
-            alert('Resi Berhasil di Update')
-            e.target.reset();
-            window.location.reload();
-        })
-        .catch((error) => {
-            console.error('Gagal menyimpan data:', error);
-        });
+            const notaRef = ref(getDatabase(), `Service/sandboxDS/`);
+            update(notaRef, newData)
+            .then(() => {
+                alert('Resi Berhasil di Update')
+                e.target.reset();
+                window.location.reload();
+                get(child(DB, `Users/dataPenerima/${Penerima}`)).then(async(datas) => {
+                    const exsist = datas.val() || {};
+                    const points = exsist.point || 0;
+                    const units = exsist.unit || 0;
+                        const pts = points + 5000
+                        const unit = units + 1;
+                            const pointData = {
+                                [Penerima] : {
+                                    nama: Penerima,
+                                    point: pts,
+                                    unit: unit,
+                                }
+                            }
+                            if(status === 'sudah diambil'){
+                                const pointRef = ref(getDatabase(), `Users/dataPenerima/`);
+                                update(pointRef, pointData)
+                            }
+                    }).catch((err) => {
+                        console.error(err);
+                    });
+            })
+            .catch((error) => {
+                console.error('Gagal menyimpan data:', error);
+            });
     }
 
     const handleDeleteResi = (i: string) => {
@@ -136,7 +165,8 @@ export default function UpdateResi() {
         }else{
             const DB = ref(getDatabase());
             get(child(DB, `Service/sandboxDS`))
-                .then(async (snapshot) => {
+            .then(async (snapshot) => {
+                    console.log(1);
                     const Data = snapshot.val() || {};
                     const Array:DataRes[] = Object.values(Data);
                     const filterData = Array.filter(items => 
@@ -182,7 +212,6 @@ export default function UpdateResi() {
 
     return (
         <Wrapper>
-            <>
             <SearchWrapper>
                 <LabelSearch>
                     Cari Service:
@@ -197,67 +226,89 @@ export default function UpdateResi() {
                     <BasicSection2 title="Update Data Service">
                 <Wrapper2>
                     {serviceDataToEdit.map((a) => {
-                        return(
-                    <FormCard key={fakeKey}>
-                    <Form onSubmit={handleSubmit}>
-                        <Label>
-                            No Nota:
-                            <Input type="text" placeholder="Resi ID" value={a.NoNota} name="noNota" readOnly/>
-                        </Label>
-                        <Splitter>
-                        <Label>
-                            Nama User:
-                            <Input type="text" value={a.NamaUser} name="namaUser" readOnly/>
-                        </Label>
-                        <Label>
-                            No Hp User:
-                            <Input type="text" value={a.NoHpUser} name="noHpUser" readOnly/>
-                        </Label>
-                        </Splitter>
-                        <Splitter>
-                        <Label>
-                            Merk Hp:
-                            <Input type="text" value={a.MerkHp} name="merkHp" readOnly/>
-                        </Label>
-                        <Label>
-                            Kerusakan:
-                            <Input type="text" placeholder="Kerusakannya apa" value={a.Kerusakan} name="kerusakan" required/>
-                        </Label>
-                        <Label>
-                            Estimasi Harga:
-                            <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
-                        </Label>
-                        </Splitter>
-                        <Label>
-                            Harga Akhir:
-                            <Input type="number" placeholder="Masukan Harga Akhir" name="harga" required/>
-                        </Label>
-                        <Splitter>
-                        <Label>
-                            Teknisi:
-                            <Select placeholder="Kerjaan Siapa ?" name="teknisi" required>
-                                <option>Amri</option>
-                                <option>Ibnu</option>
-                                <option>Rafi</option>
-                            </Select>
-                        </Label>
-                        <Label>
-                        Status:
-                            <Select name='status' required>
-                            <option>cancel</option>
-                            <option>sudah diambil</option>
-                            </Select>
-                        </Label>
-                        </Splitter>
-                        <Splitter>
-                        </Splitter>
-                        <Splitter>
-                            <Buttons type="submit" disabled={buttonDisabled}>Update</Buttons>
-                        </Splitter>
+                        if(a.status === "sudah diambil"){
+                                alert(`Status Service ${a.status} data tidak bisa di ubah!`)
+                                return window.location.reload();
+                            }else if(a.status === "cancel") {
+                                alert(`Status Service ${a.status} data tidak bisa di ubah!`)
+                                return window.location.reload();
+                            }else {
+                            return(
+                        <FormCard key={fakeKey}>
+                        <Form onSubmit={handleSubmit}>
+                            <Splitter>
+                            <Label>
+                                No Nota:
+                                <Input type="text" placeholder="Resi ID" value={a.NoNota} name="noNota" readOnly/>
+                            </Label>
+                            <Label>
+                                Tanggal Masuk:
+                                <Input type="datetime-local" placeholder="null" value={a.TglMasuk} name="tanggalMasuk" readOnly/>
+                            </Label>
+                            <Label>
+                                Tanggal Keluar:
+                                <Input type="datetime-local" placeholder="null" name="tanggalKeluar" required/>
+                            </Label>
+                            </Splitter>
+                            <Splitter>
+                            <Label>
+                                Nama User:
+                                <Input type="text" value={a.NamaUser} name="namaUser" readOnly/>
+                            </Label>
+                            <Label>
+                                No Hp User:
+                                <Input type="text" value={a.NoHpUser} name="noHpUser" readOnly/>
+                            </Label>
+                            <Label>
+                                Penerima:
+                                <Input type="text" value={a.Penerima} name="penerima" readOnly/>
+                            </Label>
+                            </Splitter>
+                            <Splitter>
+                            <Label>
+                                Merk Hp:
+                                <Input type="text" value={a.MerkHp} name="merkHp" readOnly/>
+                            </Label>
+                            <Label>
+                                Kerusakan:
+                                <Input type="text" placeholder="Kerusakannya apa" value={a.Kerusakan} name="kerusakan" required/>
+                            </Label>
+                            <Label>
+                                Estimasi Harga:
+                                <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
+                            </Label>
+                            </Splitter>
+                            <Label>
+                                Harga Akhir:
+                                <Input type="number" placeholder="Masukan Harga Akhir" name="hargaAkhir" required/>
+                            </Label>
+                            <Splitter>
+                            <Label>
+                                Teknisi:
+                                <Select placeholder="Kerjaan Siapa ?" name="teknisi" required>
+                                    <option>Amri</option>
+                                    <option>Ibnu</option>
+                                    <option>Rafi</option>
+                                </Select>
+                            </Label>
+                            <Label>
+                            Status:
+                                <Select name='status' required>
+                                <option>cancel</option>
+                                <option>sudah diambil</option>
+                                </Select>
+                            </Label>
+                            </Splitter>
+                            <Splitter>
+                            </Splitter>
+                            <Splitter>
+                                <Buttons type="submit" disabled={buttonDisabled}>Update</Buttons>
+                            </Splitter>
                     </Form>
                     </FormCard>
-                        )
-                    })}
+                        
+                    )}
+                })}
                 </Wrapper2>
                     </BasicSection2>
                 ) : (
@@ -295,7 +346,7 @@ export default function UpdateResi() {
                                             </TableRow>
                                             </thead>
                             {recentServiceData.slice(startIndex, startIndex + 5).map((a, i) => (
-                                                <tbody key={i}>
+                                <tbody key={i}>
                                                 <TableRow>
                                                     <TableData key={i}>{a.NoNota}</TableData>
                                                     <TableData key={i}>{a.NamaUser}</TableData>
@@ -305,7 +356,7 @@ export default function UpdateResi() {
                                                     <TableData key={i}>{a.MerkHp}</TableData>
                                                     <TableData key={i}>{a.Kerusakan}</TableData>
                                                     <TableData key={i}>{a.Penerima}</TableData>
-                                                    <TableData key={i}>{a.Harga.toLocaleString()}</TableData>
+                                                    <TableData key={i}>{a.Harga.toLocaleString('id')}</TableData>
                                                     <TableData key={i}>{a.Teknisi}</TableData>
                                                     <TableData key={i}>{a.status}</TableData>
                                                     <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(a.NoNota)}>Delete?</Buttons3></TableData>
@@ -322,18 +373,18 @@ export default function UpdateResi() {
                 </>
                 )}
             </WrapperContent>
-            </>
+            
             {/* Modal Section*/}
                 {isModalOpen ? 
                 <>
                 <Modal isOpen={isModalOpen} onClose={closePopUpModalFilter}>
-                    <h2>Filter Data</h2>
-                    <div>
-                        <Label>Tanggal Masuk Awal:
-                        <Input type="date" />
-                        </Label>
-                    </div>
-                    <div>
+                <h2>Filter Data</h2>
+                <div>
+                <Label>Tanggal Masuk Awal:
+                <Input type="date" />
+                </Label>
+                </div>
+                <div>
                         <Label>Tanggal Masuk Akhir:
                         <Input type="date" />
                         </Label>

@@ -2,6 +2,7 @@
 import Button from "components/Button"
 import ButtonGroup from "components/ButtonGroup";
 import { getDatabase, ref, update } from "firebase/database";
+import { getAuth } from "firebase/auth";
 import React, { useState } from "react"
 import styled from "styled-components"
 
@@ -10,6 +11,8 @@ import styled from "styled-components"
 
 export default function InputResi() {
 
+        const UserName = getAuth().currentUser?.email?.toLocaleLowerCase().split('@')[1].replace('.com', '');
+    
     const NoNota = () => {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const numbers = '0123456789';
@@ -114,11 +117,8 @@ export default function InputResi() {
                 </Label>
                 <Label>
                 Penerima:
-                    <Select placeholder="Penerima Service" name="penerima" required>
-                        <option>Sindi</option>
-                        <option>Tiara</option>
-                        <option>Vina</option>
-                        <option>Yuni</option>
+                    <Select placeholder="Penerima Service" value={UserName} name="penerima" required>
+                        <option>{UserName}</option>
                     </Select>
                 </Label>
                 </Splitter>

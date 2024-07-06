@@ -121,6 +121,9 @@ export default function Settings() {
         }
     };
 
+    const handleStatistic = () => {
+        route.push('/statistic')
+    }
 
     const Logout = () => {
         Cookies.remove('_Sid');
@@ -140,10 +143,11 @@ export default function Settings() {
                         <BasicSection2 title={`Login As : `}>
                             <h2>{auth.currentUser?.email}</h2>
                             <ButtonWrapper>
-                                {auth.currentUser?.email === "admin@admin.com" && (
+                                {auth.currentUser?.email === "admin@rraf.com" && (
                                     <Buttons transparent onClick={() => handleShowModalAdd()}>Add Admin Account</Buttons>
                                 )}
                                 <Buttons transparent onClick={() => handleShowModalCp()}>Change Password</Buttons>
+                                <Buttons transparent onClick={() => handleStatistic()}>Statistic</Buttons>
                                 <ButtonsLogout onClick={(e) => Logout()}>LogOut</ButtonsLogout>
                             </ButtonWrapper>
                         </BasicSection2>
