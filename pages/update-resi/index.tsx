@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
+import { getAuth } from "firebase/auth";
 
 interface DataRes {
     NoNota: string;
@@ -29,19 +30,8 @@ export default function UpdateResi() {
     const [searchFilter, setSearchFilter] = useState('');
     const [buttonDisabled, setButtonDisabled] = useState(false);
     const [startIndex, setStartIndex] = useState(0);
+    const [isAdmin, setIsAdmin] = useState<Boolean>(false);
     const fakeKey = 1;
-
-    /*function DateNow():string {
-        const currentDate = new Date();
-        const year = currentDate.getFullYear();
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-        const day = String(currentDate.getDate()).padStart(2, '0');
-        const hours = String(currentDate.getHours()).padStart(2, '0');
-        const minutes = String(currentDate.getMinutes()).padStart(2, '0');
-
-        const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-        return formattedDate;
-    }*/
     
     const loadNextFiveItems = () => {
         setStartIndex(prevIndex => prevIndex + 5);
@@ -144,21 +134,6 @@ export default function UpdateResi() {
             });
     }
 
-    const handleDeleteResi = (i: string) => {
-        const confirmDelete = window.confirm(`Apakah Kamu Yakin Akan Menghapus ${i} ?`)
-        if(confirmDelete){
-          try {
-            /*const DB = getDatabase();
-            const featuresRef = ref(DB, `dataInput/resi/${i}`);
-            remove(featuresRef);
-            window.location.reload();*/
-            alert(`Resi telah dihapus: ${i}`);
-          } catch (error) {
-            console.error('Error deleting partner:', error);
-          }
-        }
-    }
-
     const handleSearchFilter1 = (i:string) => {
         if(i === ''){
             alert('silahkan masukan kata Kunci Terlebih dahulu');
@@ -197,7 +172,11 @@ export default function UpdateResi() {
     }
     useEffect(() => {
             const DB = ref(getDatabase());
-            get(child(DB, `Service/sandboxDS`))
+            const AuthG:any = getAuth();
+            const role = AuthG.currentUser.email.split('@')[0];
+            if(role === 'admin'){
+                setIsAdmin(true);
+                get(child(DB, `Service/sandboxDS`))
                 .then(async (snapshot) => {
                     const Data = snapshot.val() || {};
                     const Array:DataRes[] = Object.values(Data);
@@ -208,6 +187,7 @@ export default function UpdateResi() {
                     console.error("Error fetching recent resi data:", error);
                     setIsError("Terjadi kesalahan saat mengambil data resi terbaru");
                 });
+            }
     }, []);
 
     return (
@@ -312,7 +292,9 @@ export default function UpdateResi() {
                 </Wrapper2>
                     </BasicSection2>
                 ) : (
-                    <>
+                <>
+                {isAdmin ? 
+                <>
                     {recentServiceData && (
                         <BasicSection2 title="Recent Data Service">
                             <FilterWrapper>
@@ -342,7 +324,6 @@ export default function UpdateResi() {
                                                 <TableHeader>Estimasi Harga</TableHeader>
                                                 <TableHeader>Teknisi</TableHeader>
                                                 <TableHeader>Status</TableHeader>
-                                                <TableHeader>Hapus</TableHeader>
                                             </TableRow>
                                             </thead>
                             {recentServiceData.slice(startIndex, startIndex + 5).map((a, i) => (
@@ -359,7 +340,6 @@ export default function UpdateResi() {
                                                     <TableData key={i}>{a.Harga.toLocaleString('id')}</TableData>
                                                     <TableData key={i}>{a.Teknisi}</TableData>
                                                     <TableData key={i}>{a.status}</TableData>
-                                                    <TableData key={i}><Buttons3 onClick={() => handleDeleteResi(a.NoNota)}>Delete?</Buttons3></TableData>
                                                 </TableRow>
                                                 </tbody>
                                     ))}
@@ -369,7 +349,10 @@ export default function UpdateResi() {
                             <Buttons2 onClick={loadNextFiveItems}>Next</Buttons2>
                         </BasicSection2>
                     )}
-                
+                </> : 
+                <>
+
+                </>}
                 </>
                 )}
             </WrapperContent>
@@ -545,13 +528,6 @@ width: 15rem;
 height: 7rem;
 margin-left: 2rem;
 font-size: 100%;
-`
-
-const Buttons3 = styled(Button)`
-padding: 1rem;
-font-size: 100%;
-background-color: red;
-border: none;
 `
 
 const WrapperContent = styled.div`

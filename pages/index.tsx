@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
+import NextLink from 'next/link';
 import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
 import Cookies from "js-cookie";
@@ -104,9 +105,15 @@ export default function Admin() {
     return(
         <MainWrapper>
             <WrapperAtas>
-                    <Hrefing href="/input-data">Input Data Service</Hrefing>
-                    <Hrefing href="/update-resi">Update Data Service</Hrefing>
-                    <Hrefing href="/settings">Pengaturan</Hrefing>
+                    <NextLink href="/input-data" passHref>
+                        <Hrefing >Input Data Service</Hrefing>
+                    </NextLink>
+                    <NextLink href="/update-resi" passHref>
+                        <Hrefing >Update Data Service</Hrefing>
+                    </NextLink>
+                    <NextLink href='/settings' passHref>
+                        <Hrefing>Pengaturan</Hrefing>
+                    </NextLink>
             </WrapperAtas>
         <Divider />
 
