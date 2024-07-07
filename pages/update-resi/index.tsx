@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import { child, get, getDatabase, ref, update } from "firebase/database";
 import { useEffect, useState } from "react";
-import styled from "styled-components";
+import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
 import { getAuth } from "firebase/auth";
@@ -22,6 +22,7 @@ interface DataRes {
 
 export default function UpdateResi() {
     const [noNotaSearch, setNoNotaSearch] = useState("");
+    const [isLoading, setIsloading] = useState<Boolean>(false);
     const [recentServiceData, setRecentServiceData] = useState<DataRes[]>([]);
     const [isSearch, setIsSearch] = useState(false);
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
@@ -171,6 +172,9 @@ export default function UpdateResi() {
         setIsModalOpen(false);
     }
     useEffect(() => {
+        setIsloading(true);
+        setTimeout(() => {
+            setIsloading(false);
             const DB = ref(getDatabase());
             const AuthG:any = getAuth();
             const role = AuthG.currentUser.email.split('@')[0];
@@ -188,10 +192,20 @@ export default function UpdateResi() {
                     setIsError("Terjadi kesalahan saat mengambil data resi terbaru");
                 });
             }
+        },3000)
     }, []);
 
     return (
         <Wrapper>
+            {isLoading ? 
+            <>
+                <WrapperLoading>
+                        <Spinner />
+                </WrapperLoading>
+            </> : 
+            
+            <>
+            
             <SearchWrapper>
                 <LabelSearch>
                     Cari Service:
@@ -417,6 +431,8 @@ export default function UpdateResi() {
                 : 
                 <>
                 </>}
+                
+            </>}
         </Wrapper>
     );
 }
@@ -655,3 +671,34 @@ width: 4.5rem;
 font-size: 3rem;
 padding: 0.5rem;
 `
+
+
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+const WrapperLoading = styled.div`
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100%;
+width: 100%;
+position: fixed;
+top: 0;
+left: 0;
+background-color: rgba(255, 255, 255, 0.8);
+`
+
+const Spinner = styled.div`
+  border: 8px solid rgba(0, 0, 0, 0.1);
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: ${spin} 2s linear infinite;
+`;
