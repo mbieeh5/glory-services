@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
+import { faPen, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { getAuth } from "firebase/auth";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface DataRes {
     NoNota: string;
@@ -164,6 +166,10 @@ export default function UpdateResi() {
         }
     } 
 
+    const refreshItem = () => {
+        return window.location.reload();
+    }
+
     const popUpModalFilter = () => {
         setIsModalOpen(true);
     }
@@ -318,7 +324,8 @@ export default function UpdateResi() {
                                             <ButtonSearch onClick={() => handleSearchFilter1(searchFilter)}>Cari</ButtonSearch>
                                     </Search>
                                     <FilterSearch>
-                                        <ButtonFilter onClick={() => popUpModalFilter()}>...</ButtonFilter>
+                                        <ButtonFilter onClick={() => popUpModalFilter()}><FontAwesomeIcon icon={faPen}/></ButtonFilter>
+                                        <ButtonFilter onClick={() => refreshItem()}><FontAwesomeIcon icon={faRedo}/></ButtonFilter>
                                     </FilterSearch>
                                 </SearchWrapper>
                             </FilterWrapper>

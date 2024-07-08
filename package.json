@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@accessible/drawer": "^3.0.2",
+    "@fortawesome/fontawesome-svg-core": "^6.5.2",
+    "@fortawesome/free-solid-svg-icons": "^6.5.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@n8tb1t/use-scroll-position": "^2.0.3",
     "@svgr/webpack": "^8.0.0",
     "axios": "^1.5.1",

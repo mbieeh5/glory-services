@@ -72,7 +72,7 @@ export default function Statistic() {
         <Wrapper>
             <BasicSection title="Statistic Service" />
                 <UL>Total Unit Keseluruhan: {totalUnits.toLocaleString('id-ID')}</UL>
-            <ResponsiveContainer width="100%" height={500}>
+            <ResponsiveContainer width="100%" height={300}>
                 <LineChart
                     data={dataStatic}
                     margin={{
@@ -92,11 +92,11 @@ export default function Statistic() {
 
             <BasicSection title="Point Terkumpul" />
                     <UL>Total Point Keseluruhan: {totalPoints.toLocaleString('id-ID')}</UL>
-            <ResponsiveContainer width="100%" height={500}>
+            <ResponsiveContainer width="100%" height={300}>
                 <LineChart
                     data={dataStatic}
                     margin={{
-                    top: 20, right: 30, left: 20, bottom: 5,
+                    top: 20, right: 30, left: 30, bottom: 10,
                 }}
                 >
                     <CartesianGrid strokeDasharray="6 6" />
@@ -105,7 +105,7 @@ export default function Statistic() {
                     <Tooltip />
                     <Legend />
                     <Line type="monotone" dataKey='point' stroke="#8884d8" activeDot={{ r: 5 }} />
-                <ReferenceLine y={10*5000} label="Min 250.000 points" stroke="red" strokeDasharray="6 6" />
+                <ReferenceLine y={250000} label="Min 250.000 points" stroke="red" strokeDasharray="6 6" />
                 </LineChart>
             </ResponsiveContainer>
         </Wrapper> 
