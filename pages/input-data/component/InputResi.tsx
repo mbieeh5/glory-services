@@ -5,6 +5,7 @@ import { getDatabase, ref, update } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import React, { useState } from "react"
 import styled from "styled-components"
+import { useRouter } from "next/router";
 
 
 
@@ -12,6 +13,7 @@ import styled from "styled-components"
 export default function InputResi() {
 
         const UserName = getAuth().currentUser?.email?.toLocaleLowerCase().split('@')[1].replace('.com', '');
+        const router = useRouter();
     
     const NoNota = () => {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -55,30 +57,38 @@ export default function InputResi() {
                     }
                 };
             if(notaId === ''){
-                setIsError(true);
-                alert('No Nota Harap Di Isi')
-            }
-            const resiRef = ref(getDatabase(), `Service/sandboxDS`);
-            update(resiRef, newData)
-            .then(() => {
+                setIsError(true)
+                setError('No Nota Harap di isi');
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                return;
+            }else if(Harga < 10000){
+                setIsError(true)
+                setError('Harap Masukan Nominal Lengkap')
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }else{
+                setIsError(false)
+                const resiRef = ref(getDatabase(), `Service/sandboxDS`);
+                update(resiRef, newData)
+                .then(() => {
                 alert('Service Berhasil di Input')
                 e.target.reset();
-                window.location.reload();
+                router.push('/');
             })
             .catch((error) => {
                 console.error('Gagal menyimpan data:', error);
             });
-            console.log(newData);
+        }
         }
     const [hargaBaru, setHargaBaru] = useState<number>(0);
     const [notaId, setNotaId] = useState("");
-    const [error] = useState('No Nota Harap Di Isi')
+    const [error, setError] = useState('null')
     const [isError, setIsError] = useState(false);
+
     return(
         <Wrapper>
             <FormCard>
-            <Form onSubmit={handleSubmit}>
                 <ErrEvent>{isError ? error : ''}</ErrEvent>
+            <Form onSubmit={handleSubmit}>
                 <Label>
                     No Nota:
                     <Input type="text" onClick={() => setNotaId(NoNota)} placeholder="Klik Buat No Nota" value={notaId.toUpperCase()} onChange={(e) => setNotaId(e.target.value)} name="noNota" required readOnly/>
@@ -132,7 +142,7 @@ export default function InputResi() {
 
 }
 
-const ErrEvent = styled.p`
+const ErrEvent = styled.div`
 color: red;
 `
 
