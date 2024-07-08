@@ -6,53 +6,75 @@ import { getAuth } from "firebase/auth";
 import styled, {keyframes} from "styled-components";
 import {  CartesianGrid, Legend, Line, LineChart,  ReferenceLine , ResponsiveContainer, Tooltip, XAxis , YAxis} from 'recharts';
 import BasicSection from "components/BasicSection";
+import { child, get, getDatabase, ref } from "firebase/database";
 
 
-const data = [
-    { nama: 'Tiara', unit: 1, point: 5000 },
-    { nama: 'Yuniska', unit: 3, point: 15000 },
-    { nama: 'Sindi', unit: 5, point: 25000 },
-    { nama: 'Vina', unit: 15, point: 75000 },
-    { nama: 'Reni', unit: 6, point: 30000 },
-    { nama: 'Aldi', unit: 10, point: 50000 },
-    { nama: 'Amri', unit: 11, point: 55000 },
-  ];
+interface DataStatistic {
+    nama: string;
+    point: number;
+    unit: number;
+}
+
 
 export default function Statistic() {
-    const [isLoading, setIsLoading] = useState(false);
-    const Auth:any = Cookies.get('_IDs')
+    const [isLoading, setIsLoading] = useState<Boolean>(false);
+    const [dataStatic, setDataStatic] = useState<DataStatistic[]>([]);
+    const [totalPoints, setTotalPoints] = useState<Number>(0)
+    const [totalUnits, setTotalUnits] = useState<Number>(0)
     const route:any = useRouter();
-    const AuthG:any = getAuth();
-    const isAdmin = AuthG.currentUser.email.split("@")[0];
-
-
-    useEffect(() => {
-        setIsLoading(false)
-        if(isAdmin === 'user'){
-            alert('You Not Supposed to here except admin')
-            route.push('/')
-            return   
-        }
     
+    
+    useEffect(() => {
+        const Auth:any = Cookies.get('_IDs')
+        const AuthG:any = getAuth();
+        setIsLoading(false);
         setTimeout(() => {
             setIsLoading(true)
+            const isAdmin = AuthG.currentUser.email.split("@")[0];
+            if(isAdmin === 'user'){
+                alert('You Not Supposed to here except admin')
+                return route.push('/')
+            }else{
+                const DB = ref(getDatabase());
+                get(child(DB, "Users/dataPenerima")).then((snapshot) => {
+                    if(snapshot.exists()){
+                        const datas = snapshot.val() || {};
+                        const dataArr:DataStatistic[] = Object.values(datas);
+                        setDataStatic(dataArr);
+
+                        const totals = dataArr.reduce(
+                            (acc, item:any) => {
+                                acc.totalPoints += item.point;
+                                acc.totalUnits += item.unit;
+                                return acc
+                            }, 
+                            { totalPoints: 0, totalUnits: 0 }
+                        );
+                        setTotalPoints(totals.totalPoints)
+                        setTotalUnits(totals.totalUnits);
+                    }
+                }).catch((err) => {
+                    console.error(err);
+                })
+            }
             if(!Auth){
                 alert('You Not Supposed to here before login ?')
                 route.push('/')
             }
+            
         },3000)
 
-    }, [Auth, route, isAdmin])
+    }, [route])
 
     return(
         <>
         {isLoading ? 
         <Wrapper>
             <BasicSection title="Statistic Service" />
-                <UL>Total Unit Keseluruhan: {(30).toLocaleString('id-ID')}</UL>
+                <UL>Total Unit Keseluruhan: {totalUnits.toLocaleString('id-ID')}</UL>
             <ResponsiveContainer width="100%" height={500}>
                 <LineChart
-                    data={data}
+                    data={dataStatic}
                     margin={{
                     top: 20, right: 30, left: 20, bottom: 5,
                     }}
@@ -63,15 +85,16 @@ export default function Statistic() {
                     <Tooltip />
                     <Legend />
                     <Line type="linear" dataKey="unit" stroke="#8884d8" activeDot={{ r: 5 }} />
-                    <ReferenceLine y={10} label="Min 10 units" stroke="red" strokeDasharray="6 6" />
+                    <ReferenceLine y={25} label="Minimal Redeem 25 units" stroke="red" strokeDasharray="6 6" />
+                    <ReferenceLine y={15} label="Syarat Redeem 15units" stroke="red" strokeDasharray="6 6" />
                 </LineChart>
             </ResponsiveContainer>
 
             <BasicSection title="Point Terkumpul" />
-                    <UL>Total Point Keseluruhan: {(100000).toLocaleString('id-ID')}</UL>
+                    <UL>Total Point Keseluruhan: {totalPoints.toLocaleString('id-ID')}</UL>
             <ResponsiveContainer width="100%" height={500}>
                 <LineChart
-                    data={data}
+                    data={dataStatic}
                     margin={{
                     top: 20, right: 30, left: 20, bottom: 5,
                 }}
@@ -82,7 +105,7 @@ export default function Statistic() {
                     <Tooltip />
                     <Legend />
                     <Line type="monotone" dataKey='point' stroke="#8884d8" activeDot={{ r: 5 }} />
-                <ReferenceLine y={10*5000} label="Min 50.000 points" stroke="red" strokeDasharray="6 6" />
+                <ReferenceLine y={10*5000} label="Min 250.000 points" stroke="red" strokeDasharray="6 6" />
                 </LineChart>
             </ResponsiveContainer>
         </Wrapper> 
