@@ -41,6 +41,7 @@ export default function InputResi() {
             const NamaUser = formData.get('namaUser');
             const NoHpUser = formData.get('noHpUser');
             const NoNota = formData.get('noNota');
+            const Lokasi = formData.get('lokasi');
             const Penerima = formData.get('penerima');
             const TglMasuk = formData.get('tglMasuk');
                 const newData = {
@@ -52,6 +53,7 @@ export default function InputResi() {
                         NoHpUser, 
                         NoNota,
                         Penerima,
+                        Lokasi,
                         TglMasuk,
                         status: 'process',
                     }
@@ -122,6 +124,13 @@ export default function InputResi() {
                 </Splitter>
                 <Splitter>
                 <Label>
+                Penerima:
+                    <Select placeholder="Lokasi" name="lokasi" required>
+                        <option>Cikaret</option>
+                        <option>Sukahati</option>
+                    </Select>
+                </Label>
+                <Label>
                     Estimasi Harga:
                     <Input type="number" placeholder="Masukan estimasi Harga" onChange={(e) => setHargaBaru(parseInt(e.target.value))} name="harga" required/>
                 </Label>
@@ -133,7 +142,7 @@ export default function InputResi() {
                 </Label>
                 </Splitter>
                 <ButtonGroup>
-                <Buttons type="submit">Submit</Buttons>
+                    <Buttons type="submit">Submit</Buttons>
                 </ButtonGroup>
             </Form>
             </FormCard>

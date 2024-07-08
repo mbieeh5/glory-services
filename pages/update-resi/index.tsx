@@ -7,6 +7,7 @@ import Button from "components/Button";
 import { faPen, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { getAuth } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ButtonGroup from "components/ButtonGroup";
 
 interface DataRes {
     NoNota: string;
@@ -18,6 +19,7 @@ interface DataRes {
     Kerusakan: string;
     Penerima: string;
     Harga: number;
+    Lokasi: string;
     Teknisi: string;
     status: string;
 }
@@ -34,6 +36,7 @@ export default function UpdateResi() {
     const [buttonDisabled, setButtonDisabled] = useState(false);
     const [startIndex, setStartIndex] = useState(0);
     const [isAdmin, setIsAdmin] = useState<Boolean>(false);
+    const [isKerusakan, setIsKerusakan] = useState<string>("")
     const fakeKey = 1;
     
     const loadNextFiveItems = () => {
@@ -53,13 +56,12 @@ export default function UpdateResi() {
             get(child(DB, `Service/sandboxDS/${noNotaSearch}`))
                 .then(async (data) => {
                     const Data = data.val() || {};
-                    console.log(Data);
+                    setIsKerusakan(Data.Kerusakan);
                     const Array:DataRes[] = Object.values({Data});
                     setServiceDataToEdit(Array);
                     setIsError("");
                     setRecentServiceData([]);
                     const statusBool = Data.status;
-                    console.log(statusBool)
                     if(statusBool === 'process'){
                         setButtonDisabled(false);
                     }else{
@@ -86,6 +88,7 @@ export default function UpdateResi() {
         const NoHpUser = formData.get('noHpUser')?.toString() || "null";
         const MerkHp = formData.get('merkHp')?.toString() || "null";
         const Kerusakan = formData.get('kerusakan')?.toString() || "null";
+        const Lokasi = formData.get('lokasi')?.toString() || "null";
         const Harga = formData.get('hargaAkhir')?.toString() || "null";
         const Teknisi = formData.get('teknisi')?.toString() || "null";
         const status = formData.get('status')?.toString() || "null";
@@ -101,6 +104,7 @@ export default function UpdateResi() {
                     Penerima, 
                     Kerusakan, 
                     Harga,
+                    Lokasi,
                     Teknisi,
                     status
                 }
@@ -135,6 +139,11 @@ export default function UpdateResi() {
             .catch((error) => {
                 console.error('Gagal menyimpan data:', error);
             });
+    }
+
+    const handleChange = (e:any) => {
+    console.log(e);
+        setIsKerusakan(e);
     }
 
     const handleSearchFilter1 = (i:string) => {
@@ -271,7 +280,7 @@ export default function UpdateResi() {
                             </Label>
                             <Label>
                                 Kerusakan:
-                                <Input type="text" placeholder="Kerusakannya apa" value={a.Kerusakan} name="kerusakan" required/>
+                                <Input type="text" placeholder="Kerusakannya apa" value={isKerusakan} onChange={(e) => {handleChange(e.target.value)}} name="kerusakan" required/>
                             </Label>
                             <Label>
                                 Estimasi Harga:
@@ -283,6 +292,12 @@ export default function UpdateResi() {
                                 <Input type="number" placeholder="Masukan Harga Akhir" name="hargaAkhir" required/>
                             </Label>
                             <Splitter>
+                            <Label>
+                                Lokasi:
+                                <Select placeholder="Lokasi Service"  name="lokasi" required>
+                                    <option>{a.Lokasi}</option>
+                                </Select>
+                            </Label>
                             <Label>
                                 Teknisi:
                                 <Select placeholder="Kerjaan Siapa ?"  name="teknisi" required>
@@ -302,7 +317,9 @@ export default function UpdateResi() {
                             <Splitter>
                             </Splitter>
                             <Splitter>
-                                <Buttons type="submit" disabled={buttonDisabled}>Update</Buttons>
+                                <ButtonGroup>
+                                    <Buttons type="submit" disabled={buttonDisabled}>Update</Buttons>
+                                </ButtonGroup>
                             </Splitter>
                     </Form>
                     </FormCard>
@@ -323,10 +340,10 @@ export default function UpdateResi() {
                                         <Input placeholder="Masukan Kata Kunci" onChange={(e) => setSearchFilter(e.target.value)} />
                                             <ButtonSearch onClick={() => handleSearchFilter1(searchFilter)}>Cari</ButtonSearch>
                                     </Search>
-                                    <FilterSearch>
-                                        <ButtonFilter onClick={() => popUpModalFilter()}><FontAwesomeIcon icon={faPen}/></ButtonFilter>
-                                        <ButtonFilter onClick={() => refreshItem()}><FontAwesomeIcon icon={faRedo}/></ButtonFilter>
-                                    </FilterSearch>
+                                        <FilterSearch>
+                                            <ButtonFilter onClick={() => popUpModalFilter()}><FontAwesomeIcon icon={faPen}/></ButtonFilter>
+                                            <ButtonFilter onClick={() => refreshItem()}><FontAwesomeIcon icon={faRedo}/></ButtonFilter>
+                                        </FilterSearch>
                                 </SearchWrapper>
                             </FilterWrapper>
                                     <TableWrapper>
@@ -343,6 +360,7 @@ export default function UpdateResi() {
                                                 <TableHeader>Kerusakan</TableHeader>
                                                 <TableHeader>Penerima</TableHeader>
                                                 <TableHeader>Estimasi Harga</TableHeader>
+                                                <TableHeader>Lokasi</TableHeader>
                                                 <TableHeader>Teknisi</TableHeader>
                                                 <TableHeader>Status</TableHeader>
                                             </TableRow>
@@ -350,17 +368,18 @@ export default function UpdateResi() {
                             {recentServiceData.slice(startIndex, startIndex + 5).map((a, i) => (
                                 <tbody key={i}>
                                                 <TableRow>
-                                                    <TableData key={i}>{a.NoNota}</TableData>
-                                                    <TableData key={i}>{a.NamaUser}</TableData>
-                                                    <TableData key={i}>{a.NoHpUser}</TableData>
-                                                    <TableData key={i}>{a.TglMasuk}</TableData>
-                                                    <TableData key={i}>{a.TglKeluar}</TableData>
-                                                    <TableData key={i}>{a.MerkHp}</TableData>
-                                                    <TableData key={i}>{a.Kerusakan}</TableData>
-                                                    <TableData key={i}>{a.Penerima}</TableData>
-                                                    <TableData key={i}>{a.Harga.toLocaleString('id')}</TableData>
-                                                    <TableData key={i}>{a.Teknisi}</TableData>
-                                                    <TableData key={i}>{a.status}</TableData>
+                                                    <TableData>{a.NoNota}</TableData>
+                                                    <TableData>{a.NamaUser}</TableData>
+                                                    <TableData>{a.NoHpUser}</TableData>
+                                                    <TableData>{a.TglMasuk}</TableData>
+                                                    <TableData>{a.TglKeluar}</TableData>
+                                                    <TableData>{a.MerkHp}</TableData>
+                                                    <TableData>{a.Kerusakan}</TableData>
+                                                    <TableData>{a.Penerima}</TableData>
+                                                    <TableData>{a.Harga.toLocaleString('id')}</TableData>
+                                                    <TableData>{a.Lokasi}</TableData>
+                                                    <TableData>{a.Teknisi}</TableData>
+                                                    <TableData>{a.status}</TableData>
                                                 </TableRow>
                                                 </tbody>
                                     ))}
@@ -382,17 +401,15 @@ export default function UpdateResi() {
                 {isModalOpen ? 
                 <>
                 <Modal isOpen={isModalOpen} onClose={closePopUpModalFilter}>
-                <h2>Filter Data</h2>
-                <div>
-                <Label>Tanggal Masuk Awal:
-                <Input type="date" />
-                </Label>
-                </div>
-                <div>
+                <h1>Filter Data</h1>
+                        <Label>Tanggal Masuk Awal:
+                        <Input type="date" />
+                        </Label>
+
                         <Label>Tanggal Masuk Akhir:
                         <Input type="date" />
                         </Label>
-                    </div>
+                        
                     <div>
                         <Label>Tanggal Keluar Awal:
                         <Input type="date" />
@@ -431,8 +448,10 @@ export default function UpdateResi() {
                             </Select>
                         </Label>
                     </div>
-                    <button onClick={closePopUpModalFilter}>Tutup</button>
-                    <button onClick={closePopUpModalFilter}>Filter Data</button>
+                    <ButtonGroup>
+                        <Button onClick={closePopUpModalFilter}>Tutup</Button>
+                        <Button onClick={closePopUpModalFilter}>Filter Data</Button>
+                    </ButtonGroup>
                 </Modal>
                 </> 
                 : 
@@ -471,10 +490,10 @@ const WrapperModal = styled.div`
 `;
 
 const WrapperModalContent = styled.div`
-    background-color: white;
+    background-color: rgb(var(--cardBackground));
     padding: 20px;
     border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Efek bayangan untuk modal */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
 `;
 
 const SpanClose = styled.span`
@@ -662,7 +681,11 @@ const FilterWrapper = styled.div`
 `
 
 const FilterSearch = styled.div`
+display: flex;
+flex-direction: row;
+gap: 5;
 padding-top: 1rem;
+width: 40%;
 `
 
 const Search = styled.div`
@@ -674,9 +697,8 @@ color: rgb(var(--text));
 border: none;
 box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 border-radius: 1rem;
-width: 4.5rem;
-font-size: 3rem;
-padding: 0.5rem;
+width: 30%;
+margin-left: 12px;
 `
 
 

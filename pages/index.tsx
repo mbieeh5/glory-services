@@ -19,6 +19,7 @@ interface DataRes {
     Penerima: string;
     Harga: number;
     Teknisi: string;
+    Lokasi: string;
     status: string;
 }
 
@@ -142,6 +143,7 @@ export default function Admin() {
                                     <TableHeader>Kerusakan</TableHeader>
                                     <TableHeader>Penerima</TableHeader>
                                     <TableHeader>Estimasi Harga</TableHeader>
+                                    <TableHeader>Lokasi</TableHeader>
                                     <TableHeader>Teknisi</TableHeader>
                                     <TableHeader>Status</TableHeader>
                                 </TableRow>
@@ -169,6 +171,7 @@ export default function Admin() {
                                         <TableData>{a.Kerusakan}</TableData>
                                         <TableData>{a.Penerima}</TableData>
                                         <TableData>{a.Harga.toLocaleString()}</TableData>
+                                        <TableData>{a.Lokasi}</TableData>
                                         <TableData>{a.Teknisi || a.status}</TableData>
                                         <TableData>{a.status}</TableData>                                     
                                     </TableRow>
