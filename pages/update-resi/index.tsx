@@ -279,7 +279,7 @@ export default function UpdateResi() {
                             <Splitter>
                             <Label>
                                 Teknisi:
-                                <Select placeholder="Kerjaan Siapa ?" name="teknisi" required>
+                                <Select placeholder="Kerjaan Siapa ?"  name="teknisi" required>
                                     <option>Amri</option>
                                     <option>Ibnu</option>
                                     <option>Rafi</option>

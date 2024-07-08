@@ -146,12 +146,23 @@ export default function Admin() {
                                     <TableHeader>Status</TableHeader>
                                 </TableRow>
                              </thead>
-                        {DataResi.slice(startIndex, startIndex + 5).map((a, i) => (
+                        {DataResi.slice(startIndex, startIndex + 5).map((a, i) => {
+                            
+                            const ConvertNumber = (noHP:string) => {
+                                if(noHP.startsWith('0')){
+                                    return '62' + noHP.slice(1);
+                                }
+                                return noHP
+                            }
+
+                            const noHpConverter = ConvertNumber(a.NoHpUser);
+
+                            return(
                                 <tbody key={i}>
                                     <TableRow>
                                         <TableData>{a.NoNota}</TableData>
                                         <TableData>{a.NamaUser}</TableData>
-                                        <TableData>{a.NoHpUser}</TableData>
+                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
                                         <TableData>{dateFormater(a.TglMasuk)}</TableData>
                                         <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                         <TableData>{a.MerkHp}</TableData>
@@ -162,7 +173,8 @@ export default function Admin() {
                                         <TableData>{a.status}</TableData>                                     
                                     </TableRow>
                                 </tbody>
-                        ))}
+                                )
+                            })}
                     </Table>
             </Wrapper>
                     <Buttons2 onClick={loadPreviousFiveItems}>Sebelumnya</Buttons2>
@@ -284,7 +296,10 @@ const TableHeader = styled.th`
   border-bottom: 1px solid #ddd;
   color: rgb(var(--text));
 `;
-
+  
+  const TableDataA = styled.a`
+  color: rgb(var(--text));
+  `
 
 const Buttons2 = styled(Button)`
 padding: 1rem;
