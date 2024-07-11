@@ -163,7 +163,7 @@ export default function UpdateResi() {
                         items.Kerusakan.toLowerCase().includes(i.toLowerCase()) ||
                         items.Penerima.toLowerCase().includes(i.toLowerCase()) ||
                         items.status.toLowerCase().includes(i.toLowerCase()) ||
-                        items.status.toLowerCase().includes(i.toLowerCase())
+                        items.Lokasi.toLowerCase().includes(i.toLowerCase())
                     )
                     setRecentServiceData(filterData);
                     setIsError("");

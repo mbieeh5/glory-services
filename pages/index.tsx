@@ -7,6 +7,8 @@ import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
 import Cookies from "js-cookie";
 import { getAuth } from "firebase/auth";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSortAsc, faSortDesc } from "@fortawesome/free-solid-svg-icons";
 
 interface DataRes {
     NoNota: string;
@@ -30,6 +32,7 @@ export default function Admin() {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isFinish, setIsFinish] = useState<string>('null')
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     
     const loadNextFiveItems = () => {
         setStartIndex(prevIndex => prevIndex + 5);
@@ -52,6 +55,18 @@ export default function Admin() {
         }else{
             return 'Belum Di Ambil'
         }
+    }
+
+    const sortedData = () => {
+        	const sortedData = [...DataResi].sort((a, b) => {
+                if(sortOrder === 'asc'){
+                    return new Date(a.TglMasuk).getTime() - new Date(b.TglMasuk).getTime();
+                }else {
+                    return new Date(b.TglMasuk).getTime() - new Date(a.TglMasuk).getTime()
+                }
+            })
+            setDataResi(sortedData);
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     }
 
     useEffect(() => {
@@ -137,7 +152,12 @@ export default function Admin() {
                                     <TableHeader>No Nota</TableHeader>
                                     <TableHeader>Nama user</TableHeader>
                                     <TableHeader>Nomor HP User</TableHeader>
-                                    <TableHeader>Tanggal Masuk</TableHeader>
+                                    <TableHeader>
+                                        <Button onClick={sortedData} transparent>
+                                            Tanggal Masuk
+                                            <FontAwesomeIcon icon={sortOrder === 'asc' ? faSortAsc : faSortDesc}/>
+                                        </Button>
+                                    </TableHeader>
                                     <TableHeader>Tanggal Keluar</TableHeader>
                                     <TableHeader>Merk HP</TableHeader>
                                     <TableHeader>Kerusakan</TableHeader>
@@ -149,14 +169,12 @@ export default function Admin() {
                                 </TableRow>
                              </thead>
                         {DataResi.slice(startIndex, startIndex + 5).map((a, i) => {
-                            
                             const ConvertNumber = (noHP:string) => {
                                 if(noHP.startsWith('0')){
                                     return '62' + noHP.slice(1);
                                 }
                                 return noHP
                             }
-
                             const noHpConverter = ConvertNumber(a.NoHpUser);
 
                             return(
