@@ -124,7 +124,7 @@ export default function InputResi() {
                 </Splitter>
                 <Splitter>
                 <Label>
-                Penerima:
+                Lokasi:
                     <Select placeholder="Lokasi" name="lokasi" required>
                         <option>Cikaret</option>
                         <option>Sukahati</option>
