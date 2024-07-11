@@ -106,7 +106,16 @@ export default function Admin() {
                     get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                         const Data = datas.val() || {};
                         const Array:DataRes[] = Object.values(Data);
-                        setDataResi(Array);
+                        const sortedArray = Array.sort((a, b) => {
+                         const today = new Date();
+                         const dateA = new Date(a.TglMasuk);   
+                         const dateB = new Date(b.TglMasuk);
+                         const diffA = Math.abs(today.getTime() - dateA.getTime());   
+                         const diffB = Math.abs(today.getTime() - dateB.getTime()); 
+                         return diffA - diffB  
+                        })
+
+                        setDataResi(sortedArray);
                     }).catch((err) => {
                         console.error(err);
                     })
