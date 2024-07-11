@@ -37,6 +37,7 @@ export default function UpdateResi() {
     const [startIndex, setStartIndex] = useState(0);
     const [isAdmin, setIsAdmin] = useState<Boolean>(false);
     const [isKerusakan, setIsKerusakan] = useState<string>("")
+    const [isNoHpUser, setIsNoHpUser] = useState<string>("");
     const fakeKey = 1;
     
     const loadNextFiveItems = () => {
@@ -54,18 +55,32 @@ export default function UpdateResi() {
         } else {
             const DB = ref(getDatabase());
             get(child(DB, `Service/sandboxDS/${noNotaSearch}`))
-                .then(async (data) => {
-                    const Data = data.val() || {};
-                    setIsKerusakan(Data.Kerusakan);
-                    const Array:DataRes[] = Object.values({Data});
-                    setServiceDataToEdit(Array);
-                    setIsError("");
-                    setRecentServiceData([]);
-                    const statusBool = Data.status;
-                    if(statusBool === 'process'){
-                        setButtonDisabled(false);
+            .then(async (data) => {
+                if(data.exists()){
+                    setIsloading(true)
+                    setTimeout(() => {
+                            setIsloading(false)
+                            const Data = data.val() || {};
+                            setIsKerusakan(Data.Kerusakan);
+                            setIsNoHpUser(Data.NoHpUser);
+                            const Array:DataRes[] = Object.values({Data});
+                            setServiceDataToEdit(Array);
+                            setIsError("");
+                            setRecentServiceData([]);
+                            const statusBool = Data.status;
+                            if(statusBool === 'process'){
+                                setButtonDisabled(false);
+                            }else{
+                                setButtonDisabled(true);
+                            }
+                        },1000)
                     }else{
-                        setButtonDisabled(true);
+                        setIsloading(true)
+                        setTimeout(() => {
+                            setIsloading(false)
+                            setIsError("Nomor Nota Tidak Di Temukan");
+                            setIsSearch(false);
+                        },1000)
                     }
                 })
                 .catch((error) => {
@@ -75,6 +90,12 @@ export default function UpdateResi() {
             }
     };
     
+    const handleChangeNoHp = (e:string) => { 
+        if(e.length > 0){
+            return setIsNoHpUser(e);
+        }
+        return e;
+    }
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
@@ -266,7 +287,7 @@ export default function UpdateResi() {
                             </Label>
                             <Label>
                                 No Hp User:
-                                <Input type="text" value={a.NoHpUser} name="noHpUser" readOnly/>
+                                <Input type="text" value={isNoHpUser} onChange={(e) => {handleChangeNoHp(e.target.value)}} name="noHpUser" required/>
                             </Label>
                             <Label>
                                 Penerima:
@@ -720,7 +741,7 @@ width: 100%;
 position: fixed;
 top: 0;
 left: 0;
-background-color: rgba(255, 255, 255, 0.8);
+background-color: rgba(255, 255, 255, 0.6);
 `
 
 const Spinner = styled.div`
