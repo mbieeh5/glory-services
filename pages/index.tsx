@@ -7,9 +7,6 @@ import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
 import Cookies from "js-cookie";
 import { getAuth } from "firebase/auth";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSortAsc, faSortDesc } from "@fortawesome/free-solid-svg-icons";
-
 interface DataRes {
     NoNota: string;
     NamaUser: string;
@@ -32,7 +29,6 @@ export default function Admin() {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isFinish, setIsFinish] = useState<string>('null')
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     
     const loadNextFiveItems = () => {
         setStartIndex(prevIndex => prevIndex + 5);
@@ -57,74 +53,74 @@ export default function Admin() {
         }
     }
 
-    const sortedData = () => {
-        	const sortedData = [...DataResi].sort((a, b) => {
-                if(sortOrder === 'asc'){
-                    return new Date(a.TglMasuk).getTime() - new Date(b.TglMasuk).getTime();
-                }else {
-                    return new Date(b.TglMasuk).getTime() - new Date(a.TglMasuk).getTime()
-                }
-            })
-            setDataResi(sortedData);
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    const fetchData = () => {
+        const authG:any = getAuth();
+        setIsLoading(true);
+        setTimeout(() => {
+            setIsLoading(false);
+            const userRole = authG.currentUser.email.split('@')[0];
+            const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
+            if(userRole === 'user'){
+                setIsAdmin(false);
+                const DB = ref(getDatabase());
+                get(child(DB, "Service/sandboxDS")).then(async(datas) => {
+                    const Data = datas.val() || {};
+                    const Array:DataRes[] = Object.values(Data);
+                    const PendingData = Array.filter(item => 
+                        item.status === 'process' && item.Penerima.toLocaleLowerCase() === userName
+                    );
+                        if(PendingData.length > 0){
+                            setIsFinish('Yang Belum Selesai')
+                            return setDataResi(PendingData); 
+                        }
+                        else{
+                            return setIsFinish('Mu Sudah Selesai')
+                        }
+                }).catch((err) => {
+                    console.error(err);
+                })
+            }else if(userRole === 'admin'){
+                setIsAdmin(true);
+                const DB = ref(getDatabase());
+                get(child(DB, "Service/sandboxDS")).then(async(datas) => {
+                    const Data = datas.val() || {};
+                    const Array:DataRes[] = Object.values(Data);
+                    const today = new Date().toDateString();
+                    const filteredArray = Array.filter(item => new Date(item.TglMasuk).toDateString() === today);
+                    const sortedArray = filteredArray.sort((a, b) => {
+                        const dateA:any = new Date(a.TglMasuk);
+                        const dateB:any = new Date(b.TglMasuk);
+                        return dateA - dateB;
+                    })
+                    /*const sortedArray = Array.sort((a, b) => {
+                     const today = new Date();
+                     const dateA = new Date(a.TglMasuk);   
+                     const dateB = new Date(b.TglMasuk);
+                     const diffA = Math.abs(today.getTime() - dateA.getTime());   
+                     const diffB = Math.abs(today.getTime() - dateB.getTime()); 
+                     return diffA - diffB
+                    })*/
+
+                    return setDataResi(sortedArray);
+                }).catch((err) => {
+                    console.error(err);
+                })
+            }else{
+                setIsAdmin(false);
+                
+            }
+        },3000)
+
     }
 
     useEffect(() => {
     const Auth:any = Cookies.get('_IDs')
-    const authG:any = getAuth();
         if(!Auth){
             alert('You Not Supposed to here before login ?')
-            window.location.reload();
+            return window.location.reload();
         }else{
-            setIsLoading(true);
-            setTimeout(() => {
-                setIsLoading(false);
-                const userRole = authG.currentUser.email.split('@')[0];
-                const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
-                if(userRole === 'user'){
-                    setIsAdmin(false);
-                    const DB = ref(getDatabase());
-                    get(child(DB, "Service/sandboxDS")).then(async(datas) => {
-                        const Data = datas.val() || {};
-                        const Array:DataRes[] = Object.values(Data);
-                        const PendingData = Array.filter(item => 
-                            item.status === 'process' && item.Penerima.toLocaleLowerCase() === userName
-                        );
-                        if(PendingData.length > 0){
-                            setIsFinish('Yang Belum Selesai')
-                            setDataResi(PendingData); 
-                        }
-                        else{
-                            setIsFinish('Mu Sudah Selesai')
-                        }
-                    }).catch((err) => {
-                        console.error(err);
-                    })
-                }else if(userRole === 'admin'){
-                    setIsAdmin(true);
-                    const DB = ref(getDatabase());
-                    get(child(DB, "Service/sandboxDS")).then(async(datas) => {
-                        const Data = datas.val() || {};
-                        const Array:DataRes[] = Object.values(Data);
-                        const sortedArray = Array.sort((a, b) => {
-                         const today = new Date();
-                         const dateA = new Date(a.TglMasuk);   
-                         const dateB = new Date(b.TglMasuk);
-                         const diffA = Math.abs(today.getTime() - dateA.getTime());   
-                         const diffB = Math.abs(today.getTime() - dateB.getTime()); 
-                         return diffA - diffB  
-                        })
-
-                        setDataResi(sortedArray);
-                    }).catch((err) => {
-                        console.error(err);
-                    })
-                }else{
-                    setIsAdmin(false);
-                    
-                }
-            },3000)
-            }
+            return fetchData();
+        }
     },[])
 
     return(
@@ -161,12 +157,7 @@ export default function Admin() {
                                     <TableHeader>No Nota</TableHeader>
                                     <TableHeader>Nama user</TableHeader>
                                     <TableHeader>Nomor HP User</TableHeader>
-                                    <TableHeader>
-                                        <Button onClick={sortedData} transparent>
-                                            Tanggal Masuk
-                                            <FontAwesomeIcon icon={sortOrder === 'asc' ? faSortAsc : faSortDesc}/>
-                                        </Button>
-                                    </TableHeader>
+                                    <TableHeader>Tanggal Masuk</TableHeader>
                                     <TableHeader>Tanggal Keluar</TableHeader>
                                     <TableHeader>Merk HP</TableHeader>
                                     <TableHeader>Kerusakan</TableHeader>

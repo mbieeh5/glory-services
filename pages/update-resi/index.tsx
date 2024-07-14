@@ -38,6 +38,16 @@ export default function UpdateResi() {
     const [isAdmin, setIsAdmin] = useState<Boolean>(false);
     const [isKerusakan, setIsKerusakan] = useState<string>("")
     const [isNoHpUser, setIsNoHpUser] = useState<string>("");
+    const [isTanggalSelected, setIsTanggalSelected] = useState<Boolean>(false);
+    const [isTanggalMasuk, setIsTanggalMasuk] = useState<Boolean>(false);
+    const [tanggalDipilih, setTanggalDipilih] = useState<string>('');
+    const [teknisiSelected, setTeknisiSelected] = useState('');
+    const [penerimaSelected, setPenerimaSelected] = useState('');
+    const [statusSelected, setStatusSelected] = useState('');
+    const [tglMskAwal, setTglMskAwal] = useState<string>('');
+    const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
+    const [tglKluarAwal, setTglKluarAwal] = useState<string>('');
+    const [tglKluarAkhir, setTglKluarAkhir] = useState<string>('');
     const fakeKey = 1;
     
     const loadNextFiveItems = () => {
@@ -46,7 +56,6 @@ export default function UpdateResi() {
     const loadPreviousFiveItems = () => {
         setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
     };
-    
     const isSearchService = () => {
         setIsSearch(true)
         if (!noNotaSearch) {
@@ -89,14 +98,12 @@ export default function UpdateResi() {
                 });
             }
     };
-    
     const handleChangeNoHp = (e:string) => { 
         if(e.length > 0){
             return setIsNoHpUser(e);
         }
         return e;
     }
-
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const formData = new FormData(e.target) || "Null";
@@ -161,30 +168,28 @@ export default function UpdateResi() {
                 console.error('Gagal menyimpan data:', error);
             });
     }
-
     const handleChange = (e:any) => {
-    console.log(e);
-        setIsKerusakan(e);
+    setIsKerusakan(e);
     }
-
     const handleSearchFilter1 = (i:string) => {
-        if(i === ''){
-            alert('silahkan masukan kata Kunci Terlebih dahulu');
+        const indexLowerCase = i.toLocaleLowerCase();
+        if(indexLowerCase === ''){
+            setIsError('silahkan masukan kata Kunci Terlebih dahulu');
         }else{
             const DB = ref(getDatabase());
             get(child(DB, `Service/sandboxDS`))
             .then(async (snapshot) => {
-                    console.log(1);
                     const Data = snapshot.val() || {};
                     const Array:DataRes[] = Object.values(Data);
                     const filterData = Array.filter(items => 
-                        items.NoNota.toLowerCase().includes(i.toLowerCase()) ||
-                        items.NamaUser.toLowerCase().includes(i.toLowerCase()) ||
-                        items.MerkHp.toLowerCase().includes(i.toLowerCase()) ||
-                        items.Kerusakan.toLowerCase().includes(i.toLowerCase()) ||
-                        items.Penerima.toLowerCase().includes(i.toLowerCase()) ||
-                        items.status.toLowerCase().includes(i.toLowerCase()) ||
-                        items.Lokasi.toLowerCase().includes(i.toLowerCase())
+                        items.NoNota.toLowerCase().includes(indexLowerCase) ||
+                        items.NamaUser.toLowerCase().includes(indexLowerCase) ||
+                        items.MerkHp.toLowerCase().includes(indexLowerCase) ||
+                        items.Kerusakan.toLowerCase().includes(indexLowerCase) ||
+                        items.Penerima.toLowerCase().includes(indexLowerCase) ||
+                        items.status.toLowerCase().includes(indexLowerCase) ||
+                        items.Teknisi?.toLowerCase().includes(indexLowerCase) ||
+                        items.Lokasi.toLowerCase().includes(indexLowerCase)
                     )
                     setRecentServiceData(filterData);
                     setIsError("");
@@ -195,20 +200,56 @@ export default function UpdateResi() {
                 });
         }
     } 
-
     const refreshItem = () => {
-        return window.location.reload();
+        setIsloading(true);
+        return fetchData();
     }
-
     const popUpModalFilter = () => {
         setIsModalOpen(true);
     }
-
+    const handlOnChangeTanggalFilter = (e:any) => {
+        const value:string = e.target.value;
+        setTanggalDipilih(value);
+        if(value === 'tanggalMasuk'){
+                setIsTanggalSelected(true);
+                setIsTanggalMasuk(true);
+        }else if(value === 'tanggalKeluar'){
+                setIsTanggalSelected(true);
+                setIsTanggalMasuk(false);
+        }else if(value === 'semua'){
+            return setIsTanggalSelected(false);
+        }else {
+            return setIsTanggalSelected(false)
+        }
+    }
+    const TanggalMasukComponent = () => {
+        return (
+        <div>
+            <Label> Tanggal Awal
+                <Input type="date" value={tglMskAwal} onChange={(e) => {setTglMskAwal(e.target.value)}}/>
+            </Label> 
+            <Label> Tanggal Akhir
+                <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
+            </Label> 
+        </div>
+        )
+    }
+    const TanggalKeluarComponent = () => {
+        return (
+        <div>
+            <Label> Tanggal Awal
+                <Input type="date" value={tglKluarAwal} onChange={(e) => {setTglKluarAwal(e.target.value)}}/>
+            </Label> 
+            <Label> Tanggal Akhir
+                <Input type="date" value={tglKluarAkhir} onChange={(e) => {setTglKluarAkhir(e.target.value)}}/>
+            </Label> 
+        </div>
+        )
+    }
     const closePopUpModalFilter = () => {
         setIsModalOpen(false);
     }
-    useEffect(() => {
-        setIsloading(true);
+    const fetchData = () => {
         setTimeout(() => {
             setIsloading(false);
             const DB = ref(getDatabase());
@@ -220,7 +261,12 @@ export default function UpdateResi() {
                 .then(async (snapshot) => {
                     const Data = snapshot.val() || {};
                     const Array:DataRes[] = Object.values(Data);
-                    setRecentServiceData(Array);
+                    const filteredData = Array.sort((a, b) => {
+                        const DateA:any = new Date(a.TglMasuk);
+                        const DateB:any = new Date(b.TglMasuk);
+                        return DateB - DateA;
+                    })
+                    setRecentServiceData(filteredData);
                     setIsError("");
                 })
                 .catch((error) => {
@@ -228,7 +274,78 @@ export default function UpdateResi() {
                     setIsError("Terjadi kesalahan saat mengambil data resi terbaru");
                 });
             }
-        },3000)
+        },1500)
+    }
+    const filteredData = () => {
+        setIsloading(true)
+        setRecentServiceData([]);
+        setTimeout(() => {
+            closePopUpModalFilter();
+            const DB = ref(getDatabase());
+                get(child(DB, `Service/sandboxDS`))
+                .then(async (ss) => {
+                    const dataSS = ss.val() || {};
+                    const Array:DataRes[] = Object.values(dataSS);
+                    if(tanggalDipilih === 'tanggalMasuk'){
+                    const filterData = Array.filter(items => {
+                        const masukAwal = new Date(tglMskAwal);
+                        const masukAkhir = new Date(tglMskAkhir);
+                        const tglMasuk = new Date(items.TglMasuk);
+                        const isTanggalMasukValid = (!masukAwal || tglMasuk >= masukAwal) && (!masukAkhir || tglMasuk <= masukAkhir);
+                        const isTeknisiValid = !teknisiSelected ? items.Teknisi : items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                        const isPenerimaValid = !penerimaSelected ? items.Penerima : items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                        const isStatusValid = !statusSelected ? items.status : items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                        return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                    });
+                    const sorterData = filterData.sort((a, b) => {
+                        const dateA:any = new Date(a.TglMasuk);
+                        const dateB:any = new Date(b.TglMasuk);
+                        return dateB - dateA;
+                    })
+                    setRecentServiceData(sorterData);
+                }else if(tanggalDipilih === 'tanggalKeluar'){
+                const filterData = Array.filter(items => {
+                    const keluarAwal = tglKluarAwal ? new Date(tglKluarAwal) : null;
+                    const keluarAkhir = tglKluarAkhir ? new Date(tglKluarAkhir) : null;
+                    const tglKeluar = new Date(items.TglKeluar);
+                    const isTanggalKeluarValid = (!keluarAwal || tglKeluar >= keluarAwal) && (!keluarAkhir || tglKeluar <= keluarAkhir);
+                    const isTeknisiValid = !teknisiSelected ? items.Teknisi : items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                    const isPenerimaValid = !penerimaSelected ? items.Penerima : items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                    const isStatusValid = !statusSelected ? items.status : items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                    return isTanggalKeluarValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                });
+                const sorterData = filterData.sort((a, b) => {
+                    const dateA:any = new Date(a.TglMasuk);
+                    const dateB:any = new Date(b.TglMasuk);
+                    return dateB - dateA;
+                })
+                setRecentServiceData(sorterData);
+                }else{
+                    console.log({teknisiSelected, penerimaSelected, statusSelected})
+                const filterData = Array.filter(items => {
+                    const isTeknisiValid = !teknisiSelected ? items.Teknisi : items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                    const isPenerimaValid = !penerimaSelected ? items.Penerima : items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                    const isStatusValid = !statusSelected ? items.status : items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                    console.log({isStatusValid, isPenerimaValid, isTeknisiValid})
+                    return isTeknisiValid && isPenerimaValid && isStatusValid;
+                });
+                const sorterData = filterData.sort((a, b) => {
+                    const dateA:any = new Date(a.TglMasuk);
+                    const dateB:any = new Date(b.TglMasuk);
+                    return dateB - dateA;
+                })
+                setRecentServiceData(sorterData);
+                }
+                setIsloading(false);
+                }).catch((error) => {
+                    console.error(error)
+                    setIsloading(false);
+                })
+        },1500)
+    }
+    useEffect(() => {
+        setIsloading(true);
+        fetchData();
     }, []);
 
     return (
@@ -361,10 +478,10 @@ export default function UpdateResi() {
                                         <Input placeholder="Masukan Kata Kunci" onChange={(e) => setSearchFilter(e.target.value)} />
                                             <ButtonSearch onClick={() => handleSearchFilter1(searchFilter)}>Cari</ButtonSearch>
                                     </Search>
-                                        <FilterSearch>
-                                            <ButtonFilter onClick={() => popUpModalFilter()}><FontAwesomeIcon icon={faPen}/></ButtonFilter>
-                                            <ButtonFilter onClick={() => refreshItem()}><FontAwesomeIcon icon={faRedo}/></ButtonFilter>
-                                        </FilterSearch>
+                                            <ButtonGroup>
+                                                    <ButtonFilter onClick={() => popUpModalFilter()}><FontAwesomeIcon icon={faPen}/></ButtonFilter>
+                                                    <ButtonFilter onClick={() => refreshItem()}><FontAwesomeIcon icon={faRedo}/></ButtonFilter>
+                                            </ButtonGroup>
                                 </SearchWrapper>
                             </FilterWrapper>
                                     <TableWrapper>
@@ -386,24 +503,36 @@ export default function UpdateResi() {
                                                 <TableHeader>Status</TableHeader>
                                             </TableRow>
                                             </thead>
-                            {recentServiceData.slice(startIndex, startIndex + 5).map((a, i) => (
-                                <tbody key={i}>
-                                                <TableRow>
-                                                    <TableData>{a.NoNota}</TableData>
-                                                    <TableData>{a.NamaUser}</TableData>
-                                                    <TableData>{a.NoHpUser}</TableData>
-                                                    <TableData>{a.TglMasuk}</TableData>
-                                                    <TableData>{a.TglKeluar}</TableData>
-                                                    <TableData>{a.MerkHp}</TableData>
-                                                    <TableData>{a.Kerusakan}</TableData>
-                                                    <TableData>{a.Penerima}</TableData>
-                                                    <TableData>{a.Harga.toLocaleString('id')}</TableData>
-                                                    <TableData>{a.Lokasi}</TableData>
-                                                    <TableData>{a.Teknisi}</TableData>
-                                                    <TableData>{a.status}</TableData>
-                                                </TableRow>
-                                                </tbody>
-                                    ))}
+                            {recentServiceData.slice(startIndex, startIndex + 5).map((a, i) => {
+                                const formatDate = (dateString:any) => {
+                                    const date = new Date(dateString);
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+                                    const year = date.getFullYear();
+                                    const hours = String(date.getHours()).padStart(2, '0');
+                                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                                
+                                    return `${day}/${month}/${year} @${hours}:${minutes}`;
+                                }
+                                return (
+                                        <tbody key={i}>
+                                            <TableRow>
+                                                <TableData>{a.NoNota}</TableData>
+                                                <TableData>{a.NamaUser}</TableData>
+                                                <TableData>{a.NoHpUser}</TableData>
+                                                <TableData>{formatDate(a.TglMasuk)}</TableData>
+                                                <TableData>{a.TglKeluar ? formatDate(a.TglKeluar) : 'Belum Di Ambil'}</TableData>
+                                                <TableData>{a.MerkHp}</TableData>
+                                                <TableData>{a.Kerusakan}</TableData>
+                                                <TableData>{a.Penerima}</TableData>
+                                                <TableData>{a.Harga.toLocaleString('id')}</TableData>
+                                                <TableData>{a.Lokasi}</TableData>
+                                                <TableData>{a.Teknisi}</TableData>
+                                                <TableData>{a.status}</TableData>
+                                            </TableRow>
+                                        </tbody>
+                                        )
+                            })}
                             </Table>
                         </TableWrapper>
                             <Buttons2 onClick={loadPreviousFiveItems}>Previous</Buttons2>
@@ -420,61 +549,61 @@ export default function UpdateResi() {
             
             {/* Modal Section*/}
                 {isModalOpen ? 
-                <>
-                <Modal isOpen={isModalOpen} onClose={closePopUpModalFilter}>
-                <h1>Filter Data</h1>
-                        <Label>Tanggal Masuk Awal:
-                        <Input type="date" />
-                        </Label>
+                <WrapperContent>
+                    <Modal isOpen={isModalOpen} onClose={closePopUpModalFilter}>
+                    <h1>Filter Data</h1>
+                        <div>
+                            <LabelModal> Filter Tanggal
+                                <SelectModal value={tanggalDipilih} onChange={handlOnChangeTanggalFilter}>
+                                    <option value="semua">Semua</option>
+                                    <option value="tanggalMasuk">Tanggal Masuk</option>
+                                    <option value="tanggalKeluar">Tanggal Keluar</option>
+                                </SelectModal>
+                            </LabelModal>
+                        </div>
+                        {isTanggalSelected ? 
+                        <>
+                         {isTanggalMasuk ? <TanggalMasukComponent /> : <TanggalKeluarComponent />}
+                        </> : null}
+                        <div>
+                            <LabelModal>Teknisi:
+                                <SelectModal value={teknisiSelected} onChange={(e) => {setTeknisiSelected(e.target.value)}}>
+                                    <option value="">Semua</option>
+                                    <option value="amri">Amri</option>
+                                    <option value="ibnu">Ibnu</option>
+                                    <option value="rafi">Rafi</option>
+                                </SelectModal>
+                            </LabelModal>
+                        </div>
+                        <div>
+                            <LabelModal>Penerima:
+                                <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
+                                    <option value="">Semua</option>
+                                    <option value="reni">Reni</option>
+                                    <option value="sindi">Sindi</option>
+                                    <option value="tiara">Tiara</option>
+                                    <option value="vina">Vina</option>
+                                    <option value="yuniska">Yuniska</option>
+                                </SelectModal>
+                            </LabelModal>
+                        </div>
+                        <div>
+                            <LabelModal>Status:
+                                <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
+                                    <option value="">Semua</option>
+                                    <option value="cancel">Cancel</option>
+                                    <option value="process">Process</option>
+                                    <option value="sudah diambil">Sudah Diambil</option>
+                                </SelectModal>
+                            </LabelModal>
+                        </div>
 
-                        <Label>Tanggal Masuk Akhir:
-                        <Input type="date" />
-                        </Label>
-                        
-                    <div>
-                        <Label>Tanggal Keluar Awal:
-                        <Input type="date" />
-                        </Label>
-                    </div>
-                    <div>
-                        <Label>Tanggal Keluar Akhir:
-                        <Input type="date" />
-                        </Label>
-                    </div>
-                    <div>
-                        <Label>Teknisi:
-                            <Select>
-                                <option value="rafi">Rafi</option>
-                                <option value="amri">Amri</option>
-                                <option value="ibnu">Ibnu</option>
-                            </Select>
-                        </Label>
-                    </div>
-                    <div>
-                        <Label>Penerima:
-                            <Select>
-                                <option value="sindi">Sindi</option>
-                                <option value="tiara">Tiara</option>
-                                <option value="vina">Vina</option>
-                                <option value="yuniska">Yuniska</option>
-                            </Select>
-                        </Label>
-                    </div>
-                    <div>
-                        <Label>Status:
-                            <Select>
-                                <option value="sudah diambil">Sudah Diambil</option>
-                                <option value="cancel">Cancel</option>
-                                <option value="process">Process</option>
-                            </Select>
-                        </Label>
-                    </div>
-                    <ButtonGroup>
-                        <Button onClick={closePopUpModalFilter}>Tutup</Button>
-                        <Button onClick={closePopUpModalFilter}>Filter Data</Button>
-                    </ButtonGroup>
-                </Modal>
-                </> 
+                        <ButtonGroup>
+                            <Button onClick={closePopUpModalFilter}>Tutup</Button>
+                            <Button onClick={filteredData}>Filter Data</Button>
+                        </ButtonGroup>
+                    </Modal>
+                </WrapperContent> 
                 : 
                 <>
                 </>}
@@ -484,13 +613,12 @@ export default function UpdateResi() {
     );
 }
 
-const Modal = ({isOpen, onClose, children}:any) => {
+const Modal = ({isOpen, children}:any) => {
     if(!isOpen) return null;
 
     return (
         <WrapperModal>
             <WrapperModalContent>
-                <SpanClose onClick={onClose}>&times;</SpanClose>
                 {children}
             </WrapperModalContent>
         </WrapperModal>
@@ -517,15 +645,6 @@ const WrapperModalContent = styled.div`
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
 `;
 
-const SpanClose = styled.span`
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 24px;
-    color: #555;
-`;
-
 const SearchWrapper = styled.div`
 display: flex;
 padding: 2rem;
@@ -542,7 +661,6 @@ justify-content: center;
 text-align: center;
 padding-bottom: 12rem;
 ` 
-
 
 const ErrorText = styled.h2`
 color: rgb(var(--errorColor));
@@ -574,7 +692,8 @@ font-size: 2rem;
 const ButtonSearch = styled(Button)`
 padding: 1rem;
 margin-top: 1rem;
-font-size: 1.5rem;
+font-size: 1rem;
+margin-left: 12px;
 `
 
 const LabelSearch = styled.label`
@@ -687,7 +806,25 @@ const Label = styled.label`
     align-items: center;
 `;
 
+const LabelModal = styled.label`
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+`;
+
 const Select = styled.select`
+width: 15rem;
+background: rgb(var(--inputBackground));
+color: rgb(var(--text));
+text-align: center;
+border-radius: 12px;
+border: none;
+padding-top: 1rem;
+`
+
+const SelectModal = styled.select`
 width: 15rem;
 background: rgb(var(--inputBackground));
 color: rgb(var(--text));
@@ -701,24 +838,16 @@ const FilterWrapper = styled.div`
 
 `
 
-const FilterSearch = styled.div`
-display: flex;
-flex-direction: row;
-gap: 5;
-padding-top: 1rem;
-width: 40%;
-`
-
 const Search = styled.div`
 
 `
 const ButtonFilter = styled.button`
 background: rgb(var(--inputBackground));
 color: rgb(var(--text));
+padding: 1rem;
 border: none;
 box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-border-radius: 1rem;
-width: 30%;
+border-radius: 12px;
 margin-left: 12px;
 `
 
