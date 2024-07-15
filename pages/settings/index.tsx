@@ -225,14 +225,14 @@ padding: 2rem;
 
 const Card = styled.div`
 display: flex;
-position: absolute;
-padding: 2rem;
-width: 80%;
-left: 10%;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
 align-items: center;
 justify-content: center;
+padding: 2rem;
 text-align: center;
-max-height: 100%;
 overflow: hidden;
 border-radius: 20px;
 background: rgb(var(--cardBackground));

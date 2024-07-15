@@ -21,20 +21,26 @@ interface DataRes {
     Harga: number;
     Lokasi: string;
     Teknisi: string;
+    HargaIbnu: number;
     status: string;
 }
 
 export default function UpdateResi() {
     const [noNotaSearch, setNoNotaSearch] = useState("");
+    const [cekNotaSearch, setCekNotaSearch] = useState<DataRes[]>([]);
     const [isLoading, setIsloading] = useState<Boolean>(false);
     const [recentServiceData, setRecentServiceData] = useState<DataRes[]>([]);
     const [isSearch, setIsSearch] = useState(false);
+    const [isCekNota, setIsCekNota] = useState<Boolean>(false);
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
     const [isError, setIsError] = useState("");
     const [isModalOpen, setIsModalOpen] = useState<Boolean>(false);
     const [searchFilter, setSearchFilter] = useState('');
     const [buttonDisabled, setButtonDisabled] = useState(false);
+    const [cekNota, setCekNota] = useState<string>('')
     const [startIndex, setStartIndex] = useState(0);
+    const [isIbnu, setIsIbnu] = useState<Boolean>(false);
+    const [isTeknisiUpdate, setIsTeknisiUpdate] = useState<string>("")
     const [isAdmin, setIsAdmin] = useState<Boolean>(false);
     const [isKerusakan, setIsKerusakan] = useState<string>("")
     const [isNoHpUser, setIsNoHpUser] = useState<string>("");
@@ -50,6 +56,15 @@ export default function UpdateResi() {
     const [tglKluarAkhir, setTglKluarAkhir] = useState<string>('');
     const fakeKey = 1;
     
+    const IbnuController = (e:string) => {
+        
+        if(e.toLowerCase() === 'ibnu'){
+            setIsIbnu(true)
+        }else{
+            setIsIbnu(false)
+        }
+        return setIsTeknisiUpdate(e);
+    };
     const loadNextFiveItems = () => {
         setStartIndex(prevIndex => prevIndex + 5);
     };
@@ -103,7 +118,7 @@ export default function UpdateResi() {
             return setIsNoHpUser(e);
         }
         return e;
-    }
+    };
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const formData = new FormData(e.target) || "Null";
@@ -115,6 +130,7 @@ export default function UpdateResi() {
         const Penerima = formData.get('penerima')?.toString() || "null";
         const NoHpUser = formData.get('noHpUser')?.toString() || "null";
         const MerkHp = formData.get('merkHp')?.toString() || "null";
+        const HargaIbnu = formData.get('hargaIbnu')?.toString() || "0"
         const Kerusakan = formData.get('kerusakan')?.toString() || "null";
         const Lokasi = formData.get('lokasi')?.toString() || "null";
         const Harga = formData.get('hargaAkhir')?.toString() || "null";
@@ -134,10 +150,11 @@ export default function UpdateResi() {
                     Harga,
                     Lokasi,
                     Teknisi,
+                    HargaIbnu,
                     status
                 }
             };
-            const notaRef = ref(getDatabase(), `Service/sandboxDS/`);
+          const notaRef = ref(getDatabase(), `Service/sandboxDS/`);
             update(notaRef, newData)
             .then(() => {
                 alert('Resi Berhasil di Update')
@@ -167,10 +184,10 @@ export default function UpdateResi() {
             .catch((error) => {
                 console.error('Gagal menyimpan data:', error);
             });
-    }
+    };
     const handleChange = (e:any) => {
     setIsKerusakan(e);
-    }
+    };
     const handleSearchFilter1 = (i:string) => {
         const indexLowerCase = i.toLocaleLowerCase();
         if(indexLowerCase === ''){
@@ -199,14 +216,14 @@ export default function UpdateResi() {
                     setIsError("Terjadi kesalahan saat mengambil data resi terbaru");
                 });
         }
-    } 
+    };
     const refreshItem = () => {
         setIsloading(true);
         return fetchData();
-    }
+    };
     const popUpModalFilter = () => {
         setIsModalOpen(true);
-    }
+    };
     const handlOnChangeTanggalFilter = (e:any) => {
         const value:string = e.target.value;
         setTanggalDipilih(value);
@@ -221,7 +238,7 @@ export default function UpdateResi() {
         }else {
             return setIsTanggalSelected(false)
         }
-    }
+    };
     const TanggalMasukComponent = () => {
         return (
         <div>
@@ -233,7 +250,7 @@ export default function UpdateResi() {
             </Label> 
         </div>
         )
-    }
+    };
     const TanggalKeluarComponent = () => {
         return (
         <div>
@@ -245,10 +262,10 @@ export default function UpdateResi() {
             </Label> 
         </div>
         )
-    }
+    };
     const closePopUpModalFilter = () => {
         setIsModalOpen(false);
-    }
+    };
     const fetchData = () => {
         setTimeout(() => {
             setIsloading(false);
@@ -275,7 +292,7 @@ export default function UpdateResi() {
                 });
             }
         },1500)
-    }
+    };
     const filteredData = () => {
         setIsloading(true)
         setRecentServiceData([]);
@@ -340,6 +357,29 @@ export default function UpdateResi() {
                     setIsloading(false);
                 })
         },1500)
+    };
+    const SearchNota = () => {
+        if(cekNota.length < 3){
+            alert('HARAP ISI NO NOTA')
+            setIsCekNota(false);
+        }else{
+            setIsloading(true);
+            setTimeout(() => {
+                const DB = ref(getDatabase());
+                get(child(DB, `Service/sandboxDS/${cekNota}`))
+                .then(async (ss) => {
+                    if(ss.exists()){
+                        const datas = ss.val() || {};
+                        const Array:DataRes[] = Object.values({datas});
+                        setCekNotaSearch(Array);
+                    }else{
+                        return alert('No Nota Tidak Di Temukan')
+                    }
+                    setIsCekNota(true);
+                })
+                setIsloading(false)
+            },1500)
+        }
     }
     useEffect(() => {
         setIsloading(true);
@@ -436,12 +476,17 @@ export default function UpdateResi() {
                             </Label>
                             <Label>
                                 Teknisi:
-                                <Select placeholder="Kerjaan Siapa ?"  name="teknisi" required>
+                                <Select placeholder="Kerjaan Siapa ?" value={isTeknisiUpdate} onChange={(e) => {IbnuController(e.target.value)}}  name="teknisi" required>
                                     <option>Amri</option>
                                     <option>Ibnu</option>
                                     <option>Rafi</option>
                                 </Select>
                             </Label>
+                            {isIbnu && 
+                            <Label>
+                                Harga Ibnu: 
+                                <Input type="number" placeholder="Harga Ibnu Tanya Amri" name="hargaIbnu" required />
+                            </Label>}
                             <Label>
                             Status:
                                 <Select name='status' required>
@@ -495,7 +540,8 @@ export default function UpdateResi() {
                                                 <TableHeader>Merk HP</TableHeader>
                                                 <TableHeader>Kerusakan</TableHeader>
                                                 <TableHeader>Penerima</TableHeader>
-                                                <TableHeader>Estimasi Harga</TableHeader>
+                                                <TableHeader>Harga</TableHeader>
+                                                <TableHeader>Harga Ibnu</TableHeader>
                                                 <TableHeader>Lokasi</TableHeader>
                                                 <TableHeader>Teknisi</TableHeader>
                                                 <TableHeader>Status</TableHeader>
@@ -524,6 +570,7 @@ export default function UpdateResi() {
                                                 <TableData>{a.Kerusakan}</TableData>
                                                 <TableData>{a.Penerima}</TableData>
                                                 <TableData>{a.Harga.toLocaleString('id')}</TableData>
+                                                <TableData>{a.HargaIbnu? a.HargaIbnu.toLocaleString('id') : 0}</TableData>
                                                 <TableData>{a.Lokasi}</TableData>
                                                 <TableData>{a.Teknisi}</TableData>
                                                 <TableData>{a.status}</TableData>
@@ -539,7 +586,52 @@ export default function UpdateResi() {
                     )}
                 </> : 
                 <>
+                    <SearchWrapper>
+                        <LabelSearch>
+                            Cek Nota:
+                            <Input type="text" placeholder="Masukan Nomor Nota" onChange={(e) => {setCekNota(e.target.value.toLocaleUpperCase())}}/>
+                        </LabelSearch>
+                            <ButtonSearch onClick={(SearchNota)}>Cari Data</ButtonSearch>
+                    </SearchWrapper>
+                    {isCekNota && (
+                    <>
+                        {cekNotaSearch.map((a) => {
 
+                            return(
+                                <Container key={a.NoNota}>
+                                    <Box>
+                                        <Header>
+                                            <div>{a.NoNota}</div>
+                                            <div>{a.TglMasuk}</div>
+                                        </Header>
+                                        <Info>
+                                            <LabelCard>Nama:</LabelCard><Value>{a.NamaUser}</Value>
+                                        </Info>
+                                        <Info>
+                                            <LabelCard>No Hp:</LabelCard><Value>{a.NoHpUser}</Value>
+                                        </Info>
+                                        <Info>
+                                            <LabelCard>Hp:</LabelCard><Value>{a.MerkHp}</Value>
+                                        </Info>
+                                        <Info>
+                                            <LabelCard>Kerusakan:</LabelCard><Value>{a.Kerusakan}</Value>
+                                        </Info>
+                                        <Line />
+                                        <Info>
+                                            <LabelCard>Teknisi:</LabelCard><Value>{a.Teknisi}</Value>
+                                        </Info>
+                                        <Info>
+                                            <LabelCard>Tgl Keluar:</LabelCard><Value>{(a.TglKeluar)}</Value>
+                                        </Info>
+                                        <StatusBox>
+                                            {a.status.toLocaleUpperCase()}
+                                        </StatusBox>
+                                    </Box>
+                                </Container>
+                            )    
+                        })}
+                    </>
+                    )}
                 </>}
                 </>
                 )}
@@ -878,4 +970,62 @@ const Spinner = styled.div`
   width: 60px;
   height: 60px;
   animation: ${spin} 2s linear infinite;
+`;
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 2rem;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+`;
+
+const Box = styled.div`
+  border: 1px solid #000;
+  padding: 16px;
+  margin-bottom: 16px;
+  width: 350px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  font-size: 1.5rem;
+  justify-content: space-between;
+  border-bottom: 1px solid #000;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+`;
+
+const Line = styled.hr`
+  border: none;
+  border-top: 1px solid #000;
+  margin: 8px 0;
+`;
+
+const LabelCard = styled.div`
+  font-weight: bold;
+  display: inline;
+`;
+
+const Value = styled.div`
+  display: inline;
+`;
+
+const Info = styled.div`
+  display: grid;
+  font-size: 2rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+
+const StatusBox = styled.div`
+  font-size: 2rem;
+  font-weight: bold;
+  border: 1px solid #000;
+  padding: 8px;
+  margin-top: 8px;
+  text-align: center;
+
 `;

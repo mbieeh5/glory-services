@@ -19,6 +19,7 @@ import Page from 'components/Page';
 import Input from 'components/Input';
 import Button from 'components/Button';
 import styled from 'styled-components';
+import Footer from 'components/Footer';
 
 const NavbarAdm: NavItems = [
   { title: "Input Data", href: "/input-data" },
@@ -87,6 +88,7 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
         <Providers>
           <Navbar items={NavbarAdm} />
           <Component {...pageProps} />
+          <Footer />
         </Providers>
       ) : (
         <Page title="Admin Section">

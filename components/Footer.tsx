@@ -1,5 +1,4 @@
 import NextLink from 'next/link';
-import { FacebookIcon, LinkedinIcon, TwitterIcon } from 'react-share';
 import styled from 'styled-components';
 import Container from 'components/Container';
 import { media } from 'utils/media';
@@ -13,21 +12,10 @@ const footerItems: FooterItems = [
   {
     title: 'Feature',
     items: [
-      { title: 'Features', href: '/features' },
-      { title: 'Berita', href: '/berita' },
-      { title: 'Tools/Apps', href: '/tools' },
-      { title: 'Games', href: '/games' },
-      { title: '????', href: '/hidden' },
-    ],
-  },
-  {
-    title: 'Knowledge',
-    items: [
-      { title: 'Blog', href: '/blog' },
-      { title: 'Contact', href: '/contact' },
-      { title: 'FAQ', href: '/faq' },
-      { title: 'Privacy Policy', href: '/privacy-policy' },
-      { title: 'Cookies Policy', href: '/cookies-policy' },
+      { title: 'Home', href: '/' },
+      { title: 'Update Services', href: '/update-resi' },
+      { title: 'Pengaturan', href: '/tools' },
+      { title: 'Input Services', href: '/input-data' },
     ],
   }
 ];
@@ -42,24 +30,7 @@ export default function Footer() {
           ))}
         </ListContainer>
         <BottomBar>
-          <ShareBar>
-            <NextLink href="https://www.twitter.com/my-saas-startup" passHref>
-             
-                <TwitterIcon size={50} round={true} />
-              
-            </NextLink>
-
-            <NextLink href="https://www.facebook.com/my-saas-startup" passHref>
-             
-                <FacebookIcon size={50} round={true} />
-             
-            </NextLink>
-
-            <NextLink href="https://www.linkedin.com/my-saas-startup" passHref>
-                <LinkedinIcon size={50} round={true} />
-            </NextLink>
-          </ShareBar>
-          <Copyright>&copy; Copyright 2021 My Saas Startup</Copyright>
+          <Copyright>&copy; Copyright 2017 Rraf-project</Copyright>
         </BottomBar>
       </Container>
     </FooterWrapper>
@@ -134,12 +105,6 @@ const ListItemWrapper = styled.p`
   a {
     text-decoration: none;
     color: rgba(var(--textSecondary), 0.75);
-  }
-`;
-
-const ShareBar = styled.div`
-  & > *:not(:first-child) {
-    margin-left: 1rem;
   }
 `;
 
