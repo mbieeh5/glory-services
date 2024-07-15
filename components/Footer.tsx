@@ -14,7 +14,7 @@ const footerItems: FooterItems = [
     items: [
       { title: 'Home', href: '/' },
       { title: 'Update Services', href: '/update-resi' },
-      { title: 'Pengaturan', href: '/tools' },
+      { title: 'Pengaturan', href: '/settings' },
       { title: 'Input Services', href: '/input-data' },
     ],
   }

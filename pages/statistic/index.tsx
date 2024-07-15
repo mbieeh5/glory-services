@@ -1,12 +1,13 @@
 /* eslint-disable import/order */
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Cookies from "js-cookie";
 import { getAuth } from "firebase/auth";
 import styled, {keyframes} from "styled-components";
-import {  CartesianGrid, Legend, Line, LineChart,  ReferenceLine , ResponsiveContainer, Tooltip, XAxis , YAxis} from 'recharts';
-import BasicSection from "components/BasicSection";
 import { child, get, getDatabase, ref } from "firebase/database";
+import Statistics from "./component/Statistic";
+import Laporan from "./component/Laporan";
+import Button from "components/Button";
 
 
 interface DataStatistic {
@@ -19,12 +20,16 @@ interface DataStatistic {
 export default function Statistic() {
     const [isLoading, setIsLoading] = useState<Boolean>(false);
     const [dataStatic, setDataStatic] = useState<DataStatistic[]>([]);
+    const [view, setView] = useState<string>('statistic')
     const [totalPoints, setTotalPoints] = useState<Number>(0)
     const [totalUnits, setTotalUnits] = useState<Number>(0)
     const route:any = useRouter();
     
-    
-    useEffect(() => {
+    const handleViewChange = (newView:string) => {
+        setView(newView)
+    }
+
+    const fetchData = useCallback(() => {
         const Auth:any = Cookies.get('_IDs')
         const AuthG:any = getAuth();
         setIsLoading(false);
@@ -41,7 +46,7 @@ export default function Statistic() {
                         const datas = snapshot.val() || {};
                         const dataArr:DataStatistic[] = Object.values(datas);
                         setDataStatic(dataArr);
-
+    
                         const totals = dataArr.reduce(
                             (acc, item:any) => {
                                 acc.totalPoints += item.point;
@@ -65,50 +70,26 @@ export default function Statistic() {
         },3000)
 
     }, [route])
+    
+    useEffect(() => {
+        setIsLoading(true);
+        fetchData();
+    }, [fetchData]);
 
     return(
         <>
         {isLoading ? 
-        <Wrapper>
-            <BasicSection title="Statistic Service" />
-                <UL>Total Unit Keseluruhan: {totalUnits.toLocaleString('id-ID')}</UL>
-            <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                    data={dataStatic}
-                    margin={{
-                    top: 20, right: 30, left: 20, bottom: 5,
-                    }}
-                >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="nama" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="linear" dataKey="unit" stroke="#8884d8" activeDot={{ r: 5 }} />
-                    <ReferenceLine y={25} label="Minimal Redeem 25 units" stroke="red" strokeDasharray="6 6" />
-                    <ReferenceLine y={15} label="Syarat Redeem 15units" stroke="red" strokeDasharray="6 6" />
-                </LineChart>
-            </ResponsiveContainer>
-
-            <BasicSection title="Point Terkumpul" />
-                    <UL>Total Point Keseluruhan: {totalPoints.toLocaleString('id-ID')}</UL>
-            <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                    data={dataStatic}
-                    margin={{
-                    top: 20, right: 30, left: 30, bottom: 10,
-                }}
-                >
-                    <CartesianGrid strokeDasharray="6 6" />
-                    <XAxis dataKey="nama" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey='point' stroke="#8884d8" activeDot={{ r: 5 }} />
-                <ReferenceLine y={250000} label="Min 250.000 points" stroke="red" strokeDasharray="6 6" />
-                </LineChart>
-            </ResponsiveContainer>
-        </Wrapper> 
+            <>
+                    <ButtonGroup>
+                        <Button onClick={() => {handleViewChange('statistic')}} transparent>Statistic</Button>
+                        <Button onClick={() => {handleViewChange('laporan')}} transparent>Laporan</Button>
+                    </ButtonGroup>
+                    <Divider />
+                <Wrapper>
+                    {view === 'statistic' && <Statistics Data={dataStatic} TotalU={totalUnits} TotalP={totalPoints} />}
+                    {view === 'laporan' && <Laporan />}
+                </Wrapper>
+            </>
         : 
         <Wrapper>
             <WrapperLoading>
@@ -120,9 +101,12 @@ export default function Statistic() {
 
 }
 
-const UL = styled.ul`
-font-size: 2rem;
-padding-bottom: 1rem;
+const ButtonGroup = styled.div`
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 20px;
+padding-top: 6.3rem;
 `
 
 const Wrapper = styled.div`
@@ -162,3 +146,9 @@ const Spinner = styled.div`
   animation: ${spin} 2s linear infinite;
 `;
 
+const Divider = styled.div`
+    width: 77%;
+    height: 1px;
+    background-color: rgb(var(--text));
+    margin: 1rem auto 0;
+`;
