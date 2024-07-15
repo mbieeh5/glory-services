@@ -288,45 +288,43 @@ export default function UpdateResi() {
                     const Array:DataRes[] = Object.values(dataSS);
                     if(tanggalDipilih === 'tanggalMasuk'){
                     const filterData = Array.filter(items => {
-                        const masukAwal = new Date(tglMskAwal);
-                        const masukAkhir = new Date(tglMskAkhir);
-                        const tglMasuk = new Date(items.TglMasuk);
+                        const masukAwal = tglMskAwal ? new Date(tglMskAwal).setHours(0, 0, 0, 0) : null;
+                        const masukAkhir = tglMskAkhir ? new Date(tglMskAkhir).setHours(23, 59, 59, 999) : null;
+                        const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
                         const isTanggalMasukValid = (!masukAwal || tglMasuk >= masukAwal) && (!masukAkhir || tglMasuk <= masukAkhir);
-                        const isTeknisiValid = !teknisiSelected ? items.Teknisi : items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                        const isPenerimaValid = !penerimaSelected ? items.Penerima : items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                        const isStatusValid = !statusSelected ? items.status : items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                        const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                        const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                        const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
                         return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
                     });
                     const sorterData = filterData.sort((a, b) => {
                         const dateA:any = new Date(a.TglMasuk);
                         const dateB:any = new Date(b.TglMasuk);
-                        return dateB - dateA;
+                        return dateA - dateB;
                     })
                     setRecentServiceData(sorterData);
                 }else if(tanggalDipilih === 'tanggalKeluar'){
                 const filterData = Array.filter(items => {
-                    const keluarAwal = tglKluarAwal ? new Date(tglKluarAwal) : null;
-                    const keluarAkhir = tglKluarAkhir ? new Date(tglKluarAkhir) : null;
-                    const tglKeluar = new Date(items.TglKeluar);
+                    const keluarAwal = tglMskAwal ? new Date(tglMskAwal).setHours(0, 0, 0, 0) : null;
+                    const keluarAkhir = tglMskAkhir ? new Date(tglMskAkhir).setHours(23, 59, 59, 999) : null;
+                    const tglKeluar = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
                     const isTanggalKeluarValid = (!keluarAwal || tglKeluar >= keluarAwal) && (!keluarAkhir || tglKeluar <= keluarAkhir);
-                    const isTeknisiValid = !teknisiSelected ? items.Teknisi : items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                    const isPenerimaValid = !penerimaSelected ? items.Penerima : items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                    const isStatusValid = !statusSelected ? items.status : items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                    const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                    const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                    const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
                     return isTanggalKeluarValid && isTeknisiValid && isPenerimaValid && isStatusValid;
                 });
                 const sorterData = filterData.sort((a, b) => {
                     const dateA:any = new Date(a.TglMasuk);
                     const dateB:any = new Date(b.TglMasuk);
-                    return dateB - dateA;
+                    return dateA - dateB;
                 })
                 setRecentServiceData(sorterData);
                 }else{
-                    console.log({teknisiSelected, penerimaSelected, statusSelected})
-                const filterData = Array.filter(items => {
-                    const isTeknisiValid = !teknisiSelected ? items.Teknisi : items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                    const isPenerimaValid = !penerimaSelected ? items.Penerima : items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                    const isStatusValid = !statusSelected ? items.status : items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                    console.log({isStatusValid, isPenerimaValid, isTeknisiValid})
+                    const filterData = Array.filter(items => {
+                    const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                    const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                    const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
                     return isTeknisiValid && isPenerimaValid && isStatusValid;
                 });
                 const sorterData = filterData.sort((a, b) => {
