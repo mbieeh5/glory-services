@@ -21,6 +21,7 @@ export default function Statistic() {
     const [isLoading, setIsLoading] = useState<Boolean>(false);
     const [dataStatic, setDataStatic] = useState<DataStatistic[]>([]);
     const [view, setView] = useState<string>('statistic')
+    const [Target, setTarget] = useState<Number>(0);
     const [totalPoints, setTotalPoints] = useState<Number>(0)
     const [totalUnits, setTotalUnits] = useState<Number>(0)
     const route:any = useRouter();
@@ -32,7 +33,7 @@ export default function Statistic() {
     const fetchData = useCallback(() => {
         const Auth:any = Cookies.get('_IDs')
         const AuthG:any = getAuth();
-        setIsLoading(false);
+        setIsLoading(true);
         setTimeout(() => {
             setIsLoading(true)
             const isAdmin = AuthG.currentUser.email.split("@")[0];
@@ -60,14 +61,24 @@ export default function Statistic() {
                     }
                 }).catch((err) => {
                     console.error(err);
-                })
+                });
+
+                get(child(DB, "Data/minimumTarget")).then((ss) => {
+                    if(ss.exists()){
+                        const tv = ss.val() || {};
+                        const trgt = tv.target;
+                        setTarget(trgt);
+                    }
+                }).catch((err) => {
+                    console.error(err);
+                });
             }
             if(!Auth){
                 alert('You Not Supposed to here before login ?')
                 route.push('/')
             }
             
-        },3000)
+        },3500)
 
     }, [route])
     
@@ -86,7 +97,7 @@ export default function Statistic() {
                     </ButtonGroup>
                     <Divider />
                 <Wrapper>
-                    {view === 'statistic' && <Statistics Data={dataStatic} TotalU={totalUnits} TotalP={totalPoints} />}
+                    {view === 'statistic' && <Statistics Data={dataStatic} TotalU={totalUnits} TotalP={totalPoints} Target={Target}/>}
                     {view === 'laporan' && <Laporan />}
                 </Wrapper>
             </>

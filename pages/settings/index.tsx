@@ -236,7 +236,7 @@ text-align: center;
 overflow: hidden;
 border-radius: 20px;
 background: rgb(var(--cardBackground));
-box-shadow: 0px 7px 5px rgba(100,100,100, 0.2)
+box-shadow: 0px 7px 5px rgba(100,100,100, 0.2);
 `;
 
 const ButtonWrapper = styled(ButtonGroup)` 
