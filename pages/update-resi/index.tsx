@@ -32,7 +32,6 @@ export default function UpdateResi() {
     const [isCekNota, setIsCekNota] = useState<Boolean>(false);
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
     const [isError, setIsError] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState<Boolean>(false);
     const [searchFilter, setSearchFilter] = useState('');
     const [buttonDisabled, setButtonDisabled] = useState(false);
     const [cekNota, setCekNota] = useState<string>('')
@@ -41,16 +40,11 @@ export default function UpdateResi() {
     const [isAdmin, setIsAdmin] = useState<Boolean>(false);
     const [isKerusakan, setIsKerusakan] = useState<string>("")
     const [isNoHpUser, setIsNoHpUser] = useState<string>("");
-    const [isTanggalSelected, setIsTanggalSelected] = useState<Boolean>(false);
-    const [isTanggalMasuk, setIsTanggalMasuk] = useState<Boolean>(false);
-    const [tanggalDipilih, setTanggalDipilih] = useState<string>('');
     const [teknisiSelected, setTeknisiSelected] = useState('');
     const [penerimaSelected, setPenerimaSelected] = useState('');
     const [statusSelected, setStatusSelected] = useState('');
     const [tglMskAwal, setTglMskAwal] = useState<string>('');
     const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
-    const [tglKluarAwal, setTglKluarAwal] = useState<string>('');
-    const [tglKluarAkhir, setTglKluarAkhir] = useState<string>('');
     const fakeKey = 1;
     
     const IbnuController = (e:string) => {
@@ -208,21 +202,6 @@ export default function UpdateResi() {
                 });
         }
     };
-    const handlOnChangeTanggalFilter = (e:any) => {
-        const value:string = e.target.value;
-        setTanggalDipilih(value);
-        if(value === 'tanggalMasuk'){
-                setIsTanggalSelected(true);
-                setIsTanggalMasuk(true);
-        }else if(value === 'tanggalKeluar'){
-                setIsTanggalSelected(true);
-                setIsTanggalMasuk(false);
-        }else if(value === 'semua'){
-            return setIsTanggalSelected(false);
-        }else {
-            return setIsTanggalSelected(false)
-        }
-    };
     const TanggalMasukComponent = () => {
         return (
         <Splitter2>
@@ -235,21 +214,6 @@ export default function UpdateResi() {
             </Label> 
         </Splitter2>
         )
-    };
-    const TanggalKeluarComponent = () => {
-        return (
-        <div>
-            <Label> Tanggal Awal
-                <Input type="date" value={tglKluarAwal} onChange={(e) => {setTglKluarAwal(e.target.value)}}/>
-            </Label> 
-            <Label> Tanggal Akhir
-                <Input type="date" value={tglKluarAkhir} onChange={(e) => {setTglKluarAkhir(e.target.value)}}/>
-            </Label> 
-        </div>
-        )
-    };
-    const closePopUpModalFilter = () => {
-        setIsModalOpen(false);
     };
     const fetchData = () => {
         setTimeout(() => {
@@ -282,60 +246,44 @@ export default function UpdateResi() {
         setIsloading(true)
         setRecentServiceData([]);
         setTimeout(() => {
-            closePopUpModalFilter();
             const DB = ref(getDatabase());
                 get(child(DB, `Service/sandboxDS`))
                 .then(async (ss) => {
                     const dataSS = ss.val() || {};
                     const Array:DataRes[] = Object.values(dataSS);
-                    if(tanggalDipilih === 'tanggalMasuk'){
-                    const filterData = Array.filter(items => {
-                        const masukAwal = tglMskAwal ? new Date(tglMskAwal).setHours(0, 0, 0, 0) : null;
-                        const masukAkhir = tglMskAkhir ? new Date(tglMskAkhir).setHours(23, 59, 59, 999) : null;
-                        const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
-                        const isTanggalMasukValid = (!masukAwal || tglMasuk >= masukAwal) && (!masukAkhir || tglMasuk <= masukAkhir);
-                        const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                        const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                        const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                        return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
-                    });
-                    const sorterData = filterData.sort((a, b) => {
-                        const dateA:any = new Date(a.TglMasuk);
-                        const dateB:any = new Date(b.TglMasuk);
-                        return dateA - dateB;
-                    })
-                    setRecentServiceData(sorterData);
-                }else if(tanggalDipilih === 'tanggalKeluar'){
-                const filterData = Array.filter(items => {
-                    const keluarAwal = tglMskAwal ? new Date(tglMskAwal).setHours(0, 0, 0, 0) : null;
-                    const keluarAkhir = tglMskAkhir ? new Date(tglMskAkhir).setHours(23, 59, 59, 999) : null;
-                    const tglKeluar = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
-                    const isTanggalKeluarValid = (!keluarAwal || tglKeluar >= keluarAwal) && (!keluarAkhir || tglKeluar <= keluarAkhir);
-                    const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                    const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                    const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                    return isTanggalKeluarValid && isTeknisiValid && isPenerimaValid && isStatusValid;
-                });
-                const sorterData = filterData.sort((a, b) => {
-                    const dateA:any = new Date(a.TglMasuk);
-                    const dateB:any = new Date(b.TglMasuk);
-                    return dateA - dateB;
-                })
-                setRecentServiceData(sorterData);
-                }else{
-                    const filterData = Array.filter(items => {
-                    const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                    const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                    const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                    return isTeknisiValid && isPenerimaValid && isStatusValid;
-                });
-                const sorterData = filterData.sort((a, b) => {
-                    const dateA:any = new Date(a.TglMasuk);
-                    const dateB:any = new Date(b.TglMasuk);
-                    return dateB - dateA;
-                })
-                setRecentServiceData(sorterData);
-                }
+                    if (tglMskAwal && tglMskAkhir) {
+                        const filterData = Array.filter(items => {
+                            const masukAwal = new Date(tglMskAwal).setHours(0, 0, 0, 0);
+                            const masukAkhir = new Date(tglMskAkhir).setHours(23, 59, 59, 999);
+                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
+                            const isTanggalMasukValid = tglMasuk >= masukAwal && tglMasuk <= masukAkhir;
+                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                        });
+                        const sorterData = filterData.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateA - dateB;
+                        });
+                        setRecentServiceData(sorterData);
+                    } else {
+                        const filterData = Array.filter(items => {
+                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
+                            const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
+                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                        });
+                        const sorterData = filterData.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateA - dateB;
+                        });
+                        setRecentServiceData(sorterData);
+                    }                    
                 setIsloading(false);
                 }).catch((error) => {
                     console.error(error)
@@ -658,106 +606,11 @@ export default function UpdateResi() {
                 </>}
                 </>
                 )}
-            </WrapperContent>
-            
-            {/* Modal Section*/}
-                {isModalOpen ? 
-                <WrapperContent>
-                    <Modal isOpen={isModalOpen} onClose={closePopUpModalFilter}>
-                    <h1>Filter Data</h1>
-                        <div>
-                            <LabelModal> Filter Tanggal
-                                <SelectModal value={tanggalDipilih} onChange={handlOnChangeTanggalFilter}>
-                                    <option value="semua">Semua</option>
-                                    <option value="tanggalMasuk">Tanggal Masuk</option>
-                                    <option value="tanggalKeluar">Tanggal Keluar</option>
-                                </SelectModal>
-                            </LabelModal>
-                        </div>
-                        {isTanggalSelected ? 
-                        <>
-                         {isTanggalMasuk ? <TanggalMasukComponent /> : <TanggalKeluarComponent />}
-                        </> : null}
-                        <div>
-                            <LabelModal>Teknisi:
-                                <SelectModal value={teknisiSelected} onChange={(e) => {setTeknisiSelected(e.target.value)}}>
-                                    <option value="">Semua</option>
-                                    <option value="amri">Amri</option>
-                                    <option value="ibnu">Ibnu</option>
-                                    <option value="rafi">Rafi</option>
-                                </SelectModal>
-                            </LabelModal>
-                        </div>
-                        <div>
-                            <LabelModal>Penerima:
-                                <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
-                                    <option value="">Semua</option>
-                                    <option value="reni">Reni</option>
-                                    <option value="sindi">Sindi</option>
-                                    <option value="tiara">Tiara</option>
-                                    <option value="vina">Vina</option>
-                                    <option value="yuniska">Yuniska</option>
-                                </SelectModal>
-                            </LabelModal>
-                        </div>
-                        <div>
-                            <LabelModal>Status:
-                                <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
-                                    <option value="">Semua</option>
-                                    <option value="cancel">Cancel</option>
-                                    <option value="process">Process</option>
-                                    <option value="sudah diambil">Sudah Diambil</option>
-                                </SelectModal>
-                            </LabelModal>
-                        </div>
-
-                        <ButtonGroup>
-                            <Button onClick={closePopUpModalFilter}>Tutup</Button>
-                            <Button onClick={filteredData}>Filter Data</Button>
-                        </ButtonGroup>
-                    </Modal>
-                </WrapperContent> 
-                : 
-                <>
-                </>}
-                
-            </>}
+            </WrapperContent>             
+        </>}
         </Wrapper>
     );
 }
-
-const Modal = ({isOpen, children}:any) => {
-    if(!isOpen) return null;
-
-    return (
-        <WrapperModal>
-            <WrapperModalContent>
-                {children}
-            </WrapperModalContent>
-        </WrapperModal>
-    );
-};
-
-const WrapperModal = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    z-index: 999;
-`;
-
-const WrapperModalContent = styled.div`
-    background-color: rgb(var(--cardBackground));
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
-`;
-
 const SearchWrapper = styled.div`
 display: flex;
 padding: 2rem;

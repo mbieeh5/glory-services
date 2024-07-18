@@ -2,10 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
-import NextLink from 'next/link';
 import BasicSection2 from "components/BasicSection2";
 import Cookies from "js-cookie";
 import { getAuth } from "firebase/auth";
+import Button from "components/Button";
 interface DataRes {
     NoNota: string;
     NamaUser: string;
@@ -26,7 +26,12 @@ export default function Admin() {
     const [DataResi, setDataResi] = useState<DataRes[]>([]);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isFinish, setIsFinish] = useState<string>('null')
+    const [isFinish, setIsFinish] = useState<string>('null');
+    const [teknisiSelected, setTeknisiSelected] = useState('');
+    const [penerimaSelected, setPenerimaSelected] = useState('');
+    const [statusSelected, setStatusSelected] = useState('');
+    const [tglMskAwal, setTglMskAwal] = useState<string>('');
+    const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
 
     const dateFormater = (date:string) => {
         const TglObj = new Date(date);
@@ -42,6 +47,20 @@ export default function Admin() {
             return 'Belum Di Ambil'
         }
     }
+
+    const TanggalMasukComponent = () => {
+        return (
+        <Splitter2>
+            <Label> Tanggal Awal
+                <Input type="date" value={tglMskAwal} onChange={(e) => {setTglMskAwal(e.target.value)}}/>
+            </Label>
+            <br />
+            <Label> Tanggal Akhir
+                <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
+            </Label> 
+        </Splitter2>
+        )
+    };
 
     const fetchData = () => {
         const authG:any = getAuth();
@@ -90,8 +109,58 @@ export default function Admin() {
             }
         },3000)
 
-    }
+    };
 
+    const filteredData = () => {
+        setIsLoading(true)
+        setDataResi([]);
+        setTimeout(() => {
+            const DB = ref(getDatabase());
+                get(child(DB, `Service/sandboxDS`))
+                .then(async (ss) => {
+                    const dataSS = ss.val() || {};
+                    const Array:DataRes[] = Object.values(dataSS);
+                    if (tglMskAwal && tglMskAkhir) {
+                        const filterData = Array.filter(items => {
+                            const masukAwal = new Date(tglMskAwal).setHours(0, 0, 0, 0);
+                            const masukAkhir = new Date(tglMskAkhir).setHours(23, 59, 59, 999);
+                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
+                            const isTanggalMasukValid = tglMasuk >= masukAwal && tglMasuk <= masukAkhir;
+                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                        });
+                        const sorterData = filterData.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateA - dateB;
+                        });
+                        setDataResi(sorterData);
+                    } else {
+                        const filterData = Array.filter(items => {
+                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
+                            const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
+                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                        });
+                        const sorterData = filterData.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateA - dateB;
+                        });
+                        setDataResi(sorterData);
+                    }                    
+                setIsLoading(false);
+                }).catch((error) => {
+                    console.error(error)
+                    setIsLoading(false);
+                })
+        },1500)
+    };
+    
     useEffect(() => {
     const Auth:any = Cookies.get('_IDs')
         if(!Auth){
@@ -104,19 +173,6 @@ export default function Admin() {
 
     return(
         <MainWrapper>
-            <WrapperAtas>
-                    <NextLink href="/input-data" passHref>
-                        <Hrefing >Input Data Service</Hrefing>
-                    </NextLink>
-                    <NextLink href="/update-resi" passHref>
-                        <Hrefing >Update Data Service</Hrefing>
-                    </NextLink>
-                    <NextLink href='/settings' passHref>
-                        <Hrefing>Pengaturan</Hrefing>
-                    </NextLink>
-            </WrapperAtas>
-        <Divider />
-
         <>
             {isLoading ? 
             <>
@@ -128,8 +184,55 @@ export default function Admin() {
             </> : <>
             {isAdmin ? 
             <>
+                <Wrapper>
+                        <Search>
+                                <Splitter>
+                                    <div>
+                                        <LabelModal>Penerima:
+                                            <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
+                                                <option value="">Semua</option>
+                                                <option value="reni">Reni</option>
+                                                <option value="sindi">Sindi</option>
+                                                <option value="tiara">Tiara</option>
+                                                <option value="vina">Vina</option>
+                                                <option value="yuniska">Yuniska</option>
+                                            </SelectModal>
+                                        </LabelModal>
+                                    </div>
+                                    <div>
+                                        <LabelModal>Teknisi:
+                                            <SelectModal value={teknisiSelected} onChange={(e) => {setTeknisiSelected(e.target.value)}}>
+                                                <option value="">Semua</option>
+                                                <option value="amri">Amri</option>
+                                                <option value="ibnu">Ibnu</option>
+                                                <option value="rafi">Rafi</option>
+                                            </SelectModal>
+                                        </LabelModal>
+                                    </div>
+                                </Splitter>
+                                <Splitter>
+                                    <div>
+                                        <LabelModal>Status:
+                                            <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
+                                                <option value="">Semua</option>
+                                                <option value="cancel">Cancel</option>
+                                                <option value="process">Process</option>
+                                                <option value="sudah diambil">Sudah Diambil</option>
+                                            </SelectModal>
+                                        </LabelModal>
+                                    </div>
+                                </Splitter>
+                                <Splitter2>
+                                    <TanggalMasukComponent />
+                                </Splitter2>
+                                <ButtonWrapper>
+                                    <Button onClick={() => {filteredData()}}>Filter Data</Button>
+                                </ButtonWrapper>
+                        </Search>
+                </Wrapper>
             <BasicSection2 title="Data Service">
                     <Wrapper>
+                        <p>Total Data : {DataResi.length}</p>
                         <Table>
                             <thead>
                                 <TableRow>
@@ -231,38 +334,6 @@ const MainWrapper = styled.div`
 margin-top: 3rem;
 `
 
-
-const Hrefing = styled.a`
-  display: inline-block;
-  padding: 1rem 2rem;
-  margin: 2rem;
-  font-size: 1.5rem;
-  color: #fff;
-  background-color: #007bff;
-  text-decoration: none;
-  border-radius: 12px;
-  transition: background-color 0.3s, color 0.3s, transform 0.3s;
-  text-align: center;
-
-  &:hover {
-    background-color: #0056b3;
-    color: #e0e0e0;
-    transform: translateY(-3px);
-  }
-
-  &:active {
-    background-color: #004085;
-    color: #d0d0d0;
-    transform: translateY(-1px);
-  }
-`;
-
-const WrapperAtas = styled.div`
-display: absolute;
-text-align: center;
-
-`
-
 const Wrapper = styled.div`
 overflow-x: auto;
 align-items: center;
@@ -328,9 +399,78 @@ const Spinner = styled.div`
   animation: ${spin} 2s linear infinite;
 `;
 
-const Divider = styled.div`
-    width: 100%;
-    height: 1px;
-    background-color: rgb(var(--text));
-    margin-top: 1rem;
+const Splitter2 = styled.div` 
+    display: flex;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    @media (max-width: 512px) {
+        flex-direction: row;
+    }
+`
+
+const Search = styled.div`
+
+`
+const Splitter = styled.div` 
+    display: flex;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    @media (max-width: 512px) {
+        flex-direction: column;
+    }
+`
+
+const LabelModal = styled.label`
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
 `;
+
+const SelectModal = styled.select`
+width: 15rem;
+background: rgb(var(--inputBackground));
+color: rgb(var(--text));
+text-align: center;
+border-radius: 12px;
+border: none;
+padding-top: 1rem;
+`
+
+const Input = styled.input`
+  border: 1px solid rgb(var(--inputBackground));
+  background: rgb(var(--inputBackground));
+  color: rgb(var(--text));
+  border-radius: 0.6rem;
+  max-width: 25rem;
+  max-height: 2rem;
+  text-align: center;
+  font-size: 1.6rem;
+  padding: 1.8rem;
+  box-shadow: var(--shadow-md);
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--shadow-lg);
+  }
+`;
+const Label = styled.label`
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+`;
+
+const ButtonWrapper = styled.div`
+display: flex;
+align-items:center;
+justify-content: center;
+`
