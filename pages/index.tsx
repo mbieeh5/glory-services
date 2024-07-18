@@ -4,7 +4,6 @@ import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import NextLink from 'next/link';
 import BasicSection2 from "components/BasicSection2";
-import Button from "components/Button";
 import Cookies from "js-cookie";
 import { getAuth } from "firebase/auth";
 interface DataRes {
@@ -25,18 +24,9 @@ interface DataRes {
 export default function Admin() { 
 
     const [DataResi, setDataResi] = useState<DataRes[]>([]);
-    const [startIndex, setStartIndex] = useState(0);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isFinish, setIsFinish] = useState<string>('null')
-    
-    const loadNextFiveItems = () => {
-        setStartIndex(prevIndex => prevIndex + 5);
-    };
-    
-    const loadPreviousFiveItems = () => {
-        setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
-    };
 
     const dateFormater = (date:string) => {
         const TglObj = new Date(date);
@@ -85,22 +75,11 @@ export default function Admin() {
                 get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                     const Data = datas.val() || {};
                     const Array:DataRes[] = Object.values(Data);
-                    const today = new Date().toDateString();
-                    const filteredArray = Array.filter(item => new Date(item.TglMasuk).toDateString() === today);
-                    const sortedArray = filteredArray.sort((a, b) => {
+                    const sortedArray = Array.sort((a, b) => {
                         const dateA:any = new Date(a.TglMasuk);
                         const dateB:any = new Date(b.TglMasuk);
-                        return dateA - dateB;
+                        return dateB - dateA;
                     })
-                    /*const sortedArray = Array.sort((a, b) => {
-                     const today = new Date();
-                     const dateA = new Date(a.TglMasuk);   
-                     const dateB = new Date(b.TglMasuk);
-                     const diffA = Math.abs(today.getTime() - dateA.getTime());   
-                     const diffB = Math.abs(today.getTime() - dateB.getTime()); 
-                     return diffA - diffB
-                    })*/
-
                     return setDataResi(sortedArray);
                 }).catch((err) => {
                     console.error(err);
@@ -149,7 +128,7 @@ export default function Admin() {
             </> : <>
             {isAdmin ? 
             <>
-            <BasicSection2 title="Data Service Hari ini">
+            <BasicSection2 title="Data Service">
                     <Wrapper>
                         <Table>
                             <thead>
@@ -168,7 +147,7 @@ export default function Admin() {
                                     <TableHeader>Status</TableHeader>
                                 </TableRow>
                              </thead>
-                        {DataResi.slice(startIndex, startIndex + 5).map((a, i) => {
+                        {DataResi.map((a, i) => {
                             const ConvertNumber = (noHP:string) => {
                                 if(noHP.startsWith('0')){
                                     return '62' + noHP.slice(1);
@@ -198,8 +177,6 @@ export default function Admin() {
                             })}
                     </Table>
             </Wrapper>
-                    <Buttons2 onClick={loadPreviousFiveItems}>Sebelumnya</Buttons2>
-                    <Buttons2 onClick={loadNextFiveItems}>Selanjutnya</Buttons2>
             </BasicSection2>
             </> : 
             <>
@@ -222,7 +199,7 @@ export default function Admin() {
                                         <TableHeader>Status</TableHeader>
                                     </TableRow>
                                 </thead>
-                            {DataResi.slice(startIndex, startIndex + 5).map((a, i) => (
+                            {DataResi.map((a, i) => (
                                     <tbody key={i}>
                                         <TableRow>
                                             <TableData>{a.NoNota}</TableData>
@@ -241,8 +218,6 @@ export default function Admin() {
                             ))}
                         </Table>
                 </Wrapper>
-                        <Buttons2 onClick={loadPreviousFiveItems}>Sebelumnya</Buttons2>
-                        <Buttons2 onClick={loadNextFiveItems}>Selanjutnya</Buttons2>
                 </BasicSection2>
             </MainWrapper>
             </>}
@@ -321,15 +296,6 @@ const TableHeader = styled.th`
   const TableDataA = styled.a`
   color: rgb(var(--text));
   `
-
-const Buttons2 = styled(Button)`
-padding: 1rem;
-margin-top: 2rem;
-width: 15rem;
-height: 7rem;
-margin-left: 2rem;
-font-size: 100%;
-`
 
 
 const spin = keyframes`

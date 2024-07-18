@@ -18,8 +18,8 @@ export default function Laporan() {
 
     return(
         <>
-                        <BasicSection2 title="">
-                                    <TableWrapper>
+            <BasicSection2 title="">
+                        <TableWrapper>
                                         <div>Total Service Total : {recentServiceData.length}</div>
                                         <Table>
                                             <thead>
@@ -43,7 +43,7 @@ export default function Laporan() {
                                 const formatDate = (dateString:any) => {
                                     const date = new Date(dateString);
                                     const day = String(date.getDate()).padStart(2, '0');
-                                    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
                                     const year = date.getFullYear();
                                     const hours = String(date.getHours()).padStart(2, '0');
                                     const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -74,7 +74,7 @@ export default function Laporan() {
                         </TableWrapper>
                             <Buttons2 onClick={loadPreviousFiveItems}>Previous</Buttons2>
                             <Buttons2 onClick={loadNextFiveItems}>Next</Buttons2>
-                        </BasicSection2>
+             </BasicSection2>
         </>
     )
 }

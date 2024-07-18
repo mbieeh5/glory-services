@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
-import { faPen, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { getAuth } from "firebase/auth";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ButtonGroup from "components/ButtonGroup";
 
 interface DataRes {
@@ -38,7 +36,6 @@ export default function UpdateResi() {
     const [searchFilter, setSearchFilter] = useState('');
     const [buttonDisabled, setButtonDisabled] = useState(false);
     const [cekNota, setCekNota] = useState<string>('')
-    const [startIndex, setStartIndex] = useState(0);
     const [isIbnu, setIsIbnu] = useState<Boolean>(false);
     const [isTeknisiUpdate, setIsTeknisiUpdate] = useState<string>("")
     const [isAdmin, setIsAdmin] = useState<Boolean>(false);
@@ -64,12 +61,6 @@ export default function UpdateResi() {
             setIsIbnu(false)
         }
         return setIsTeknisiUpdate(e);
-    };
-    const loadNextFiveItems = () => {
-        setStartIndex(prevIndex => prevIndex + 5);
-    };
-    const loadPreviousFiveItems = () => {
-        setStartIndex(prevIndex => Math.max(0, prevIndex - 5));
     };
     const isSearchService = () => {
         setIsSearch(true)
@@ -217,13 +208,6 @@ export default function UpdateResi() {
                 });
         }
     };
-    const refreshItem = () => {
-        setIsloading(true);
-        return fetchData();
-    };
-    const popUpModalFilter = () => {
-        setIsModalOpen(true);
-    };
     const handlOnChangeTanggalFilter = (e:any) => {
         const value:string = e.target.value;
         setTanggalDipilih(value);
@@ -241,14 +225,15 @@ export default function UpdateResi() {
     };
     const TanggalMasukComponent = () => {
         return (
-        <div>
+        <Splitter2>
             <Label> Tanggal Awal
                 <Input type="date" value={tglMskAwal} onChange={(e) => {setTglMskAwal(e.target.value)}}/>
-            </Label> 
+            </Label>
+            <br />
             <Label> Tanggal Akhir
                 <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
             </Label> 
-        </div>
+        </Splitter2>
         )
     };
     const TanggalKeluarComponent = () => {
@@ -520,11 +505,51 @@ export default function UpdateResi() {
                                     <Search>
                                         <Input placeholder="Masukan Kata Kunci" onChange={(e) => setSearchFilter(e.target.value)} />
                                             <ButtonSearch onClick={() => handleSearchFilter1(searchFilter)}>Cari</ButtonSearch>
+                                        <Search>
+                                                <Splitter>
+                                                <div>
+                                                    <LabelModal>Penerima:
+                                                        <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
+                                                            <option value="">Semua</option>
+                                                            <option value="reni">Reni</option>
+                                                            <option value="sindi">Sindi</option>
+                                                            <option value="tiara">Tiara</option>
+                                                            <option value="vina">Vina</option>
+                                                            <option value="yuniska">Yuniska</option>
+                                                        </SelectModal>
+                                                    </LabelModal>
+                                                </div>
+                                                <div>
+                                                    <LabelModal>Teknisi:
+                                                        <SelectModal value={teknisiSelected} onChange={(e) => {setTeknisiSelected(e.target.value)}}>
+                                                            <option value="">Semua</option>
+                                                            <option value="amri">Amri</option>
+                                                            <option value="ibnu">Ibnu</option>
+                                                            <option value="rafi">Rafi</option>
+                                                        </SelectModal>
+                                                    </LabelModal>
+                                                </div>
+                                                </Splitter>
+                                                <Splitter>
+                                                <div>
+                                                    <LabelModal>Status:
+                                                        <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
+                                                            <option value="">Semua</option>
+                                                            <option value="cancel">Cancel</option>
+                                                            <option value="process">Process</option>
+                                                            <option value="sudah diambil">Sudah Diambil</option>
+                                                        </SelectModal>
+                                                    </LabelModal>
+                                                </div>
+                                                </Splitter>
+                                                <Splitter2>
+                                                    <TanggalMasukComponent />
+                                                </Splitter2>
+                        <ButtonGroup>
+                            <Button onClick={filteredData}>Filter Data</Button>
+                        </ButtonGroup>
+                                        </Search>
                                     </Search>
-                                            <ButtonGroup>
-                                                    <ButtonFilter onClick={() => popUpModalFilter()}><FontAwesomeIcon icon={faPen}/></ButtonFilter>
-                                                    <ButtonFilter onClick={() => refreshItem()}><FontAwesomeIcon icon={faRedo}/></ButtonFilter>
-                                            </ButtonGroup>
                                 </SearchWrapper>
                             </FilterWrapper>
                                     <TableWrapper>
@@ -547,7 +572,7 @@ export default function UpdateResi() {
                                                 <TableHeader>Status</TableHeader>
                                             </TableRow>
                                             </thead>
-                            {recentServiceData.slice(startIndex, startIndex + 5).map((a, i) => {
+                            {recentServiceData.map((a, i) => {
                                 const formatDate = (dateString:any) => {
                                     const date = new Date(dateString);
                                     const day = String(date.getDate()).padStart(2, '0');
@@ -580,8 +605,6 @@ export default function UpdateResi() {
                             })}
                             </Table>
                         </TableWrapper>
-                            <Buttons2 onClick={loadPreviousFiveItems}>Previous</Buttons2>
-                            <Buttons2 onClick={loadNextFiveItems}>Next</Buttons2>
                         </BasicSection2>
                     )}
                 </> : 
@@ -793,15 +816,6 @@ flex-direction: column;
 padding: 1rem;
 `
 
-const Buttons2 = styled(Button)`
-padding: 1rem;
-margin-top: 2rem;
-width: 15rem;
-height: 7rem;
-margin-left: 2rem;
-font-size: 100%;
-`
-
 const WrapperContent = styled.div`
 padding-top: 5rem;
 display: absolute;
@@ -888,6 +902,18 @@ const Splitter = styled.div`
     }
 `
 
+const Splitter2 = styled.div` 
+    display: flex;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    @media (max-width: 512px) {
+        flex-direction: row;
+    }
+`
+
 const Label = styled.label`
     display: flex;
     flex-direction: column;
@@ -930,15 +956,6 @@ const FilterWrapper = styled.div`
 
 const Search = styled.div`
 
-`
-const ButtonFilter = styled.button`
-background: rgb(var(--inputBackground));
-color: rgb(var(--text));
-padding: 1rem;
-border: none;
-box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-border-radius: 12px;
-margin-left: 12px;
 `
 
 

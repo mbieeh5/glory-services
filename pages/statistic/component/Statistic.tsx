@@ -19,7 +19,8 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const target = formData.get('target')?.toString() || '';
-        if(target === ''){
+        const targetNum:number = parseInt(target) || 0;
+        if(target === '' || targetNum <= 0){
             setIsError(true);
             setIsErrorText('Silahkan Masukan Jumlah Target');
             return
@@ -53,7 +54,7 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                                 <FormCard>
                                 <Wrapper>
                                     {isError && <TextError>{isErrorText}</TextError>}
-                                    <Text2>Target Minimum Saat ini <Text1>{25}unit</Text1></Text2>
+                                    <Text2>Target Minimum Saat ini <Text1>{Target}unit</Text1></Text2>
                                 </Wrapper>
                                         <Label> Ubah Target :
                                             <Input placeholder="Masukan Jumlah Target" type="number" name="target" onChange={(e) => {handleOnChange(e.target.value)}} required/>

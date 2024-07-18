@@ -5,7 +5,6 @@ import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { AppProps } from 'next/dist/shared/lib/router/router';
-import Head from 'next/head';
 import { ColorModeScript } from 'nextjs-color-mode';
 import React, { useEffect, useState } from 'react';
 import Cookie from "js-cookie";
@@ -31,12 +30,6 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <>
-      <Head>
-        <title>Glory Services</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="icon" type="image/png" href="/Logo-GC.png" />
-      </Head>
       <LoginProvider>
         <ColorModeScript />
         <GlobalStyle />
