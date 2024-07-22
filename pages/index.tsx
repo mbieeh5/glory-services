@@ -93,7 +93,12 @@ export default function Admin() {
                 const DB = ref(getDatabase());
                 get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                     const Data = datas.val() || {};
-                    const Array:DataRes[] = Object.values(Data);
+                    const Array:DataRes[] = Object.values(Data).map((item: any) => {
+                        if(item.status === 'sudah diambil'){
+                            item.status = 'sukses'
+                        }
+                        return item;
+                    });
                     const sortedArray = Array.sort((a, b) => {
                         const dateA:any = new Date(a.TglMasuk);
                         const dateB:any = new Date(b.TglMasuk);
@@ -136,7 +141,13 @@ export default function Admin() {
                             const dateB:any = new Date(b.TglMasuk);
                             return dateA - dateB;
                         });
-                        setDataResi(sorterData);
+                        const converter = sorterData.map((item:any) => {
+                            if(item.status === 'sudah diambil'){
+                                item.status = 'sukses';
+                            }
+                            return item
+                        });
+                        setDataResi(converter);
                     } else {
                         const filterData = Array.filter(items => {
                             const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
@@ -151,7 +162,13 @@ export default function Admin() {
                             const dateB:any = new Date(b.TglMasuk);
                             return dateA - dateB;
                         });
-                        setDataResi(sorterData);
+                        const converter = sorterData.map((item:any) => {
+                            if(item.status === 'sudah diambil'){
+                                item.status = 'sukses';
+                            }
+                            return item
+                        });
+                        setDataResi(converter);
                     }                    
                 setIsLoading(false);
                 }).catch((error) => {
@@ -209,21 +226,19 @@ export default function Admin() {
                                             </SelectModal>
                                         </LabelModal>
                                     </div>
-                                </Splitter>
-                                <Splitter>
                                     <div>
                                         <LabelModal>Status:
                                             <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
                                                 <option value="">Semua</option>
                                                 <option value="cancel">Cancel</option>
                                                 <option value="process">Process</option>
-                                                <option value="sudah diambil">Sudah Diambil</option>
+                                                <option value="sudah diambil">Sukses</option>
                                             </SelectModal>
                                         </LabelModal>
                                     </div>
                                 </Splitter>
-                                <Splitter2>
                                     <TanggalMasukComponent />
+                                <Splitter2>
                                 </Splitter2>
                                 <ButtonWrapper>
                                     <Button onClick={() => {filteredData()}}>Filter Data</Button>
@@ -235,7 +250,7 @@ export default function Admin() {
                         <p>Total Data : {DataResi.length}</p>
                         <Table>
                             <thead>
-                                <TableRow>
+                                <tr>
                                     <TableHeader>No Nota</TableHeader>
                                     <TableHeader>Nama user</TableHeader>
                                     <TableHeader>Nomor HP User</TableHeader>
@@ -248,7 +263,7 @@ export default function Admin() {
                                     <TableHeader>Lokasi</TableHeader>
                                     <TableHeader>Teknisi</TableHeader>
                                     <TableHeader>Status</TableHeader>
-                                </TableRow>
+                                </tr>
                              </thead>
                         {DataResi.map((a, i) => {
                             const ConvertNumber = (noHP:string) => {
@@ -261,7 +276,7 @@ export default function Admin() {
 
                             return(
                                 <tbody key={i}>
-                                    <TableRow>
+                                    <TableRow status={a.status}>
                                         <TableData>{a.NoNota}</TableData>
                                         <TableData>{a.NamaUser}</TableData>
                                         <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
@@ -288,7 +303,7 @@ export default function Admin() {
                         <Wrapper>
                             <Table>
                                 <thead>
-                                    <TableRow>
+                                    <tr>
                                         <TableHeader>No Nota</TableHeader>
                                         <TableHeader>Nama user</TableHeader>
                                         <TableHeader>Nomor HP User</TableHeader>
@@ -300,7 +315,7 @@ export default function Admin() {
                                         <TableHeader>Estimasi Harga</TableHeader>
                                         <TableHeader>Teknisi</TableHeader>
                                         <TableHeader>Status</TableHeader>
-                                    </TableRow>
+                                    </tr>
                                 </thead>
                             {DataResi.map((a, i) => {
                                 const ConvertNumber = (noHP:string) => {
@@ -312,7 +327,7 @@ export default function Admin() {
                                 const noHpConverter = ConvertNumber(a.NoHpUser);
                                     return (
                                     <tbody key={i}>
-                                        <TableRow>
+                                        <TableRow status={a.status}>
                                             <TableData>{a.NoNota}</TableData>
                                             <TableData>{a.NamaUser}</TableData>
                                             <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
@@ -354,27 +369,34 @@ const Table = styled.table`
   border-collapse: collapse;
 `;
 
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f2f2f2;
-  }
+const TableRow = styled.tr<{status : string}>`
+    background-color: ${props => {
+        switch (props.status) {
+            case 'sukses':
+                return 'green';
+            case 'cancel': 
+                return 'red';
+            default:
+                return 'yellow';
+        }
+    }};
 `;
 
 const TableHeader = styled.th`
   padding: 12px;
   text-align: left;
-  background-color: #4caf50;
-  color: rgb(0,0,0);
+  background-color: blue;
+  color: rgb(var(--textSecondary));
   `;
   
   const TableData = styled.td`
   padding: 12px;
   border-bottom: 1px solid #ddd;
-  color: rgb(var(--text));
+  color: black;
 `;
   
   const TableDataA = styled.a`
-  color: rgb(var(--text));
+  color: black;
   `
 
 
@@ -438,9 +460,9 @@ const Splitter = styled.div`
 const LabelModal = styled.label`
     display: flex;
     flex-direction: column;
-    padding: 1rem;
     margin-bottom: 1rem;
     align-items: center;
+    text-align: center;'
 `;
 
 const SelectModal = styled.select`

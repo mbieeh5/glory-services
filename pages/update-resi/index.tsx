@@ -504,7 +504,7 @@ export default function UpdateResi() {
                                         <div>Total Service Total : {recentServiceData.length}</div>
                                         <Table>
                                             <thead>
-                                            <TableRow>
+                                            <tr>
                                                 <TableHeader>No Nota</TableHeader>
                                                 <TableHeader>Nama user</TableHeader>
                                                 <TableHeader>Nomor HP User</TableHeader>
@@ -518,7 +518,7 @@ export default function UpdateResi() {
                                                 <TableHeader>Lokasi</TableHeader>
                                                 <TableHeader>Teknisi</TableHeader>
                                                 <TableHeader>Status</TableHeader>
-                                            </TableRow>
+                                            </tr>
                                             </thead>
                             {recentServiceData.map((a, i) => {
                                 const formatDate = (dateString:any) => {
@@ -533,7 +533,7 @@ export default function UpdateResi() {
                                 }
                                 return (
                                         <tbody key={i}>
-                                            <TableRow>
+                                            <TableRow status={a.status}>
                                                 <TableData>{a.NoNota}</TableData>
                                                 <TableData>{a.NamaUser}</TableData>
                                                 <TableData>{a.NoHpUser}</TableData>
@@ -694,10 +694,18 @@ max-width: 80%;
   table-layout: auto;
 `;
 
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f2f2f2;
-  }
+const TableRow = styled.tr<{status : string}>`
+background-color: ${props => {
+    switch (props.status){
+        case 'sudah diambil':
+            return 'green';
+        case 'cancel' :
+            return 'red';
+        default :
+            return 'yellow';
+    }
+}};
+color: white;
 `;
 
 const TableHeader = styled.th`

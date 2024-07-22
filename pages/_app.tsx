@@ -63,7 +63,7 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
         .then((userCredential) => {
           const user = userCredential.user;
           const accessToken = user.uid;
-          Cookie.set('_IDs', accessToken, { expires: 1 });
+          Cookie.set('_IDs', accessToken, { expires: 30 });
           setIsLoggedIn(true);
         })
         .catch((error) => {
