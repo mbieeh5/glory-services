@@ -15,7 +15,8 @@ interface DataRes {
     MerkHp: string;
     Kerusakan: string;
     Penerima: string;
-    Harga: number;
+    Harga: any;
+    HargaIbnu: any;
     Teknisi: string;
     Lokasi: string;
     status: string;
@@ -258,6 +259,7 @@ export default function Admin() {
                                     <TableHeader>Tanggal Keluar</TableHeader>
                                     <TableHeader>Merk HP</TableHeader>
                                     <TableHeader>Kerusakan</TableHeader>
+                                    <TableHeader>Harga Ibnu</TableHeader>
                                     <TableHeader>Penerima</TableHeader>
                                     <TableHeader>Estimasi Harga</TableHeader>
                                     <TableHeader>Lokasi</TableHeader>
@@ -284,8 +286,9 @@ export default function Admin() {
                                         <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                         <TableData>{a.MerkHp}</TableData>
                                         <TableData>{a.Kerusakan}</TableData>
+                                        <TableData>{a.HargaIbnu ? parseInt(a.HargaIbnu).toLocaleString() : 0}</TableData>
                                         <TableData>{a.Penerima}</TableData>
-                                        <TableData>{a.Harga.toLocaleString()}</TableData>
+                                        <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
                                         <TableData>{a.Lokasi}</TableData>
                                         <TableData>{a.Teknisi || a.status}</TableData>
                                         <TableData>{a.status}</TableData>                                     
