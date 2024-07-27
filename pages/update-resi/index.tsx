@@ -151,7 +151,7 @@ export default function UpdateResi() {
                                     unit: unit,
                                 }
                             }
-                            if(status === 'sudah diambil'){
+                            if(status === 'sudah diambil' && TglKeluar.length > 5){
                                 const pointRef = ref(getDatabase(), `Users/dataPenerima/`);
                                 update(pointRef, pointData)
                             }
