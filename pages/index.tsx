@@ -356,6 +356,7 @@ export default function Admin() {
                                         <TableHeader>Merk HP</TableHeader>
                                         <TableHeader>Kerusakan</TableHeader>
                                         <TableHeader>Penerima</TableHeader>
+                                        <TableHeader>Lokasi</TableHeader>
                                         <TableHeader>Estimasi Harga</TableHeader>
                                         <TableHeader>Teknisi</TableHeader>
                                         <TableHeader>Status</TableHeader>
@@ -380,6 +381,7 @@ export default function Admin() {
                                             <TableData>{a.MerkHp}</TableData>
                                             <TableData>{a.Kerusakan}</TableData>
                                             <TableData>{a.Penerima}</TableData>
+                                            <TableData>{a.Lokasi}</TableData>
                                             <TableData>{a.Harga.toLocaleString()}</TableData>
                                             <TableData>{a.Teknisi || a.status}</TableData>
                                             <TableData>{a.status}</TableData>                                     
