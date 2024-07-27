@@ -33,7 +33,6 @@ export default function UpdateResi() {
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
     const [isError, setIsError] = useState("");
     const [searchFilter, setSearchFilter] = useState('');
-    const [buttonDisabled, setButtonDisabled] = useState(false);
     const [cekNota, setCekNota] = useState<string>('')
     const [isIbnu, setIsIbnu] = useState<Boolean>(false);
     const [isTeknisiUpdate, setIsTeknisiUpdate] = useState<string>("")
@@ -76,12 +75,6 @@ export default function UpdateResi() {
                             setServiceDataToEdit(Array);
                             setIsError("");
                             setRecentServiceData([]);
-                            const statusBool = Data.status;
-                            if(statusBool === 'process'){
-                                setButtonDisabled(false);
-                            }else{
-                                setButtonDisabled(true);
-                            }
                         },1000)
                     }else{
                         setIsloading(true)
@@ -344,13 +337,14 @@ export default function UpdateResi() {
                     <BasicSection2 title="Update Data Service">
                 <Wrapper2>
                     {serviceDataToEdit.map((a) => {
-                        if(a.status === "sudah diambil"){
+                        if(a.status === "sudah diambil" && a.TglKeluar.length > 5){
                                 alert(`Status Service ${a.status} data tidak bisa di ubah!`)
                                 return window.location.reload();
                             }else if(a.status === "cancel") {
                                 alert(`Status Service ${a.status} data tidak bisa di ubah!`)
                                 return window.location.reload();
                             }else {
+
                             return(
                         <FormCard key={fakeKey}>
                         <Form onSubmit={handleSubmit}>
@@ -365,7 +359,7 @@ export default function UpdateResi() {
                             </Label>
                             <Label>
                                 Tanggal Keluar:
-                                <Input type="datetime-local" placeholder="null" name="tanggalKeluar" required/>
+                                <Input type="datetime-local" placeholder="null" name="tanggalKeluar"/>
                             </Label>
                             </Splitter>
                             <Splitter>
@@ -423,8 +417,9 @@ export default function UpdateResi() {
                             <Label>
                             Status:
                                 <Select name='status' required>
-                                <option>cancel</option>
-                                <option>sudah diambil</option>
+                                <option value={'sudah diambil'}>sukses</option>
+                                <option value={'sudah diambil'}>sudah diambil</option>
+                                <option value={'cancel'}>cancel</option>
                                 </Select>
                             </Label>
                             </Splitter>
@@ -432,7 +427,7 @@ export default function UpdateResi() {
                             </Splitter>
                             <Splitter>
                                 <ButtonGroup>
-                                    <Buttons type="submit" disabled={buttonDisabled}>Update</Buttons>
+                                    <Buttons type="submit">Update</Buttons>
                                 </ButtonGroup>
                             </Splitter>
                     </Form>

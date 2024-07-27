@@ -6,6 +6,7 @@ import BasicSection2 from "components/BasicSection2";
 import Cookies from "js-cookie";
 import { getAuth } from "firebase/auth";
 import Button from "components/Button";
+import Link from "next/link";
 interface DataRes {
     NoNota: string;
     NamaUser: string;
@@ -30,6 +31,7 @@ export default function Admin() {
     const [isFinish, setIsFinish] = useState<string>('null');
     const [teknisiSelected, setTeknisiSelected] = useState('');
     const [penerimaSelected, setPenerimaSelected] = useState('');
+    const [lokasiSelected, setLokasiSelected] = useState('');
     const [statusSelected, setStatusSelected] = useState('');
     const [tglMskAwal, setTglMskAwal] = useState<string>('');
     const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
@@ -59,12 +61,14 @@ export default function Admin() {
             <Label> Tanggal Akhir
                 <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
             </Label> 
+            <Button onClick={() => {filteredData()}}>Filter</Button>
         </Splitter2>
         )
     };
 
     const fetchData = () => {
         const authG:any = getAuth();
+        const DB = ref(getDatabase());
         setIsLoading(true);
         setTimeout(() => {
             setIsLoading(false);
@@ -72,7 +76,6 @@ export default function Admin() {
             const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
             if(userRole === 'user'){
                 setIsAdmin(false);
-                const DB = ref(getDatabase());
                 get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                     const Data = datas.val() || {};
                     const Array:DataRes[] = Object.values(Data);
@@ -91,7 +94,6 @@ export default function Admin() {
                 })
             }else if(userRole === 'admin'){
                 setIsAdmin(true);
-                const DB = ref(getDatabase());
                 get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                     const Data = datas.val() || {};
                     const Array:DataRes[] = Object.values(Data).map((item: any) => {
@@ -109,9 +111,32 @@ export default function Admin() {
                 }).catch((err) => {
                     console.error(err);
                 })
-            }else{
+            }else if(userRole === 'mod'){
                 setIsAdmin(false);
-                
+                get(child(DB, "Service/sandboxDS"))
+                .then(async(ss) => {
+                    if(ss.exists()){
+                        const datas = ss.val() || {};
+                        const Array:DataRes[] = Object.values(datas);
+                        const PendingData = Array.filter(items => 
+                            (items.status === 'process' || items.status === 'sudah diambil') && (items.TglKeluar === undefined || items.TglKeluar === 'null')
+                        );
+                        const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
+                        if(PendingData.length > 0){
+                            const sortedData = converter.sort((a, b) => {
+                                const dateA:any = new Date(a.TglMasuk);
+                                const dateB:any = new Date(b.TglMasuk);
+                                return dateB - dateA ;
+                            });
+                            setIsFinish('Yang Belum Selesai')
+                            return setDataResi(sortedData); 
+                        }
+                        else{
+                            return setIsFinish('Mu Sudah Selesai')
+                        }
+
+                    }
+                })
             }
         },3000)
 
@@ -156,18 +181,20 @@ export default function Admin() {
                             const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
                             const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
                             const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                            const isLokasiValid = !lokasiSelected || items.Lokasi?.toLowerCase().includes(lokasiSelected.toLowerCase());
+                            console.log({isLokasiValid, isStatusValid, isPenerimaValid, isTeknisiValid, isTanggalMasukValid});
+                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid && isLokasiValid;
                         });
                         const sorterData = filterData.sort((a, b) => {
                             const dateA:any = new Date(a.TglMasuk);
                             const dateB:any = new Date(b.TglMasuk);
-                            return dateA - dateB;
+                            return dateB - dateA;
                         });
                         const converter = sorterData.map((item:any) => {
                             if(item.status === 'sudah diambil'){
                                 item.status = 'sukses';
                             }
-                            return item
+                            return item;
                         });
                         setDataResi(converter);
                     }                    
@@ -228,6 +255,15 @@ export default function Admin() {
                                         </LabelModal>
                                     </div>
                                     <div>
+                                        <LabelModal> Lokasi:
+                                            <SelectModal value={lokasiSelected} onChange={(e) => {setLokasiSelected(e.target.value)}}>
+                                                <option value="">Semua</option>
+                                                <option value="Cikaret">Cikaret</option>
+                                                <option value="Sukahati">Sukahati</option>
+                                            </SelectModal>
+                                        </LabelModal>
+                                    </div>
+                                    <div>
                                         <LabelModal>Status:
                                             <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
                                                 <option value="">Semua</option>
@@ -242,7 +278,9 @@ export default function Admin() {
                                 <Splitter2>
                                 </Splitter2>
                                 <ButtonWrapper>
-                                    <Button onClick={() => {filteredData()}}>Filter Data</Button>
+                                    <Link href='/statistic'>
+                                        <Button onClick={() => (null)}>Statistic</Button>
+                                    </Link>
                                 </ButtonWrapper>
                         </Search>
                 </Wrapper>
@@ -278,7 +316,7 @@ export default function Admin() {
 
                             return(
                                 <tbody key={i}>
-                                    <TableRow status={a.status}>
+                                    <TableRow status={a.status} tglKeluar={a.TglKeluar}>
                                         <TableData>{a.NoNota}</TableData>
                                         <TableData>{a.NamaUser}</TableData>
                                         <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
@@ -330,7 +368,7 @@ export default function Admin() {
                                 const noHpConverter = ConvertNumber(a.NoHpUser);
                                     return (
                                     <tbody key={i}>
-                                        <TableRow status={a.status}>
+                                        <TableRow status={a.status} tglKeluar={a.TglKeluar}>
                                             <TableData>{a.NoNota}</TableData>
                                             <TableData>{a.NamaUser}</TableData>
                                             <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
@@ -372,17 +410,20 @@ const Table = styled.table`
   border-collapse: collapse;
 `;
 
-const TableRow = styled.tr<{status : string}>`
+const TableRow = styled.tr<{status : string, tglKeluar: string}>`
     background-color: ${props => {
-        switch (props.status) {
+        if (props.status === 'sukses' && (props.tglKeluar === 'null' || props.tglKeluar === '')) {
+            return 'cyan';
+          }
+          switch (props.status) {
             case 'sukses':
-                return 'green';
-            case 'cancel': 
-                return 'red';
+              return 'green';
+            case 'cancel':
+              return 'red';
             default:
-                return 'yellow';
-        }
-    }};
+              return 'yellow';
+          }
+        }};
 `;
 
 const TableHeader = styled.th`

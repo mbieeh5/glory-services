@@ -16,6 +16,7 @@ const footerItems: FooterItems = [
       { title: 'Update Services', href: '/update-resi' },
       { title: 'Pengaturan', href: '/settings' },
       { title: 'Input Services', href: '/input-data' },
+      { title: 'Statistic', href: '/statistic' },
     ],
   }
 ];
