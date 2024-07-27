@@ -80,11 +80,13 @@ export default function Admin() {
                     const Data = datas.val() || {};
                     const Array:DataRes[] = Object.values(Data);
                     const PendingData = Array.filter(item => 
-                        item.status === 'process' && item.Penerima.toLocaleLowerCase() === userName
+                        item.Penerima.toLocaleLowerCase() === userName.toLocaleLowerCase() && 
+                        (item.TglKeluar === 'null' || item.TglKeluar === undefined)                    
                     );
-                        if(PendingData.length > 0){
+                    const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
+                        if(converter.length > 0){
                             setIsFinish('Yang Belum Selesai')
-                            return setDataResi(PendingData); 
+                            return setDataResi(converter); 
                         }
                         else{
                             return setIsFinish('Mu Sudah Selesai')
@@ -119,7 +121,8 @@ export default function Admin() {
                         const datas = ss.val() || {};
                         const Array:DataRes[] = Object.values(datas);
                         const PendingData = Array.filter(items => 
-                            (items.status === 'process' || items.status === 'sudah diambil') && (items.TglKeluar === undefined || items.TglKeluar === 'null')
+                            (items.status === 'process' || items.status === 'sudah diambil') &&
+                             (items.TglKeluar === undefined || items.TglKeluar === 'null')
                         );
                         const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
                         if(PendingData.length > 0){
