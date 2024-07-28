@@ -340,7 +340,7 @@ export default function UpdateResi() {
                         if(a.status === "sudah diambil" && a.TglKeluar.length > 5){
                                 alert(`Status Service ${a.status} data tidak bisa di ubah!`)
                                 return window.location.reload();
-                            }else if(a.status === "cancel") {
+                            }else if(a.status === "cancel" && a.TglKeluar.length > 5) {
                                 alert(`Status Service ${a.status} data tidak bisa di ubah!`)
                                 return window.location.reload();
                             }else {

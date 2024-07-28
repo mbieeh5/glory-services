@@ -121,8 +121,7 @@ export default function Admin() {
                         const datas = ss.val() || {};
                         const Array:DataRes[] = Object.values(datas);
                         const PendingData = Array.filter(items => 
-                            (items.status === 'process' || items.status === 'sudah diambil') &&
-                             (items.TglKeluar === undefined || items.TglKeluar === 'null')
+                            (items.TglKeluar === undefined || items.TglKeluar === 'null')
                         );
                         const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
                         if(PendingData.length > 0){
