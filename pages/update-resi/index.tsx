@@ -102,7 +102,7 @@ export default function UpdateResi() {
         const Penerima = formData.get('penerima')?.toString() || "null";
         const NoHpUser = formData.get('noHpUser')?.toString() || "null";
         const MerkHp = formData.get('merkHp')?.toString() || "null";
-        const Imei = formData.get('Imei')?.toString() || "null"
+        const Imei = formData.get('imei')?.toString() || "null"
         const HargaIbnu = formData.get('hargaIbnu')?.toString() || "0"
         const Kerusakan = formData.get('kerusakan')?.toString() || "null";
         const Lokasi = formData.get('lokasi')?.toString() || "null";
