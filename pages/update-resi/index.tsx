@@ -263,10 +263,16 @@ export default function UpdateResi() {
                                 Kerusakan:
                                 <Input type="text" placeholder="Kerusakannya apa" value={isKerusakan} onChange={(e) => {handleChange(e.target.value)}} name="kerusakan" required/>
                             </Label>
+                            </Splitter>
+                            <Splitter>
                             <Label>
                                 Estimasi Harga:
                                 <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
                             </Label>
+                                <Label>
+                                    Harga Akhir:
+                                    <Input type="number" placeholder="Harga Akhir" name="hargaAkhir" required/>
+                                </Label>
                             </Splitter>
                            {/* 
                             <Splitter>

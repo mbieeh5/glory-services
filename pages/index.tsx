@@ -391,7 +391,8 @@ export default function Admin() {
                                         <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=Halo Kak Dari Glory Cell, mau infokan untuk handphone ${a.MerkHp}, dengan kerusakan ${a.Kerusakan} selesai kak, untuk info lengkapnya ada di invoice ya kak. Terimakasih, 
                                         %0A%0A
                                         https://struk.rraf-project.site/struk?noNota=${a.NoNota}`} 
-                                        target="_blank">{a.NoNota}</TableDataA></TableData>                                            <TableData>{a.NamaUser}</TableData>
+                                        target="_blank">{a.NoNota}</TableDataA></TableData>                                            
+                                            <TableData>{a.NamaUser}</TableData>
                                             <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
                                             <TableData>{dateFormater(a.TglMasuk)}</TableData>
                                             <TableData>{dateFormater(a.TglKeluar)}</TableData>
