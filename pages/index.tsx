@@ -397,6 +397,7 @@ export default function Admin() {
                                             <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                             <TableData>{a.MerkHp}</TableData>
                                             <TableData>{a.Kerusakan}</TableData>
+                                            <TableData>{a.Penerima}</TableData>
                                             <TableData>{a.Lokasi}</TableData>
                                             <TableData>{a.Harga.toLocaleString()}</TableData>
                                             <TableData>{a.Teknisi || a.status}</TableData>
