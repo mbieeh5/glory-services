@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
-import Cookies from "js-cookie";
 import { getAuth } from "firebase/auth";
 import Button from "components/Button";
 import Link from "next/link";
+
 interface DataRes {
     NoNota: string;
     NamaUser: string;
@@ -17,6 +17,10 @@ interface DataRes {
     Kerusakan: string;
     Penerima: string;
     Harga: any;
+    Imei: string;
+    Sparepart: string;
+    TypeOrColor: string;
+    HargaSparePart: any;
     HargaIbnu: any;
     Teknisi: string;
     Lokasi: string;
@@ -35,6 +39,12 @@ export default function Admin() {
     const [statusSelected, setStatusSelected] = useState('');
     const [tglMskAwal, setTglMskAwal] = useState<string>('');
     const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
+
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Bulan dimulai dari 0
+    const year = today.getFullYear();
+    const localDate = `${year}-${month}-${day}`;
 
     const dateFormater = (date:string) => {
         const TglObj = new Date(date);
@@ -66,83 +76,7 @@ export default function Admin() {
         )
     };
 
-    const fetchData = () => {
-        const authG:any = getAuth();
-        const DB = ref(getDatabase());
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-            const userRole = authG.currentUser.email.split('@')[0];
-            const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
-            if(userRole === 'user'){
-                setIsAdmin(false);
-                get(child(DB, "Service/sandboxDS")).then(async(datas) => {
-                    const Data = datas.val() || {};
-                    const Array:DataRes[] = Object.values(Data);
-                    const PendingData = Array.filter(item => 
-                        item.Penerima.toLocaleLowerCase() === userName.toLocaleLowerCase() && 
-                        (item.TglKeluar === 'null' || item.TglKeluar === undefined)                    
-                    );
-                    const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
-                        if(converter.length > 0){
-                            setIsFinish('Yang Belum Selesai')
-                            return setDataResi(converter); 
-                        }
-                        else{
-                            return setIsFinish('Mu Sudah Selesai')
-                        }
-                }).catch((err) => {
-                    console.error(err);
-                })
-            }else if(userRole === 'admin'){
-                setIsAdmin(true);
-                get(child(DB, "Service/sandboxDS")).then(async(datas) => {
-                    const Data = datas.val() || {};
-                    const Array:DataRes[] = Object.values(Data).map((item: any) => {
-                        if(item.status === 'sudah diambil'){
-                            item.status = 'sukses'
-                        }
-                        return item;
-                    });
-                    const sortedArray = Array.sort((a, b) => {
-                        const dateA:any = new Date(a.TglMasuk);
-                        const dateB:any = new Date(b.TglMasuk);
-                        return dateB - dateA;
-                    })
-                    return setDataResi(sortedArray);
-                }).catch((err) => {
-                    console.error(err);
-                })
-            }else if(userRole === 'mod'){
-                setIsAdmin(false);
-                get(child(DB, "Service/sandboxDS"))
-                .then(async(ss) => {
-                    if(ss.exists()){
-                        const datas = ss.val() || {};
-                        const Array:DataRes[] = Object.values(datas);
-                        const PendingData = Array.filter(items => 
-                            (items.TglKeluar === undefined || items.TglKeluar === 'null')
-                        );
-                        const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
-                        if(PendingData.length > 0){
-                            const sortedData = converter.sort((a, b) => {
-                                const dateA:any = new Date(a.TglMasuk);
-                                const dateB:any = new Date(b.TglMasuk);
-                                return dateB - dateA ;
-                            });
-                            setIsFinish('Yang Belum Selesai')
-                            return setDataResi(sortedData); 
-                        }
-                        else{
-                            return setIsFinish('Mu Sudah Selesai')
-                        }
 
-                    }
-                })
-            }
-        },3000)
-
-    };
 
     const filteredData = () => {
         setIsLoading(true)
@@ -209,18 +143,91 @@ export default function Admin() {
     };
     
     useEffect(() => {
-    const Auth:any = Cookies.get('_IDs')
-        if(!Auth){
-            alert('You Not Supposed to here before login ?')
-            return window.location.reload();
-        }else{
-            return fetchData();
-        }
-    },[])
+        const fetchData = () => {
+            const authG:any = getAuth();
+            const DB = ref(getDatabase());
+            setIsLoading(true);
+                const userRole = authG.currentUser.email.split('@')[0];
+                const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
+                if(userRole === 'user'){
+                    setIsAdmin(false);
+                    get(child(DB, "Service/sandboxDS")).then(async(datas) => {
+                        const Data = datas.val() || {};
+                        const Array:DataRes[] = Object.values(Data);
+                        const PendingData = Array.filter(item => 
+                            item.Penerima.toLocaleLowerCase() === userName.toLocaleLowerCase() && 
+                            (item.TglKeluar?.split('T')[0] === localDate || item.TglKeluar === 'null' || item.TglKeluar === undefined)
+                        );
+                        const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
+                            if(converter.length > 0){
+                                setIsFinish('Yang Belum Selesai')
+                                setIsLoading(false);
+                                return setDataResi(converter); 
+                            }
+                            else{
+                                setIsLoading(false);
+                                return setIsFinish('Mu Sudah Selesai')
+                            }
+                    }).catch((err) => {
+                        console.error(err);
+                    })
+                }else if(userRole === 'admin'){
+                    setIsAdmin(true);
+                    get(child(DB, "Service/sandboxDS")).then(async(datas) => {
+                        const Data = datas.val() || {};
+                        const Array:DataRes[] = Object.values(Data).map((item: any) => {
+                            if(item.status === 'sudah diambil'){
+                                item.status = 'sukses'
+                            }
+                            return item;
+                        });
+                        const sortedArray = Array.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateB - dateA;
+                        })
+                        setIsLoading(false);
+                        return setDataResi(sortedArray);
+                    }).catch((err) => {
+                        console.error(err);
+                    })
+                }else if(userRole === 'mod'){
+                    setIsAdmin(false);
+                    get(child(DB, "Service/sandboxDS"))
+                    .then(async(ss) => {
+                        if(ss.exists()){
+                            const datas = ss.val() || {};
+                            const Array:DataRes[] = Object.values(datas);
+                            const PendingData = Array.filter(items => 
+                                (items.TglKeluar === undefined || items.TglKeluar === 'null')
+                            );
+                            const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
+                            if(PendingData.length > 0){
+                                const sortedData = converter.sort((a, b) => {
+                                    const dateA:any = new Date(a.TglMasuk);
+                                    const dateB:any = new Date(b.TglMasuk);
+                                    return dateB - dateA ;
+                                });
+                                setIsFinish('Yang Belum Selesai')
+                                setIsLoading(false);
+                                return setDataResi(sortedData); 
+                            }
+                            else{
+                                setIsLoading(false);
+                                return setIsFinish('Mu Sudah Selesai')
+                            }
+    
+                        }
+                    })
+                }
+    
+        };
+        fetchData();
+    },[localDate])
 
     return(
-        <MainWrapper>
         <>
+        <MainWrapper>
             {isLoading ? 
             <>
             <Wrapper>
@@ -286,24 +293,26 @@ export default function Admin() {
                                 </ButtonWrapper>
                         </Search>
                 </Wrapper>
-            <BasicSection2 title="Data Service">
+            <BasicSection2 title={`Data Services: ${DataResi.length}`}>
                     <Wrapper>
-                        <p>Total Data : {DataResi.length}</p>
                         <Table>
                             <thead>
                                 <tr>
                                     <TableHeader>No Nota</TableHeader>
-                                    <TableHeader>Nama user</TableHeader>
-                                    <TableHeader>Nomor HP User</TableHeader>
                                     <TableHeader>Tanggal Masuk</TableHeader>
                                     <TableHeader>Tanggal Keluar</TableHeader>
                                     <TableHeader>Merk HP</TableHeader>
+                                    <TableHeader>Imei</TableHeader>
                                     <TableHeader>Kerusakan</TableHeader>
-                                    <TableHeader>Harga Ibnu</TableHeader>
-                                    <TableHeader>Penerima</TableHeader>
-                                    <TableHeader>Estimasi Harga</TableHeader>
+                                    <TableHeader>Spareparts</TableHeader>
+                                    <TableHeader>Warna/Merk</TableHeader>
+                                    <TableHeader>Harga Sparepart</TableHeader>
+                                    <TableHeader>Harga User</TableHeader>
+                                    <TableHeader>Nama user</TableHeader>
+                                    <TableHeader>Nomor HP User</TableHeader>
                                     <TableHeader>Lokasi</TableHeader>
                                     <TableHeader>Teknisi</TableHeader>
+                                    <TableHeader>Penerima</TableHeader>
                                     <TableHeader>Status</TableHeader>
                                 </tr>
                              </thead>
@@ -319,18 +328,24 @@ export default function Admin() {
                             return(
                                 <tbody key={i}>
                                     <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                        <TableData>{a.NoNota}</TableData>
-                                        <TableData>{a.NamaUser}</TableData>
-                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
+                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=Halo Kak Dari Glory Cell, mau infokan untuk handphone ${a.MerkHp}, dengan kerusakan ${a.Kerusakan} selesai kak, untuk info lengkapnya ada di invoice ya kak. Terimakasih, 
+                                        %0A%0A
+                                        https://struk.rraf-project.site/struk?noNota=${a.NoNota}`} 
+                                        target="_blank">{a.NoNota}</TableDataA></TableData>
                                         <TableData>{dateFormater(a.TglMasuk)}</TableData>
                                         <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                         <TableData>{a.MerkHp}</TableData>
+                                        <TableData>{a.Imei ? a.Imei : "0"}</TableData>
                                         <TableData>{a.Kerusakan}</TableData>
-                                        <TableData>{a.HargaIbnu ? parseInt(a.HargaIbnu).toLocaleString() : 0}</TableData>
-                                        <TableData>{a.Penerima}</TableData>
+                                        <TableData>{a.Sparepart}</TableData>
+                                        <TableData>{a.TypeOrColor}</TableData>
+                                        <TableData>{a.HargaIbnu ? parseInt(a.HargaIbnu).toLocaleString() : 0 || a.HargaSparePart ? parseInt(a.HargaSparePart) : 0}</TableData>
                                         <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
+                                        <TableData>{a.NamaUser}</TableData>
+                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
                                         <TableData>{a.Lokasi}</TableData>
                                         <TableData>{a.Teknisi || a.status}</TableData>
+                                        <TableData>{a.Penerima}</TableData>
                                         <TableData>{a.status}</TableData>                                     
                                     </TableRow>
                                 </tbody>
@@ -367,19 +382,19 @@ export default function Admin() {
                                         return '62' + noHP.slice(1);
                                     }
                                     return noHP
+                                    
                                 }
                                 const noHpConverter = ConvertNumber(a.NoHpUser);
                                     return (
                                     <tbody key={i}>
                                         <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                            <TableData>{a.NoNota}</TableData>
+                                            <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=\n\nhttps://struk.rraf-project/struk?noNota=${a.NoNota}`} target="_blank">{a.NoNota}</TableDataA></TableData>
                                             <TableData>{a.NamaUser}</TableData>
                                             <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
                                             <TableData>{dateFormater(a.TglMasuk)}</TableData>
                                             <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                             <TableData>{a.MerkHp}</TableData>
                                             <TableData>{a.Kerusakan}</TableData>
-                                            <TableData>{a.Penerima}</TableData>
                                             <TableData>{a.Lokasi}</TableData>
                                             <TableData>{a.Harga.toLocaleString()}</TableData>
                                             <TableData>{a.Teknisi || a.status}</TableData>
@@ -394,8 +409,8 @@ export default function Admin() {
             </MainWrapper>
             </>}
             </>}        
-        </>
             </MainWrapper>
+        </>
         )
     }
 

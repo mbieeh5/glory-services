@@ -1,30 +1,22 @@
 /* eslint-disable import/order */
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
-import Cookies from "js-cookie";
+import { useState } from "react"
 import Button from "components/Button";
 import styled from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import ButtonGroup from "components/ButtonGroup";
 import { createUserWithEmailAndPassword, EmailAuthProvider, getAuth, reauthenticateWithCredential, updatePassword } from "firebase/auth";
+import { useLogin } from "contexts/LoginContext";
+import Head from "next/head";
 
 export default function Settings() {
     const [isError, setIsError] = useState("")
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const {isLogin, logout} = useLogin();
     const [showModalAdd, setShowModalAdd] = useState(false);
     const [showModalCp, setShowModalCp] = useState(false);
     const route:any = useRouter();
     const auth = getAuth();
     const router = useRouter();
-    
-    useEffect(() => {
-        const auth = getAuth();
-        const Auth:any = Cookies.get('_IDs')
-        if (auth.currentUser && Auth) {
-          setIsLoggedIn(true);
-        }
-      }, []);
-
     
     const handleShowModalAdd = () => {
         setShowModalAdd(true);
@@ -111,7 +103,7 @@ export default function Settings() {
             updatePassword(user, newPassword)
                 .then(() => {
                     alert('password berhasil di rubah silahkan login ulang!')
-                    Logout();
+                    logout();
                 }).catch((err) => {
                     alert('gagal mengubah password')
                 })
@@ -125,19 +117,12 @@ export default function Settings() {
         route.push('/statistic')
     }
 
-    const Logout = () => {
-        Cookies.remove('_Sid');
-        Cookies.remove('_Auth');
-        Cookies.remove('_IDs');
-        Cookies.remove('_theme');
-        Cookies.remove('_uID');
-        auth.signOut();
-        route.push('/');
-    }
-
     return(
         <Wrapper>
-            {isLoggedIn ? (
+        <Head>
+            <title>Settings || Rraf Project</title>
+        </Head>
+            {isLogin ? (
                 <Wrapper>
                     <Card>
                         <BasicSection2 title={`Login As : `}>
@@ -148,7 +133,7 @@ export default function Settings() {
                                 )}
                                 <Buttons transparent onClick={() => handleShowModalCp()}>Change Password</Buttons>
                                 <Buttons transparent onClick={() => handleStatistic()}>Statistic</Buttons>
-                                <ButtonsLogout onClick={(e) => Logout()}>LogOut</ButtonsLogout>
+                                <ButtonsLogout onClick={(e) => logout()}>LogOut</ButtonsLogout>
                             </ButtonWrapper>
                         </BasicSection2>
                     </Card>

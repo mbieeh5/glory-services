@@ -1,5 +1,4 @@
 /* eslint-disable import/order */
-import { signOut } from 'firebase/auth';
 import dynamic from 'next/dynamic';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
@@ -15,7 +14,6 @@ import Container from './Container';
 import Drawer from './Drawer';
 import { HamburgerIcon } from './HamburgerIcon';
 import Logo from './Logo';
-import { auth } from '../firebase';
 
 const ColorSwitcher = dynamic(() => import('../components/ColorSwitcher'), { ssr: false });
 
@@ -68,12 +66,7 @@ export default function Navbar({ items }: NavbarProps) {
   const isNavbarHidden = scrollingDirection === 'down';
   const isTransparent = scrollingDirection === 'none';
 
-  const {isLogin, setLogin} = useLogin();
-
-  const handleLogout = () => {
-    signOut(auth);
-    setLogin(false);
-  }
+  const {isLogin, logout} = useLogin();
 
   return (
     <NavbarContainer hidden={isNavbarHidden} transparent={isTransparent}>
@@ -85,9 +78,11 @@ export default function Navbar({ items }: NavbarProps) {
       <Content>
         <NavItemList>
           {items.map((singleItem, i) => (
-            <NavItem key={i} {...singleItem} />
+            <>
+             <NavItem key={i} {...singleItem} />
+            </>
           ))}
-          {isLogin ? <CustomButton onClick={handleLogout}>Logout</CustomButton> : ""}
+          {isLogin ? <CustomButton onClick={() => {logout()}}>Logout</CustomButton> : ""}
         </NavItemList>
         <ColorSwitcherContainer>
           <ColorSwitcher />

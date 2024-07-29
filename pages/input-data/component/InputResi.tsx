@@ -41,6 +41,7 @@ export default function InputResi() {
             const NamaUser = formData.get('namaUser');
             const NoHpUser = formData.get('noHpUser');
             const NoNota = formData.get('noNota');
+            const Imei = formData.get('imei');
             const Lokasi = formData.get('lokasi');
             const Penerima = formData.get('penerima');
             const TglMasuk = formData.get('tglMasuk');
@@ -52,6 +53,7 @@ export default function InputResi() {
                         NamaUser,
                         NoHpUser, 
                         NoNota,
+                        Imei,
                         Penerima,
                         Lokasi,
                         TglMasuk,
@@ -95,7 +97,6 @@ export default function InputResi() {
                     No Nota:
                     <Input type="text" onClick={() => setNotaId(NoNota)} placeholder="Klik Buat No Nota" value={notaId.toUpperCase()} onChange={(e) => setNotaId(e.target.value)} name="noNota" required readOnly/>
                 <Splitter>
-                    {/*<Buttons2 type='button' onClick={() => setNotaId(NoNota)}>Buat No Nota</Buttons2>*/}
                 </Splitter>
                 </Label>
                 <Splitter>
@@ -106,6 +107,10 @@ export default function InputResi() {
                 <Label>
                     No Hp User:
                     <Input type="number" placeholder="08xxxxxx" name="noHpUser" required/>
+                </Label>
+                <Label>
+                    Tanggal Masuk:
+                    <Input type="datetime-local" placeholder="Tanggal Masuk" name="tglMasuk" required/>
                 </Label>
                 </Splitter>
                 <Splitter>
@@ -118,8 +123,8 @@ export default function InputResi() {
                     <Input type="text" placeholder="Curhat Kerusakannya" name="kerusakan" required/>
                 </Label>
                 <Label>
-                    Tanggal Masuk:
-                    <Input type="datetime-local" placeholder="Tanggal Masuk" name="tglMasuk" required/>
+                    Imei:
+                    <Input type="number" placeholder="Masukan Nomor Imei" name="imei"/>
                 </Label>
                 </Splitter>
                 <Splitter>

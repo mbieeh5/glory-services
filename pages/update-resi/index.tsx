@@ -1,11 +1,11 @@
 /* eslint-disable import/order */
 import { child, get, getDatabase, ref, update } from "firebase/database";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
-import { getAuth } from "firebase/auth";
 import ButtonGroup from "components/ButtonGroup";
+import Head from "next/head";
 
 interface DataRes {
     NoNota: string;
@@ -27,23 +27,16 @@ export default function UpdateResi() {
     const [noNotaSearch, setNoNotaSearch] = useState("");
     const [cekNotaSearch, setCekNotaSearch] = useState<DataRes[]>([]);
     const [isLoading, setIsloading] = useState<Boolean>(false);
-    const [recentServiceData, setRecentServiceData] = useState<DataRes[]>([]);
     const [isSearch, setIsSearch] = useState(false);
     const [isCekNota, setIsCekNota] = useState<Boolean>(false);
+    const [isMerkHp, setIsMerkHp] = useState<string>('')
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
     const [isError, setIsError] = useState("");
-    const [searchFilter, setSearchFilter] = useState('');
     const [cekNota, setCekNota] = useState<string>('')
     const [isIbnu, setIsIbnu] = useState<Boolean>(false);
     const [isTeknisiUpdate, setIsTeknisiUpdate] = useState<string>("")
-    const [isAdmin, setIsAdmin] = useState<Boolean>(false);
     const [isKerusakan, setIsKerusakan] = useState<string>("")
     const [isNoHpUser, setIsNoHpUser] = useState<string>("");
-    const [teknisiSelected, setTeknisiSelected] = useState('');
-    const [penerimaSelected, setPenerimaSelected] = useState('');
-    const [statusSelected, setStatusSelected] = useState('');
-    const [tglMskAwal, setTglMskAwal] = useState<string>('');
-    const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
     const fakeKey = 1;
     
     const IbnuController = (e:string) => {
@@ -71,10 +64,10 @@ export default function UpdateResi() {
                             const Data = data.val() || {};
                             setIsKerusakan(Data.Kerusakan);
                             setIsNoHpUser(Data.NoHpUser);
+                            setIsMerkHp(Data.MerkHp);
                             const Array:DataRes[] = Object.values({Data});
                             setServiceDataToEdit(Array);
                             setIsError("");
-                            setRecentServiceData([]);
                         },1000)
                     }else{
                         setIsloading(true)
@@ -166,124 +159,6 @@ export default function UpdateResi() {
     const handleChange = (e:any) => {
     setIsKerusakan(e);
     };
-    const handleSearchFilter1 = (i:string) => {
-        const indexLowerCase = i.toLocaleLowerCase();
-        if(indexLowerCase === ''){
-            setIsError('silahkan masukan kata Kunci Terlebih dahulu');
-        }else{
-            const DB = ref(getDatabase());
-            get(child(DB, `Service/sandboxDS`))
-            .then(async (snapshot) => {
-                    const Data = snapshot.val() || {};
-                    const Array:DataRes[] = Object.values(Data);
-                    const filterData = Array.filter(items => 
-                        items.NoNota.toLowerCase().includes(indexLowerCase) ||
-                        items.NamaUser.toLowerCase().includes(indexLowerCase) ||
-                        items.MerkHp.toLowerCase().includes(indexLowerCase) ||
-                        items.Kerusakan.toLowerCase().includes(indexLowerCase) ||
-                        items.Penerima.toLowerCase().includes(indexLowerCase) ||
-                        items.status.toLowerCase().includes(indexLowerCase) ||
-                        items.Teknisi?.toLowerCase().includes(indexLowerCase) ||
-                        items.Lokasi.toLowerCase().includes(indexLowerCase)
-                    )
-                    setRecentServiceData(filterData);
-                    setIsError("");
-                })
-                .catch((error) => {
-                    console.error("Error fetching recent resi data:", error);
-                    setIsError("Terjadi kesalahan saat mengambil data resi terbaru");
-                });
-        }
-    };
-    const TanggalMasukComponent = () => {
-        return (
-        <Splitter2>
-            <Label> Tanggal Awal
-                <Input type="date" value={tglMskAwal} onChange={(e) => {setTglMskAwal(e.target.value)}}/>
-            </Label>
-            <br />
-            <Label> Tanggal Akhir
-                <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
-            </Label> 
-        </Splitter2>
-        )
-    };
-    const fetchData = () => {
-        setTimeout(() => {
-            setIsloading(false);
-            const DB = ref(getDatabase());
-            const AuthG:any = getAuth();
-            const role = AuthG.currentUser.email.split('@')[0];
-            if(role === 'admin'){
-                setIsAdmin(true);
-                get(child(DB, `Service/sandboxDS`))
-                .then(async (snapshot) => {
-                    const Data = snapshot.val() || {};
-                    const Array:DataRes[] = Object.values(Data);
-                    const filteredData = Array.sort((a, b) => {
-                        const DateA:any = new Date(a.TglMasuk);
-                        const DateB:any = new Date(b.TglMasuk);
-                        return DateB - DateA;
-                    })
-                    setRecentServiceData(filteredData);
-                    setIsError("");
-                })
-                .catch((error) => {
-                    console.error("Error fetching recent resi data:", error);
-                    setIsError("Terjadi kesalahan saat mengambil data resi terbaru");
-                });
-            }
-        },1500)
-    };
-    const filteredData = () => {
-        setIsloading(true)
-        setRecentServiceData([]);
-        setTimeout(() => {
-            const DB = ref(getDatabase());
-                get(child(DB, `Service/sandboxDS`))
-                .then(async (ss) => {
-                    const dataSS = ss.val() || {};
-                    const Array:DataRes[] = Object.values(dataSS);
-                    if (tglMskAwal && tglMskAkhir) {
-                        const filterData = Array.filter(items => {
-                            const masukAwal = new Date(tglMskAwal).setHours(0, 0, 0, 0);
-                            const masukAkhir = new Date(tglMskAkhir).setHours(23, 59, 59, 999);
-                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
-                            const isTanggalMasukValid = tglMasuk >= masukAwal && tglMasuk <= masukAkhir;
-                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
-                        });
-                        const sorterData = filterData.sort((a, b) => {
-                            const dateA:any = new Date(a.TglMasuk);
-                            const dateB:any = new Date(b.TglMasuk);
-                            return dateA - dateB;
-                        });
-                        setRecentServiceData(sorterData);
-                    } else {
-                        const filterData = Array.filter(items => {
-                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
-                            const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
-                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
-                        });
-                        const sorterData = filterData.sort((a, b) => {
-                            const dateA:any = new Date(a.TglMasuk);
-                            const dateB:any = new Date(b.TglMasuk);
-                            return dateA - dateB;
-                        });
-                        setRecentServiceData(sorterData);
-                    }                    
-                setIsloading(false);
-                }).catch((error) => {
-                    console.error(error)
-                    setIsloading(false);
-                })
-        },1500)
-    };
     const SearchNota = () => {
         if(cekNota.length < 3){
             alert('HARAP ISI NO NOTA')
@@ -307,13 +182,12 @@ export default function UpdateResi() {
             },1500)
         }
     }
-    useEffect(() => {
-        setIsloading(true);
-        fetchData();
-    }, []);
 
     return (
         <Wrapper>
+        <Head>
+            <title>Update Data || Rraf Project</title>
+        </Head>
             {isLoading ? 
             <>
                 <WrapperLoading>
@@ -379,7 +253,11 @@ export default function UpdateResi() {
                             <Splitter>
                             <Label>
                                 Merk Hp:
-                                <Input type="text" value={a.MerkHp} name="merkHp" readOnly/>
+                                <Input type="text" value={isMerkHp} onChange={(e) => {setIsMerkHp(e.target.value)}}  name="merkHp" required/>
+                            </Label>
+                            <Label>
+                                Imei:
+                                <Input type="number" placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
                             </Label>
                             <Label>
                                 Kerusakan:
@@ -390,10 +268,38 @@ export default function UpdateResi() {
                                 <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
                             </Label>
                             </Splitter>
-                            <Label>
-                                Harga Akhir:
-                                <Input type="number" placeholder="Masukan Harga Akhir" name="hargaAkhir" required/>
-                            </Label>
+                           {/* 
+                            <Splitter>
+                           <Label>
+                                Sparepart:
+                                <Select placeholder="Sparepart" name="sparepart" required>
+                                    <option>ANT CABLE</option>
+                                    <option>BAZEL HP</option>
+                                    <option>BACKDOOR</option>
+                                    <option>CON T/C</option>
+                                    <option>CON T/C ORI</option>
+                                    <option>FLEXI BOARD</option>
+                                    <option>FLEXI O/F</option>
+                                    <option>FLEXI O/F + VOL</option>
+                                    <option>FLEXI VOL</option>
+                                    <option>LCD</option>
+                                    <option>MIC</option>
+                                    <option>SIMLOCK</option>
+                                    <option>SPEAKER</option>
+                                    <option>TOMBOL LUAR</option>
+                                </Select>
+                                </Label>
+                                <Label>
+                                    Merk/Warna Sparepart:
+                                    <Input type="text" placeholder="Warna & Merk" name="hargaAkhir" required/>
+                                </Label>
+                                <Label>
+                                    Harga Sparepart:
+                                    <Input type="number" placeholder="Warna & Merk" name="hargaAkhir" required/>
+                                </Label>
+                                <button type="button" onClick={() => {addForms}}>+</button>
+                            </Splitter>
+                                */}
                             <Splitter>
                             <Label>
                                 Lokasi:
@@ -438,119 +344,6 @@ export default function UpdateResi() {
                 </Wrapper2>
                     </BasicSection2>
                 ) : (
-                <>
-                {isAdmin ? 
-                <>
-                    {recentServiceData && (
-                        <BasicSection2 title="Recent Data Service">
-                            <FilterWrapper>
-                                <SearchWrapper>
-                                    <Search>
-                                        <Input placeholder="Masukan Kata Kunci" onChange={(e) => setSearchFilter(e.target.value)} />
-                                            <ButtonSearch onClick={() => handleSearchFilter1(searchFilter)}>Cari</ButtonSearch>
-                                        <Search>
-                                                <Splitter>
-                                                <div>
-                                                    <LabelModal>Penerima:
-                                                        <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
-                                                            <option value="">Semua</option>
-                                                            <option value="reni">Reni</option>
-                                                            <option value="sindi">Sindi</option>
-                                                            <option value="tiara">Tiara</option>
-                                                            <option value="vina">Vina</option>
-                                                            <option value="yuniska">Yuniska</option>
-                                                        </SelectModal>
-                                                    </LabelModal>
-                                                </div>
-                                                <div>
-                                                    <LabelModal>Teknisi:
-                                                        <SelectModal value={teknisiSelected} onChange={(e) => {setTeknisiSelected(e.target.value)}}>
-                                                            <option value="">Semua</option>
-                                                            <option value="amri">Amri</option>
-                                                            <option value="ibnu">Ibnu</option>
-                                                            <option value="rafi">Rafi</option>
-                                                        </SelectModal>
-                                                    </LabelModal>
-                                                </div>
-                                                </Splitter>
-                                                <Splitter>
-                                                <div>
-                                                    <LabelModal>Status:
-                                                        <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
-                                                            <option value="">Semua</option>
-                                                            <option value="cancel">Cancel</option>
-                                                            <option value="process">Process</option>
-                                                            <option value="sudah diambil">Sudah Diambil</option>
-                                                        </SelectModal>
-                                                    </LabelModal>
-                                                </div>
-                                                </Splitter>
-                                                <Splitter2>
-                                                    <TanggalMasukComponent />
-                                                </Splitter2>
-                        <ButtonGroup>
-                            <Button onClick={filteredData}>Filter Data</Button>
-                        </ButtonGroup>
-                                        </Search>
-                                    </Search>
-                                </SearchWrapper>
-                            </FilterWrapper>
-                                    <TableWrapper>
-                                        <div>Total Service Total : {recentServiceData.length}</div>
-                                        <Table>
-                                            <thead>
-                                            <tr>
-                                                <TableHeader>No Nota</TableHeader>
-                                                <TableHeader>Nama user</TableHeader>
-                                                <TableHeader>Nomor HP User</TableHeader>
-                                                <TableHeader>Tanggal Masuk</TableHeader>
-                                                <TableHeader>Tanggal Keluar</TableHeader>
-                                                <TableHeader>Merk HP</TableHeader>
-                                                <TableHeader>Kerusakan</TableHeader>
-                                                <TableHeader>Penerima</TableHeader>
-                                                <TableHeader>Harga</TableHeader>
-                                                <TableHeader>Harga Ibnu</TableHeader>
-                                                <TableHeader>Lokasi</TableHeader>
-                                                <TableHeader>Teknisi</TableHeader>
-                                                <TableHeader>Status</TableHeader>
-                                            </tr>
-                                            </thead>
-                            {recentServiceData.map((a, i) => {
-                                const formatDate = (dateString:any) => {
-                                    const date = new Date(dateString);
-                                    const day = String(date.getDate()).padStart(2, '0');
-                                    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
-                                    const year = date.getFullYear();
-                                    const hours = String(date.getHours()).padStart(2, '0');
-                                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                                
-                                    return `${day}/${month}/${year} @${hours}:${minutes}`;
-                                }
-                                return (
-                                        <tbody key={i}>
-                                            <TableRow status={a.status}>
-                                                <TableData>{a.NoNota}</TableData>
-                                                <TableData>{a.NamaUser}</TableData>
-                                                <TableData>{a.NoHpUser}</TableData>
-                                                <TableData>{formatDate(a.TglMasuk)}</TableData>
-                                                <TableData>{a.TglKeluar ? formatDate(a.TglKeluar) : 'Belum Di Ambil'}</TableData>
-                                                <TableData>{a.MerkHp}</TableData>
-                                                <TableData>{a.Kerusakan}</TableData>
-                                                <TableData>{a.Penerima}</TableData>
-                                                <TableData>{a.Harga.toLocaleString('id')}</TableData>
-                                                <TableData>{a.HargaIbnu? a.HargaIbnu.toLocaleString('id') : 0}</TableData>
-                                                <TableData>{a.Lokasi}</TableData>
-                                                <TableData>{a.Teknisi}</TableData>
-                                                <TableData>{a.status}</TableData>
-                                            </TableRow>
-                                        </tbody>
-                                        )
-                            })}
-                            </Table>
-                        </TableWrapper>
-                        </BasicSection2>
-                    )}
-                </> : 
                 <>
                     <SearchWrapper>
                         <LabelSearch>
@@ -598,7 +391,6 @@ export default function UpdateResi() {
                         })}
                     </>
                     )}
-                </>}
                 </>
                 )}
             </WrapperContent>             
@@ -677,50 +469,6 @@ const Divider = styled.div`
     margin-top: 1rem;
 `;
 
-const TableWrapper = styled.div` 
-overflow-x: auto;
-align-items: center;
-max-width: 100%;
-`
-
-const Table = styled.table`
-max-width: 80%;
-  border-collapse: collapse;
-  table-layout: auto;
-`;
-
-const TableRow = styled.tr<{status : string}>`
-background-color: ${props => {
-    switch (props.status){
-        case 'sudah diambil':
-            return 'green';
-        case 'cancel' :
-            return 'red';
-        default :
-            return 'yellow';
-    }
-}};
-color: white;
-`;
-
-const TableHeader = styled.th`
-  padding: 12px;
-  text-align: left;
-  width: 25rem;
-  background-color: #4caf50;
-  color: rgb(0,0,0);
-  `;
-  
-  const TableData = styled.td`
-  padding: 2rem;
-  max-width: 100%;
-  border-bottom: 1px solid #ddd;
-  color: rgb(var(--text));
-  white-space: nowrap;
-  word-wrap: break-word;
-`;
-
-
 const Wrapper2 = styled.div`
     position: relative;
     display: flex;
@@ -758,27 +506,7 @@ const Splitter = styled.div`
     }
 `
 
-const Splitter2 = styled.div` 
-    display: flex;
-    max-width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    @media (max-width: 512px) {
-        flex-direction: row;
-    }
-`
-
 const Label = styled.label`
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    align-items: center;
-`;
-
-const LabelModal = styled.label`
     display: flex;
     flex-direction: column;
     padding: 1rem;
@@ -790,30 +518,12 @@ const Select = styled.select`
 width: 15rem;
 background: rgb(var(--inputBackground));
 color: rgb(var(--text));
+overflow-y: auto;
 text-align: center;
 border-radius: 12px;
 border: none;
 padding-top: 1rem;
 `
-
-const SelectModal = styled.select`
-width: 15rem;
-background: rgb(var(--inputBackground));
-color: rgb(var(--text));
-text-align: center;
-border-radius: 12px;
-border: none;
-padding-top: 1rem;
-`
-
-const FilterWrapper = styled.div`
-
-`
-
-const Search = styled.div`
-
-`
-
 
 const spin = keyframes`
   0% {

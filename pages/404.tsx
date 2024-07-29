@@ -1,9 +1,14 @@
+import Head from 'next/head';
 import styled from 'styled-components';
 import Container from 'components/Container';
 import NotFoundIllustration from 'components/NotFoundIllustration';
 
 export default function NotFoundPage() {
   return (
+    <>
+        <Head>
+            <title>Home</title>
+        </Head>
     <Wrapper>
       <Container>
         <ImageContainer>
@@ -13,6 +18,7 @@ export default function NotFoundPage() {
         <Description>Oh, that&apos;s unfortunate! Page not found 😔</Description>
       </Container>
     </Wrapper>
+    </>
   );
 }
 

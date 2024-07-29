@@ -8,6 +8,7 @@ import { child, get, getDatabase, ref } from "firebase/database";
 import Statistics from "./component/Statistic";
 import Laporan from "./component/Laporan";
 import Button from "components/Button";
+import Head from "next/head";
 
 
 interface DataStatistic {
@@ -36,7 +37,7 @@ export default function Statistic() {
         setIsLoading(true);
         setTimeout(() => {
             setIsLoading(true)
-            const isAdmin = AuthG.currentUser.email.split("@")[0];
+            const isAdmin = AuthG.currentUser.email?.split("@")[0];
             if(isAdmin === 'user'){
                 alert('You Not Supposed to here except admin')
                 return route.push('/')
@@ -89,6 +90,9 @@ export default function Statistic() {
 
     return(
         <>
+        <Head>
+            <title>Statistic || Rraf Project</title>
+        </Head>
         {isLoading ? 
             <>
                     <ButtonGroup>

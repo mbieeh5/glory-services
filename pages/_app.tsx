@@ -3,15 +3,13 @@ import 'swiper/css';
 import 'swiper/css/bundle';
 import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { AppProps } from 'next/dist/shared/lib/router/router';
 import { ColorModeScript } from 'nextjs-color-mode';
-import React, { useEffect, useState } from 'react';
-import Cookie from "js-cookie";
+import React, { useState } from 'react';
 import { GlobalStyle } from 'components/GlobalStyles';
 import Navbar from 'components/Navbar';
 import NavigationDrawer from 'components/NavigationDrawer';
-import { LoginProvider } from 'contexts/LoginContext';
+import { LoginProvider, useLogin } from 'contexts/LoginContext';
 import { NewsletterModalContextProvider } from 'contexts/newsletter-modal.context';
 import { NavItems } from 'types';
 import Page from 'components/Page';
@@ -19,6 +17,7 @@ import Input from 'components/Input';
 import Button from 'components/Button';
 import styled from 'styled-components';
 import Footer from 'components/Footer';
+import Head from 'next/head';
 
 const NavbarAdm: NavItems = [
   { title: "Input Data", href: "/input-data" },
@@ -43,33 +42,13 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const {isLogin, login } = useLogin();
 
-  useEffect(() => {
-    const auth = getAuth();
-    const AuthCookie = Cookie.get('_IDs');
-    if (auth.currentUser || AuthCookie) {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isValidPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/.test(password);
-
     if (isValidEmail && isValidPassword) {
-      const auth = getAuth();
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          const accessToken = user.uid;
-          Cookie.set('_IDs', accessToken, { expires: 30 });
-          setIsLoggedIn(true);
-        })
-        .catch((error) => {
-          console.error("Error signing in:", error);
-          alert('Invalid email or password');
-        });
+        await login({email, password});
     } else {
       alert('Invalid email or password');
     }
@@ -77,13 +56,24 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
 
   return (
     <>
-      {isLoggedIn ? (
+      {isLogin ? (
+        <>
+        <Head>
+            <title>Home || Rraf Project</title>
+        </Head>
         <Providers>
-          <Navbar items={NavbarAdm} />
-          <Component {...pageProps} />
-          <Footer />
+          <LoginProvider>
+            <Navbar items={NavbarAdm} />
+            <Component {...pageProps} />
+            <Footer />
+          </LoginProvider>
         </Providers>
+        </>
       ) : (
+        <>
+        <Head>
+            <title>Login</title>
+        </Head>
         <Page title="Admin Section">
           <InputCard>
             <InputWrapper>
@@ -99,6 +89,7 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
             </InputWrapper>
           </InputCard>
         </Page>
+        </>
       )}
     </>
   )
