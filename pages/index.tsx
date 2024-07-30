@@ -199,7 +199,7 @@ export default function Admin() {
                             const datas = ss.val() || {};
                             const Array:DataRes[] = Object.values(datas);
                             const PendingData = Array.filter(items => 
-                                (items.TglKeluar === undefined || items.TglKeluar === 'null')
+                                (items.TglKeluar === undefined || items.TglKeluar === 'null' || items.TglKeluar?.split('T')[0] === localDate)
                             );
                             const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
                             if(PendingData.length > 0){
