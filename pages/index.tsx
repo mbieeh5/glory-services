@@ -388,10 +388,10 @@ export default function Admin() {
                                     return (
                                     <tbody key={i}>
                                         <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=Hai Ka, ini dari Glory Cell, mau infokan untuk handphone ${a.MerkHp}, dengan kerusakan ${a.Kerusakan} selesai kak, untuk info lengkapnya ada di invoice ya kak. Terimakasih, 
-                                        %0A
+                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=Halo Kak Dari Glory Cell, mau infokan untuk handphone ${a.MerkHp}, dengan kerusakan ${a.Kerusakan} sudah diambil ya. ini invoicenya ya ka. Terimakasih
+                                        %0A%0A
                                         https://struk.rraf-project.site/struk?noNota=${a.NoNota}`} 
-                                        target="_blank">{a.NoNota}</TableDataA></TableData>                                            
+                                        target="_blank">{a.NoNota}</TableDataA></TableData>                                          
                                             <TableData>{a.NamaUser}</TableData>
                                             <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
                                             <TableData>{dateFormater(a.TglMasuk)}</TableData>
