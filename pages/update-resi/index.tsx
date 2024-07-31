@@ -17,12 +17,15 @@ interface DataRes {
     Kerusakan: string;
     Penerima: string;
     Harga: number;
+    Sparepart: any;
     Imei: any;
     Lokasi: string;
     Teknisi: string;
     HargaIbnu: number;
     status: string;
 }
+
+interface SparepartInterface {Sparepart:string; TypeOrColor:string; HargaSparepart:any;}
 
 export default function UpdateResi() {
     const [noNotaSearch, setNoNotaSearch] = useState("");
@@ -31,7 +34,9 @@ export default function UpdateResi() {
     const [isSearch, setIsSearch] = useState(false);
     const [isCekNota, setIsCekNota] = useState<Boolean>(false);
     const [isMerkHp, setIsMerkHp] = useState<string>('')
+    const [isImei, setIsImei] = useState<string>('');
     const [serviceDataToEdit, setServiceDataToEdit] = useState<DataRes[]>([]);
+    const [sparepart, setSparepart] = useState<SparepartInterface[]>([])
     const [isError, setIsError] = useState("");
     const [cekNota, setCekNota] = useState<string>('')
     const [isIbnu, setIsIbnu] = useState<Boolean>(false);
@@ -40,6 +45,12 @@ export default function UpdateResi() {
     const [isNoHpUser, setIsNoHpUser] = useState<string>("");
     const fakeKey = 1;
     
+    const addForms = () => {
+        setSparepart([...sparepart, {Sparepart: "", TypeOrColor: "", HargaSparepart:0}])
+    };
+    const removeForms = (index:number) => {
+        setSparepart(sparepart.filter((_,i) => i !== index));
+    }
     const IbnuController = (e:string) => {
         
         if(e.toLowerCase() === 'ibnu'){
@@ -55,9 +66,11 @@ export default function UpdateResi() {
             setIsError("Silahkan Masukan Nomor Nota");
             setIsSearch(false);
         } else {
-            const DB = ref(getDatabase());
-            get(child(DB, `Service/sandboxDS/${noNotaSearch}`))
-            .then(async (data) => {
+            const noNotaRegex = /^GL\d{3}[A-Za-z]{3}$/;
+            if(noNotaRegex.test(noNotaSearch)){
+                const DB = ref(getDatabase());
+                get(child(DB, `Service/sandboxDS/${noNotaSearch.toUpperCase()}`))
+                .then(async (data) => {
                 if(data.exists()){
                     setIsloading(true)
                     setTimeout(() => {
@@ -66,6 +79,16 @@ export default function UpdateResi() {
                             setIsKerusakan(Data.Kerusakan);
                             setIsNoHpUser(Data.NoHpUser);
                             setIsMerkHp(Data.MerkHp);
+                            setIsImei(Data.Imei);
+                            const sparepartDatas = Data.sparepart;
+                            if(sparepartDatas){
+                                const initialDataSparepart = Object.keys(sparepartDatas).map((key)=> ({
+                                    Sparepart: sparepartDatas[key].Sparepart || "",
+                                    TypeOrColor: sparepartDatas[key].TypeOrColor || "",
+                                    HargaSparepart: sparepartDatas[key].HargaSparepart || "",
+                                }));
+                                setSparepart(initialDataSparepart);
+                            }
                             const Array:DataRes[] = Object.values({Data});
                             setServiceDataToEdit(Array);
                             setIsError("");
@@ -83,7 +106,11 @@ export default function UpdateResi() {
                     console.error("Error fetching resi data:", error);
                     setIsError("Terjadi kesalahan saat mencari resi");
                 });
+            }else{
+                setIsError("Silahkan Masukan Nomor Nota Dengan Benar");
+                setIsSearch(false);
             }
+        }
     };
     const handleChangeNoHp = (e:string) => { 
         if(e.length > 0){
@@ -110,6 +137,24 @@ export default function UpdateResi() {
         const Teknisi = formData.get('teknisi')?.toString() || "null";
         const status = formData.get('status')?.toString() || "null";
 
+        const spareparts: Record<string, SparepartInterface> = {};
+        formData.forEach((val, key)=> {
+              if(key.startsWith('sparepart')) {
+                const index = key.match(/\d+/)?.[0] || 0;
+                const partName = formData.get(`sparepart-${index}`)?.toString() || "null";
+                const typeOrColor = formData.get(`typeOrColor-${index}`)?.toString() || "-";
+                const hargaSparepart = formData.get(`hargaSparepart-${index}`)?.toString() || "null"
+
+                if(partName !== 'null'){
+                    spareparts[index]= {
+                        Sparepart: partName,
+                        TypeOrColor: typeOrColor,
+                        HargaSparepart: hargaSparepart,
+                    }
+                }
+            }
+        });
+
             const newData = {
                 [NoNota] : {
                     NoNota,
@@ -125,7 +170,8 @@ export default function UpdateResi() {
                     Lokasi,
                     Teknisi,
                     HargaIbnu,
-                    status
+                    status,
+                    sparepart: spareparts
                 }
             };
           const notaRef = ref(getDatabase(), `Service/sandboxDS/`);
@@ -148,8 +194,10 @@ export default function UpdateResi() {
                                 }
                             }
                             if(status === 'sudah diambil' && TglKeluar.length > 5){
-                                const pointRef = ref(getDatabase(), `Users/dataPenerima/`);
-                                update(pointRef, pointData)
+                                if(Imei.length > 5){
+                                    const pointRef = ref(getDatabase(), `Users/dataPenerima/`);
+                                    update(pointRef, pointData)
+                                }
                             }
                     }).catch((err) => {
                         console.error(err);
@@ -260,7 +308,7 @@ export default function UpdateResi() {
                             </Label>
                             <Label>
                                 Imei:
-                                <Input type="number" placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
+                                <Input type="number" value={isImei} onChange={(e) => {setIsImei(e.target.value)}} placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
                             </Label>
                             <Label>
                                 Kerusakan:
@@ -277,11 +325,20 @@ export default function UpdateResi() {
                                     <Input type="number" placeholder="Harga Akhir" name="hargaAkhir" required/>
                                 </Label>
                             </Splitter>
-                           {/* 
                             <Splitter>
+                                {sparepart.map((spareparts, i) => (
+                            <SplitterSparepart key={i}>
                            <Label>
                                 Sparepart:
-                                <Select placeholder="Sparepart" name="sparepart" required>
+                                <Select placeholder="Sparepart" 
+                                name={`sparepart-${i}`}
+                                value={spareparts.Sparepart}
+                                onChange={(e)=> {
+                                    const newSpareparts = [...sparepart];
+                                    newSpareparts[i].Sparepart = e.target.value;
+                                    setSparepart(newSpareparts);
+                                }}
+                                >
                                     <option>ANT CABLE</option>
                                     <option>BAZEL HP</option>
                                     <option>BACKDOOR</option>
@@ -300,15 +357,35 @@ export default function UpdateResi() {
                                 </Label>
                                 <Label>
                                     Merk/Warna Sparepart:
-                                    <Input type="text" placeholder="Warna & Merk" name="hargaAkhir" required/>
+                                    <Input type="text" 
+                                    placeholder="Warna & Merk" 
+                                    name={`typeOrColor-${i}`}
+                                    value={spareparts.TypeOrColor}
+                                    onChange={(e) => {
+                                        const newSpareparts = [...sparepart];
+                                        newSpareparts[i].TypeOrColor = e.target.value;
+                                        setSparepart(newSpareparts);
+                                    }}
+                                    />
                                 </Label>
                                 <Label>
                                     Harga Sparepart:
-                                    <Input type="number" placeholder="Warna & Merk" name="hargaAkhir" required/>
+                                    <Input type="number" 
+                                    placeholder="Harga Sparepart" 
+                                    name={`hargaSparepart-${i}`} 
+                                    value={spareparts.HargaSparepart}
+                                    onChange={(e) => {
+                                        const newSpareparts = [...sparepart];
+                                        newSpareparts[i].HargaSparepart = e.target.value;
+                                        setSparepart(newSpareparts);
+                                    }}
+                                    />
                                 </Label>
-                                <button type="button" onClick={() => {addForms}}>+</button>
+                                <Button type="button" onClick={() => {removeForms(i)}}>Hapus</Button>
+                                </SplitterSparepart>
+                            ))}
+                            <button type="button" onClick={addForms}>+</button>
                             </Splitter>
-                                */}
                             <Splitter>
                             <Label>
                                 Lokasi:
@@ -502,6 +579,10 @@ const Form = styled.form`
     flex-direction: column;
     max-width: 100%;
 `;
+
+const SplitterSparepart = styled.div`
+overflow-x: auto;
+`
 
 const Splitter = styled.div` 
     display: flex;

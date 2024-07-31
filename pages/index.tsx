@@ -18,13 +18,17 @@ interface DataRes {
     Penerima: string;
     Harga: any;
     Imei: string;
-    Sparepart: string;
-    TypeOrColor: string;
-    HargaSparePart: any;
+    sparepart: any;
     HargaIbnu: any;
     Teknisi: string;
     Lokasi: string;
     status: string;
+}
+
+interface SparepartData {
+    Sparepart: string;
+    HargaSparepart: any;
+    TypeOrColor: string;
 }
 
 export default function Admin() { 
@@ -33,12 +37,15 @@ export default function Admin() {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isFinish, setIsFinish] = useState<string>('null');
-    const [teknisiSelected, setTeknisiSelected] = useState('');
-    const [penerimaSelected, setPenerimaSelected] = useState('');
-    const [lokasiSelected, setLokasiSelected] = useState('');
-    const [statusSelected, setStatusSelected] = useState('');
+    const [teknisiSelected, setTeknisiSelected] = useState<string>('');
+    const [penerimaSelected, setPenerimaSelected] = useState<string>('');
+    const [lokasiSelected, setLokasiSelected] = useState<string>('');
+    const [statusSelected, setStatusSelected] = useState<string>('');
+    const [sparepartSelected, setSparepartSelected] = useState<string>('')
     const [tglMskAwal, setTglMskAwal] = useState<string>('');
     const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
+    const [tglKeluar, setTglKeluar] = useState<string>('')
+    
 
     const today = new Date();
     const day = today.getDate().toString().padStart(2, '0');
@@ -63,7 +70,11 @@ export default function Admin() {
 
     const TanggalMasukComponent = () => {
         return (
-        <Splitter2>
+        <Splitter>
+            <Label> Tanggal Keluar
+                <Input type="date" value={tglKeluar} onChange={(e) => {setTglKeluar(e.target.value)}}/>
+            </Label>
+            <br />
             <Label> Tanggal Awal
                 <Input type="date" value={tglMskAwal} onChange={(e) => {setTglMskAwal(e.target.value)}}/>
             </Label>
@@ -72,7 +83,7 @@ export default function Admin() {
                 <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
             </Label> 
             <Button onClick={() => {filteredData()}}>Filter</Button>
-        </Splitter2>
+        </Splitter>
         )
     };
 
@@ -110,7 +121,55 @@ export default function Admin() {
                             return item
                         });
                         setDataResi(converter);
-                    } else {
+                    }else if(tglKeluar){
+                        const filterData = Array.filter(items => {
+                            const tanggalKeluarAwal = new Date(tglKeluar).setHours(0, 0, 0, 0);
+                            const tanggalKeluarAkhir = new Date(tglKeluar).setHours(23, 59, 59, 999);
+                            const tanggalKeluar = new Date(items.TglKeluar).setHours(0, 0, 0, 0);
+                            const isTanggalKeluarValid = tanggalKeluar >= tanggalKeluarAwal && tanggalKeluar <= tanggalKeluarAkhir;
+                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            return isTanggalKeluarValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                        });
+                        const sorterData = filterData.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateA - dateB;
+                        });
+                        const converter = sorterData.map((item:any) => {
+                            if(item.status === 'sudah diambil'){
+                                item.status = 'sukses';
+                            }
+                            return item
+                        });
+                        setDataResi(converter);
+                    }else if(sparepartSelected){
+                        const filterData = Array.filter(items => {
+                            const sparepartArray:SparepartData[] = Object.values(items.sparepart || {});
+
+                            const isSparepartValid = sparepartArray.some(sparepartItem => {
+                                return !sparepartSelected || sparepartItem.Sparepart?.toLowerCase().includes(sparepartSelected.toLowerCase());
+                            });
+                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                    
+                            return isSparepartValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                        })
+                        const sorterData = filterData.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateA - dateB;
+                        });
+                        const converter = sorterData.map((item:any) => {
+                            if(item.status === 'sudah diambil'){
+                                item.status = 'sukses';
+                            }
+                            return item
+                        });
+                        setDataResi(converter);
+                    }else{
                         const filterData = Array.filter(items => {
                             const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
                             const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
@@ -242,16 +301,26 @@ export default function Admin() {
                         <Search>
                                 <Splitter>
                                     <div>
-                                        <LabelModal>Penerima:
-                                            <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
-                                                <option value="">Semua</option>
-                                                <option value="reni">Reni</option>
-                                                <option value="sindi">Sindi</option>
-                                                <option value="tiara">Tiara</option>
-                                                <option value="vina">Vina</option>
-                                                <option value="yuniska">Yuniska</option>
-                                            </SelectModal>
-                                        </LabelModal>
+                                    <Label>
+                                    Sparepart:
+                                    <SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
+                                        <option value={""}>SEMUA</option>
+                                        <option>ANT CABLE</option>
+                                        <option>BAZEL HP</option>
+                                        <option>BACKDOOR</option>
+                                        <option>CON T/C</option>
+                                        <option>CON T/C ORI</option>
+                                        <option>FLEXI BOARD</option>
+                                        <option>FLEXI O/F</option>
+                                        <option>FLEXI O/F + VOL</option>
+                                        <option>FLEXI VOL</option>
+                                        <option>LCD</option>
+                                        <option>MIC</option>
+                                        <option>SIMLOCK</option>
+                                        <option>SPEAKER</option>
+                                        <option>TOMBOL LUAR</option>
+                                    </SelectModal>
+                                    </Label>
                                     </div>
                                     <div>
                                         <LabelModal>Teknisi:
@@ -260,6 +329,18 @@ export default function Admin() {
                                                 <option value="amri">Amri</option>
                                                 <option value="ibnu">Ibnu</option>
                                                 <option value="rafi">Rafi</option>
+                                            </SelectModal>
+                                        </LabelModal>
+                                    </div>
+                                    <div>
+                                        <LabelModal>Penerima:
+                                            <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
+                                                <option value="">Semua</option>
+                                                <option value="reni">Reni</option>
+                                                <option value="sindi">Sindi</option>
+                                                <option value="tiara">Tiara</option>
+                                                <option value="vina">Vina</option>
+                                                <option value="yuniska">Yuniska</option>
                                             </SelectModal>
                                         </LabelModal>
                                     </div>
@@ -305,7 +386,6 @@ export default function Admin() {
                                     <TableHeader>Imei</TableHeader>
                                     <TableHeader>Kerusakan</TableHeader>
                                     <TableHeader>Spareparts</TableHeader>
-                                    <TableHeader>Warna/Merk</TableHeader>
                                     <TableHeader>Harga Sparepart</TableHeader>
                                     <TableHeader>Harga User</TableHeader>
                                     <TableHeader>Nama user</TableHeader>
@@ -324,6 +404,17 @@ export default function Admin() {
                                 return noHP
                             }
                             const noHpConverter = ConvertNumber(a.NoHpUser);
+                            const spareparts:any = a.sparepart || {};
+                            let sparepartList = [];
+                            let totalSparepartPrice = 0;
+
+                            for(let key in spareparts){
+                                if(spareparts.hasOwnProperty(key)){
+                                    const part = spareparts[key];
+                                    sparepartList.push(`${part.Sparepart}(${part.TypeOrColor})`);
+                                    totalSparepartPrice += parseInt(part.HargaSparepart || "0")
+                                }
+                            }
 
                             return(
                                 <tbody key={i}>
@@ -335,9 +426,13 @@ export default function Admin() {
                                         <TableData>{a.MerkHp}</TableData>
                                         <TableData>{a.Imei ? a.Imei : "0"}</TableData>
                                         <TableData>{a.Kerusakan}</TableData>
-                                        <TableData>{a.Sparepart}</TableData>
-                                        <TableData>{a.TypeOrColor}</TableData>
-                                        <TableData>{a.HargaIbnu ? parseInt(a.HargaIbnu).toLocaleString() : 0 || a.HargaSparePart ? parseInt(a.HargaSparePart) : 0}</TableData>
+                                        <TableData>{sparepartList.join(', ')}</TableData>
+                                        <TableData>{a.HargaIbnu && parseInt(a.HargaIbnu) !== 0 
+                                            ? parseInt(a.HargaIbnu).toLocaleString() 
+                                            : (totalSparepartPrice !== 0 
+                                                ? totalSparepartPrice.toLocaleString() 
+                                                : 0)
+                                        }</TableData>
                                         <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
                                         <TableData>{a.NamaUser}</TableData>
                                         <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
@@ -360,18 +455,15 @@ export default function Admin() {
                             <Table>
                                 <thead>
                                     <tr>
-                                        <TableHeader>No Nota</TableHeader>
-                                        <TableHeader>Nama user</TableHeader>
-                                        <TableHeader>Nomor HP User</TableHeader>
-                                        <TableHeader>Tanggal Masuk</TableHeader>
-                                        <TableHeader>Tanggal Keluar</TableHeader>
-                                        <TableHeader>Merk HP</TableHeader>
-                                        <TableHeader>Kerusakan</TableHeader>
-                                        <TableHeader>Penerima</TableHeader>
-                                        <TableHeader>Lokasi</TableHeader>
-                                        <TableHeader>Estimasi Harga</TableHeader>
-                                        <TableHeader>Teknisi</TableHeader>
-                                        <TableHeader>Status</TableHeader>
+                                    <TableHeader>No Nota</TableHeader>
+                                    <TableHeader>Tanggal Masuk</TableHeader>
+                                    <TableHeader>Tanggal Keluar</TableHeader>
+                                    <TableHeader>Merk HP</TableHeader>
+                                    <TableHeader>Kerusakan</TableHeader>
+                                    <TableHeader>Spareparts</TableHeader>
+                                    <TableHeader>Harga User</TableHeader>
+                                    <TableHeader>Lokasi</TableHeader>
+                                    <TableHeader>Status</TableHeader>
                                     </tr>
                                 </thead>
                             {DataResi.map((a, i) => {
@@ -382,23 +474,31 @@ export default function Admin() {
                                     return noHP
                                     
                                 }
+
                                 const noHpConverter = ConvertNumber(a.NoHpUser);
+
+                                const spareparts:any = a.sparepart || {};
+                                let sparepartList = [];
+    
+                                for(let key in spareparts){
+                                    if(spareparts.hasOwnProperty(key)){
+                                        const part = spareparts[key];
+                                        sparepartList.push(`${part.Sparepart}(${part.TypeOrColor})`);
+                                    }
+                                }
                                     return (
                                     <tbody key={i}>
                                         <TableRow status={a.status} tglKeluar={a.TglKeluar}>
                                         <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${a.MerkHp} dengan kerusakan ${a.Kerusakan} sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}`} 
-                                        target="_blank">{a.NoNota}</TableDataA></TableData>                                          
-                                            <TableData>{a.NamaUser}</TableData>
-                                            <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
-                                            <TableData>{dateFormater(a.TglMasuk)}</TableData>
-                                            <TableData>{dateFormater(a.TglKeluar)}</TableData>
-                                            <TableData>{a.MerkHp}</TableData>
-                                            <TableData>{a.Kerusakan}</TableData>
-                                            <TableData>{a.Penerima}</TableData>
-                                            <TableData>{a.Lokasi}</TableData>
-                                            <TableData>{a.Harga.toLocaleString()}</TableData>
-                                            <TableData>{a.Teknisi || a.status}</TableData>
-                                            <TableData>{a.status}</TableData>                                     
+                                        target="_blank">{a.NoNota}</TableDataA></TableData>   
+                                        <TableData>{dateFormater(a.TglMasuk)}</TableData>
+                                        <TableData>{dateFormater(a.TglKeluar)}</TableData>
+                                        <TableData>{a.MerkHp}</TableData>
+                                        <TableData>{a.Kerusakan}</TableData>
+                                        <TableData>{sparepartList.join(', ')}</TableData>
+                                        <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
+                                        <TableData>{a.Lokasi}</TableData>
+                                        <TableData>{a.status}</TableData>                                      
                                         </TableRow>
                                     </tbody>
                                     )
