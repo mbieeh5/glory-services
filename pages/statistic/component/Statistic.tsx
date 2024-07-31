@@ -1,5 +1,5 @@
 /* eslint-disable import/order */
-import React, {useState} from "react";
+import React, { useState} from "react";
 import styled from "styled-components";
 import {  CartesianGrid, Legend, Line, LineChart,  ReferenceLine , ResponsiveContainer, Tooltip, XAxis , YAxis} from 'recharts';
 import BasicSection from "components/BasicSection";
@@ -8,13 +8,19 @@ import ButtonGroup from "components/ButtonGroup";
 import { getDatabase, ref, update } from "firebase/database";
 
 
+interface DataTarget {
+    nama: string;
+    point: number;
+    unit: number;
+}
+
 
 export default function Statistics({Data, TotalU, TotalP, Target}:any) {
     
     
     const [isError, setIsError] = useState<Boolean>(false);
     const [isErrorText, setIsErrorText] = useState<string>('');
-
+    const DataArray:DataTarget[] = Object.values(Data);
     const handleSubmit = (e:any) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -45,6 +51,8 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
             setIsError(false)
         }
     }
+    const filteredDataForUL = DataArray.filter((item: any) => item.unit <= parseInt(Target));
+    const filteredDataForOL = DataArray.filter((item: any) => item.unit || (item.point / Target) > parseInt(Target));
 
     return(
         <>
@@ -66,14 +74,15 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                                 </FormCard>
                             </Form>
                 </Wrapper>
-            <BasicSection title="Statistic Service" />
+                <br />
+            <BasicSection title="Statistic Service">
                 <UL>Total Unit Keseluruhan: {TotalU.toLocaleString('id-ID')}</UL>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart
                             data={Data}
                             margin={{
                             top: 20, right: 30, left: 20, bottom: 5,
-                            }}
+                        }}
                         >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="nama" />
@@ -85,14 +94,29 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                             <ReferenceLine y={15} label="Syarat Redeem 15units" stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
+                <ol>Data Unit
+                    {filteredDataForOL.map((a: any, i: any) => (
+                        <div key={i}>
+                            <li>{a.nama} || <strong>{a.unit} Units</strong></li>
+                        </div>
+                    ))}
+                </ol>
+                    <ul>Data Unit yang (Tidak Memenuhi Syarat)
+                    {filteredDataForUL.map((a: any, i: any) => (
+                        <div key={i}>
+                            <li>{a.nama} || <strong>{a.unit} Units</strong></li>
+                        </div>
+                    ))}
+                </ul>
+            </BasicSection>
+                <BasicSection title="Point Terkumpul">
 
-                    <BasicSection title="Point Terkumpul" />
                             <UL>Total Point Keseluruhan: {TotalP.toLocaleString('id-ID')}</UL>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart
                             data={Data}
                             margin={{
-                            top: 20, right: 30, left: 30, bottom: 10,
+                                top: 20, right: 30, left: 30, bottom: 10,
                         }}
                         >
                             <CartesianGrid strokeDasharray="6 6" />
@@ -104,6 +128,21 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                         <ReferenceLine y={(Target*5000)} label={`Min ${(Target*5000).toLocaleString()} points`} stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
+                <ol>Data Points
+                    {filteredDataForOL.map((a: any, i: any) => (
+                        <div key={i}>
+                            <li>{a.nama} || <strong>{parseInt(a.point).toLocaleString('id')} Point</strong></li>
+                        </div>
+                    ))}
+                </ol>
+                    <ul>Data Point yang (Tidak Memenuhi Syarat)
+                    {filteredDataForUL.map((a: any, i: any) => (
+                        <div key={i}>
+                            <li>{a.nama} || <strong>{parseInt(a.point).toLocaleString('id')} Point</strong></li>
+                        </div>
+                    ))}
+                </ul>
+                </BasicSection>
         </>
     )
 }
