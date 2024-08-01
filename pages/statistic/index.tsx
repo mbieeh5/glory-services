@@ -28,7 +28,7 @@ export default function Statistic() {
     const fetchData = useCallback(() => {
         const AuthG:any = getAuth();
         const isAdmin = AuthG.currentUser.email?.split("@")[0];
-        if(isAdmin === 'user'){
+        if(isAdmin === 'user' || isAdmin === 'mod'){
             alert('You Not Supposed to here except admin')
             setIsLoading(false);
             return route.push('/')
