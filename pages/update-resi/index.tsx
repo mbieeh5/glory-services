@@ -593,8 +593,6 @@ const Form = styled.form`
 
 const SplitterSparepart = styled.div`
 overflow-x: auto;
-display-flex;
-flex-direction: column;
 `
 
 const Splitter = styled.div` 
