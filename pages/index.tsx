@@ -308,6 +308,9 @@ export default function Admin() {
                                         <option>ANT CABLE</option>
                                         <option>BAZEL HP</option>
                                         <option>BACKDOOR</option>
+                                        <option>BATTRE VV</option>
+                                        <option>BATTRE VB</option>
+                                        <option>BATTRE SQ</option>
                                         <option>CON T/C</option>
                                         <option>CON T/C ORI</option>
                                         <option>FLEXI BOARD</option>

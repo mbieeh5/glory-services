@@ -64,7 +64,6 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                                         <Label> Ubah Target :
                                             <Input placeholder="Masukan Jumlah Target" type="number" name="target" onChange={(e) => {handleOnChange(e.target.value)}} required/>
                                         </Label>
-                                        <br />
                                         <ButtonGroupSubmit>
                                             <ButtonSubmit type="submit">Ubah Target</ButtonSubmit>
                                         </ButtonGroupSubmit>
@@ -81,20 +80,18 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                             top: 20, right: 30, left: 20, bottom: 5,
                         }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" />
+                            <CartesianGrid strokeDasharray="1 1" />1
                             <XAxis dataKey="nama" />
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Line type="linear" dataKey="unit" stroke="#8884d8" activeDot={{ r: 5 }} />
+                            <Line type="linear" dataKey="unit" stroke="#8884d8" activeDot={{ r: 5 }}/>
                             <ReferenceLine y={Target} label={`Minimal Redeem ${Target} units`} stroke="red" strokeDasharray="6 6" />
                             <ReferenceLine y={15} label="Syarat Redeem 15units" stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
-
             </BasicSection>
                 <BasicSection title="Point Terkumpul">
-
                             <UL>Total Point Keseluruhan: {TotalP.toLocaleString('id-ID')}</UL>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart
@@ -103,8 +100,8 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                                 top: 20, right: 30, left: 30, bottom: 10,
                         }}
                         >
-                            <CartesianGrid strokeDasharray="6 6" />
-                            <XAxis dataKey="nama" />
+                            <CartesianGrid strokeDasharray="1 1" />
+                            <XAxis dataKey="nama"  />
                             <YAxis />
                             <Tooltip />
                             <Legend />

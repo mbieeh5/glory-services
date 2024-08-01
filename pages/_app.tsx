@@ -61,13 +61,13 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
         <Head>
             <title>Home || Rraf Project</title>
         </Head>
-        <Providers>
-          <LoginProvider>
+        <LoginProvider>
+          <Providers>
             <Navbar items={NavbarAdm} />
-            <Component {...pageProps} />
+              <Component {...pageProps} />
             <Footer />
-          </LoginProvider>
-        </Providers>
+          </Providers>
+        </LoginProvider>
         </>
       ) : (
         <>

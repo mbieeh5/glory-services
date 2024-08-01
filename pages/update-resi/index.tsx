@@ -184,12 +184,14 @@ export default function UpdateResi() {
                     const exsist = datas.val() || {};
                     const points = exsist.point || 0;
                     const units = exsist.unit || 0;
+                    const oldUnit = exsist.oldUnit || 0;
                         const pts = points + 5000
                         const unit = units + 1;
                             const pointData = {
                                 [Penerima] : {
                                     nama: Penerima,
                                     point: pts,
+                                    oldUnit: oldUnit,
                                     unit: unit,
                                 }
                             }
@@ -342,6 +344,9 @@ export default function UpdateResi() {
                                     <option>ANT CABLE</option>
                                     <option>BAZEL HP</option>
                                     <option>BACKDOOR</option>
+                                    <option>BATTRE VV</option>
+                                    <option>BATTRE VB</option>
+                                    <option>BATTRE SQ</option>
                                     <option>CON T/C</option>
                                     <option>CON T/C ORI</option>
                                     <option>FLEXI BOARD</option>
@@ -381,10 +386,10 @@ export default function UpdateResi() {
                                     }}
                                     />
                                 </Label>
-                                <Button type="button" onClick={() => {removeForms(i)}}>Hapus</Button>
+                                <Buttons2 type="button" onClick={() => {removeForms(i)}}>Hapus</Buttons2>
                                 </SplitterSparepart>
                             ))}
-                            <button type="button" onClick={addForms}>+</button>
+                            <Buttons type="button" onClick={addForms}>+</Buttons>
                             </Splitter>
                             <Splitter>
                             <Label>
@@ -528,6 +533,12 @@ padding: 1rem;
 font-size: 2rem;
 `
 
+const Buttons2 = styled(Button)`
+padding: 1rem;
+font-size: 2rem;
+background-color: red;
+`
+
 const ButtonSearch = styled(Button)`
 padding: 1rem;
 margin-top: 1rem;
@@ -582,6 +593,8 @@ const Form = styled.form`
 
 const SplitterSparepart = styled.div`
 overflow-x: auto;
+display-flex;
+flex-direction: column;
 `
 
 const Splitter = styled.div` 
