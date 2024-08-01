@@ -15,6 +15,7 @@ interface DataStatistic {
     nama: string;
     point: number;
     unit: number;
+    oldUnit: number;
 }
 
 

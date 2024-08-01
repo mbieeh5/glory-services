@@ -51,9 +51,6 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
             setIsError(false)
         }
     }
-    const filteredDataForUL = DataArray.filter((item: any) => item.unit <= parseInt(Target));
-    const filteredDataForOL = DataArray.filter((item: any) => item.unit || (item.point / Target) > parseInt(Target));
-
     return(
         <>
             <BasicSection title="Atur Target" />
@@ -94,20 +91,7 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                             <ReferenceLine y={15} label="Syarat Redeem 15units" stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
-                <ol>Data Unit
-                    {filteredDataForOL.map((a: any, i: any) => (
-                        <div key={i}>
-                            <li>{a.nama} || <strong>{a.unit} Units</strong></li>
-                        </div>
-                    ))}
-                </ol>
-                    <ul>Data Unit yang (Tidak Memenuhi Syarat)
-                    {filteredDataForUL.map((a: any, i: any) => (
-                        <div key={i}>
-                            <li>{a.nama} || <strong>{a.unit} Units</strong></li>
-                        </div>
-                    ))}
-                </ul>
+
             </BasicSection>
                 <BasicSection title="Point Terkumpul">
 
@@ -128,21 +112,16 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                         <ReferenceLine y={(Target*5000)} label={`Min ${(Target*5000).toLocaleString()} points`} stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
-                <ol>Data Points
-                    {filteredDataForOL.map((a: any, i: any) => (
-                        <div key={i}>
-                            <li>{a.nama} || <strong>{parseInt(a.point).toLocaleString('id')} Point</strong></li>
-                        </div>
-                    ))}
-                </ol>
-                    <ul>Data Point yang (Tidak Memenuhi Syarat)
-                    {filteredDataForUL.map((a: any, i: any) => (
-                        <div key={i}>
-                            <li>{a.nama} || <strong>{parseInt(a.point).toLocaleString('id')} Point</strong></li>
-                        </div>
-                    ))}
-                </ul>
                 </BasicSection>
+                <BasicSection title="Laporan Target Bulan Lalu">
+                        <ol>Data Unit
+                            {DataArray.map((a: any, i: any) => (
+                                <div key={i}>
+                                    <li>{a.nama} || <strong>{a.oldUnit} Units</strong> || <strong>{(a.oldUnit * 5000).toLocaleString()} Point</strong></li>
+                                </div>
+                            ))}
+                        </ol>
+                    </BasicSection>
         </>
     )
 }
