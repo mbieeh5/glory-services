@@ -62,7 +62,7 @@ export const LoginProvider = ({ children }: { children: ReactNode }) => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user?.getIdToken();
       if (token) {
-        Cookies.set('token', token, { expires: 30 });
+        Cookies.set('token', token, { expires: 30, secure:true });
         setIsLogin(true);
       }
     } catch (error) {

@@ -264,6 +264,8 @@ export default function UpdateResi() {
                     <BasicSection2 title="Update Data Service">
                 <Wrapper2>
                     {serviceDataToEdit.map((a) => {
+
+                        /* TGL KELUAR === TGL HARI INI, CAN EDIT IS TRUE */
                         if(a.status === "sudah diambil" && a.TglKeluar.length > 5){
                                 alert(`Status Service ${a.status} data tidak bisa di ubah!`)
                                 return window.location.reload();
@@ -344,17 +346,15 @@ export default function UpdateResi() {
                                     <option>ANT CABLE</option>
                                     <option>BAZEL HP</option>
                                     <option>BACKDOOR</option>
-                                    <option>BATTRE VV</option>
-                                    <option>BATTRE VB</option>
-                                    <option>BATTRE SQ</option>
+                                    <option>BATERAI</option>
                                     <option>CON T/C</option>
-                                    <option>CON T/C ORI</option>
                                     <option>FLEXI BOARD</option>
                                     <option>FLEXI O/F</option>
                                     <option>FLEXI O/F + VOL</option>
                                     <option>FLEXI VOL</option>
                                     <option>LCD</option>
                                     <option>MIC</option>
+                                    <option>MIDDLE FRAME LCD</option>
                                     <option>SIMLOCK</option>
                                     <option>SPEAKER</option>
                                     <option>TOMBOL LUAR</option>
@@ -463,6 +463,7 @@ export default function UpdateResi() {
                                         <Info>
                                             <LabelCard>Hp:</LabelCard><Value>{a.MerkHp}</Value>
                                         </Info>
+                                        {/* OnCheck semua, untuk user Tampil */}
                                         <Info>
                                             <LabelCard>Kerusakan:</LabelCard><Value>{a.Kerusakan}</Value>
                                         </Info>

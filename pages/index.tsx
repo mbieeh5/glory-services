@@ -4,7 +4,6 @@ import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import { getAuth } from "firebase/auth";
-import Button from "components/Button";
 import Link from "next/link";
 
 interface DataRes {
@@ -71,18 +70,18 @@ export default function Admin() {
     const TanggalMasukComponent = () => {
         return (
         <Splitter>
-            <Label> Tanggal Keluar
+            <LabelModal>
+                Tanggal Keluar
                 <Input type="date" value={tglKeluar} onChange={(e) => {setTglKeluar(e.target.value)}}/>
-            </Label>
-            <br />
-            <Label> Tanggal Awal
+            </LabelModal>
+            <LabelModal>
+                Tanggal Awal
                 <Input type="date" value={tglMskAwal} onChange={(e) => {setTglMskAwal(e.target.value)}}/>
-            </Label>
-            <br />
-            <Label> Tanggal Akhir
+            </LabelModal>
+            <LabelModal>
+                Tanggal Akhir
                 <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
-            </Label> 
-            <Button onClick={() => {filteredData()}}>Filter</Button>
+            </LabelModal> 
         </Splitter>
         )
     };
@@ -177,7 +176,6 @@ export default function Admin() {
                             const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
                             const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
                             const isLokasiValid = !lokasiSelected || items.Lokasi?.toLowerCase().includes(lokasiSelected.toLowerCase());
-                            console.log({isLokasiValid, isStatusValid, isPenerimaValid, isTeknisiValid, isTanggalMasukValid});
                             return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid && isLokasiValid;
                         });
                         const sorterData = filterData.sort((a, b) => {
@@ -240,7 +238,14 @@ export default function Admin() {
                             }
                             return item;
                         });
-                        const sortedArray = Array.sort((a, b) => {
+                        const FilteredArray = Array.filter(items => {
+                            const dateFilter = new Date(items.TglMasuk);
+                            const getMonth = dateFilter.getMonth();
+                            const dateLocal = new Date(localDate);
+                            const getMonth2 = dateLocal.getMonth();
+                            return getMonth === getMonth2
+                        })
+                        const sortedArray = FilteredArray.sort((a, b) => {
                             const dateA:any = new Date(a.TglMasuk);
                             const dateB:any = new Date(b.TglMasuk);
                             return dateB - dateA;
@@ -297,22 +302,19 @@ export default function Admin() {
             </> : <>
             {isAdmin ? 
             <>
-                <Wrapper>
+                <Wrapper2>
                         <Search>
                                 <Splitter>
                                     <div>
-                                    <Label>
+                                    <LabelModal>
                                     Sparepart:
                                     <SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
                                         <option value={""}>SEMUA</option>
                                         <option>ANT CABLE</option>
                                         <option>BAZEL HP</option>
                                         <option>BACKDOOR</option>
-                                        <option>BATTRE VV</option>
-                                        <option>BATTRE VB</option>
-                                        <option>BATTRE SQ</option>
+                                        <option>BATERAI</option>
                                         <option>CON T/C</option>
-                                        <option>CON T/C ORI</option>
                                         <option>FLEXI BOARD</option>
                                         <option>FLEXI O/F</option>
                                         <option>FLEXI O/F + VOL</option>
@@ -323,7 +325,7 @@ export default function Admin() {
                                         <option>SPEAKER</option>
                                         <option>TOMBOL LUAR</option>
                                     </SelectModal>
-                                    </Label>
+                                    </LabelModal>
                                     </div>
                                     <div>
                                         <LabelModal>Teknisi:
@@ -372,11 +374,12 @@ export default function Admin() {
                                 </Splitter2>
                                 <ButtonWrapper>
                                     <Link href='/statistic'>
-                                        <Button onClick={() => (null)}>Statistic</Button>
+                                        <Button3 onClick={() => (null)}>Statistic</Button3>
                                     </Link>
+                                        <Button onClick={() => {filteredData()}}>Filter</Button>
                                 </ButtonWrapper>
                         </Search>
-                </Wrapper>
+                </Wrapper2>
             <BasicSection2 title={`Data Services: ${DataResi.length}`}>
                     <Wrapper>
                         <Table>
@@ -521,12 +524,6 @@ const MainWrapper = styled.div`
 margin-top: 3rem;
 `
 
-const Wrapper = styled.div`
-overflow-x: auto;
-align-items: center;
-max-width: 100%;
-`
-
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -546,6 +543,41 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
               return 'yellow';
           }
         }};
+`;
+
+const Button = styled.button`
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-left: 10px;
+
+  &:first-child {
+    margin-left: 0; 
+  }
+
+  &:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    background-color: #004494;
+  }
+`;
+
+const Button3 = styled(Button)`
+  color: rgb(var(--text));
+  background-color: rgb(var(--button));
+`
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
 `;
 
 const TableHeader = styled.th`
@@ -596,54 +628,10 @@ const Spinner = styled.div`
   animation: ${spin} 2s linear infinite;
 `;
 
-const Splitter2 = styled.div` 
-    display: flex;
-    max-width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    @media (max-width: 512px) {
-        flex-direction: row;
-    }
-`
-
-const Search = styled.div`
-
-`
-const Splitter = styled.div` 
-    display: flex;
-    max-width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    @media (max-width: 512px) {
-        flex-direction: column;
-    }
-`
-
-const LabelModal = styled.label`
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1rem;
-    align-items: center;
-    text-align: center;'
-`;
-
-const SelectModal = styled.select`
-width: 15rem;
-background: rgb(var(--inputBackground));
-color: rgb(var(--text));
-text-align: center;
-border-radius: 12px;
-border: none;
-padding-top: 1rem;
-`
 
 const Input = styled.input`
-  border: 1px solid rgb(var(--inputBackground));
-  background: rgb(var(--inputBackground));
+    background-color: rgb(var(--modalBackground));
+    border: rgb(var(--modalBackground));
   color: rgb(var(--text));
   border-radius: 0.6rem;
   max-width: 25rem;
@@ -657,17 +645,76 @@ const Input = styled.input`
     outline: none;
     box-shadow: var(--shadow-lg);
   }
-`;
-const Label = styled.label`
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    align-items: center;
+`
+
+
+const Wrapper = styled.div`
+overflow-x: auto;
+align-items: center;
+max-width: 100%;
+`
+
+const Wrapper2 = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgb(var(--cardBackground));
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 91%;
+  margin: auto;
 `;
 
-const ButtonWrapper = styled.div`
+const Search = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const Splitter = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+`;
+
+const Label = styled.label`
+  font-weight: bold;
+  font-size: 14px;
+  color: rgb(var(-Text));
+  margin-bottom: 8px;
+  display: block;
+`;
+
+const LabelModal = styled(Label)`
+
 display: flex;
-align-items:center;
-justify-content: center;
-`
+flex-direction: column;
+color: rgb(var(--Text));
+`;
+
+const SelectModal = styled.select`
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  color: rgb(var(--Text));
+  background-color: rgb(var(--modalBackground));
+  border: rgb(var(--modalBackground));
+  width: 100%;
+  max-width: 200px;
+  box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+`;
+
+const Splitter2 = styled.div`
+  height: 1px;
+  background-color: #e0e0e0;
+`;
