@@ -71,9 +71,6 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
         </>
       ) : (
         <>
-        <Head>
-            <title>Login</title>
-        </Head>
         <Page title="Admin Section">
           <InputCard>
             <InputWrapper>

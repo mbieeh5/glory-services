@@ -306,8 +306,7 @@ export default function Admin() {
                         <Search>
                                 <Splitter>
                                     <div>
-                                    <LabelModal>
-                                    Sparepart:
+                                    <LabelModal>Sparepart:
                                     <SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
                                         <option value={""}>SEMUA</option>
                                         <option>ANT CABLE</option>
@@ -704,7 +703,7 @@ const SelectModal = styled.select`
   background-color: rgb(var(--modalBackground));
   border: rgb(var(--modalBackground));
   width: 100%;
-  max-width: 200px;
+  max-width: 100px;
   box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
   transition: border-color 0.3s ease;
 

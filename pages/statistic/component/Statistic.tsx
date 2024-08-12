@@ -73,6 +73,7 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                 <br />
             <BasicSection title="Statistic Service">
                 <UL>Total Unit Keseluruhan: {TotalU.toLocaleString('id-ID')}</UL>
+            </BasicSection>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart
                             data={Data}
@@ -90,9 +91,9 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                             <ReferenceLine y={15} label="Syarat Redeem 15units" stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
-            </BasicSection>
                 <BasicSection title="Point Terkumpul">
                             <UL>Total Point Keseluruhan: {TotalP.toLocaleString('id-ID')}</UL>
+                </BasicSection>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart
                             data={Data}
@@ -109,7 +110,6 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                         <ReferenceLine y={(Target*5000)} label={`Min ${(Target*5000).toLocaleString()} points`} stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
-                </BasicSection>
                 <BasicSection title="Laporan Target Bulan Lalu">
                         <ol>Data Unit
                             {DataArray.map((a: any, i: any) => (
