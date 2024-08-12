@@ -4,7 +4,6 @@ import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import { getAuth } from "firebase/auth";
-import Link from "next/link";
 
 interface DataRes {
     NoNota: string;
@@ -69,7 +68,7 @@ export default function Admin() {
 
     const TanggalMasukComponent = () => {
         return (
-        <Splitter>
+        <SplitterInputTanggal>
             <LabelModal>
                 Tanggal Keluar
                 <Input type="date" value={tglKeluar} onChange={(e) => {setTglKeluar(e.target.value)}}/>
@@ -82,7 +81,8 @@ export default function Admin() {
                 Tanggal Akhir
                 <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
             </LabelModal> 
-        </Splitter>
+            <Buttons onClick={() => {filteredData()}}>Filter</Buttons>
+        </SplitterInputTanggal>
         )
     };
 
@@ -372,10 +372,6 @@ export default function Admin() {
                                 <Splitter2>
                                 </Splitter2>
                                 <ButtonWrapper>
-                                    <Link href='/statistic'>
-                                        <Button3 onClick={() => (null)}>Statistic</Button3>
-                                    </Link>
-                                        <Button onClick={() => {filteredData()}}>Filter</Button>
                                 </ButtonWrapper>
                         </Search>
                 </Wrapper2>
@@ -533,9 +529,12 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
         if (props.status === 'sukses' && (props.tglKeluar === 'null' || props.tglKeluar === '')) {
             return 'cyan';
           }
+        if (props.status === 'cancel' && (props.tglKeluar === 'null' || props.tglKeluar === '')) {
+            return '#FE9900';
+        }
           switch (props.status) {
             case 'sukses':
-              return 'green';
+              return 'green'; 
             case 'cancel':
               return 'red';
             default:
@@ -544,7 +543,7 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
         }};
 `;
 
-const Button = styled.button`
+/*const Button = styled.button`
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
@@ -567,12 +566,21 @@ const Button = styled.button`
   &:active {
     background-color: #004494;
   }
-`;
+`;*/
+const Buttons = styled.button`
+  background-color: #007bff;
+  color: white;
+  margin-top: 23px;
+  border: none;
+  border-radius: 12px;
+  max-height: 30px;
+  font-size: 14px;
 
-const Button3 = styled(Button)`
-  color: rgb(var(--text));
-  background-color: rgb(var(--button));
-`
+  &:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+`;
 
 const ButtonWrapper = styled.div`
   display: flex;
@@ -631,14 +639,14 @@ const Spinner = styled.div`
 const Input = styled.input`
     background-color: rgb(var(--modalBackground));
     border: rgb(var(--modalBackground));
-  color: rgb(var(--text));
-  border-radius: 0.6rem;
-  max-width: 25rem;
-  max-height: 2rem;
-  text-align: center;
-  font-size: 1.6rem;
-  padding: 1.8rem;
-  box-shadow: var(--shadow-md);
+    color: rgb(var(--text));
+    border-radius: 0.6rem;
+    max-width: 25rem;
+    max-height: 2rem;
+    text-align: center;
+    font-size: 1.6rem;
+    padding: 1.8rem;
+    box-shadow: var(--shadow-md);
 
   &:focus {
     outline: none;
@@ -679,6 +687,12 @@ const Splitter = styled.div`
   gap: 20px;
 `;
 
+const SplitterInputTanggal = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+`;
+
 const Label = styled.label`
   font-weight: bold;
   font-size: 14px;
@@ -690,6 +704,7 @@ const Label = styled.label`
 const LabelModal = styled(Label)`
 display: flex;
 flex-direction: column;
+text-align: center;
 color: rgb(var(--Text));
 `;
 
