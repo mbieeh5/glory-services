@@ -688,7 +688,6 @@ const Label = styled.label`
 `;
 
 const LabelModal = styled(Label)`
-
 display: flex;
 flex-direction: column;
 color: rgb(var(--Text));
@@ -698,7 +697,7 @@ const SelectModal = styled.select`
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
-  font-size: 14px;
+  font-size: 12px;
   color: rgb(var(--Text));
   background-color: rgb(var(--modalBackground));
   border: rgb(var(--modalBackground));
