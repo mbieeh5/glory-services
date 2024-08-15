@@ -22,6 +22,7 @@ import Head from 'next/head';
 const NavbarAdm: NavItems = [
   { title: "Input Data", href: "/input-data" },
   { title: "Update Resi", href: "/update-resi" },
+  { title: "Statistic", href: "/statistic" },
   { title: "Settings", href: "settings" },
 ]
 
