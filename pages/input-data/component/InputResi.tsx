@@ -124,7 +124,7 @@ export default function InputResi() {
                 </Label>
                 <Label>
                     Imei:
-                    <Input type="number" placeholder="No Imei (*#06#)" name="imei"/>
+                    <Input type="text" placeholder="No Imei (*#06#)" name="imei"/>
                 </Label>
                 </Splitter>
                 <Splitter>

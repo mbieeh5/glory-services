@@ -312,7 +312,7 @@ export default function UpdateResi() {
                             </Label>
                             <Label>
                                 Imei:
-                                <Input type="number" value={isImei} onChange={(e) => {setIsImei(e.target.value)}} placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
+                                <Input type="text" value={isImei} onChange={(e) => {setIsImei(e.target.value)}} placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
                             </Label>
                             <Label>
                                 Kerusakan:
