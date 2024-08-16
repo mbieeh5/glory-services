@@ -362,6 +362,7 @@ export default function Admin() {
                                             <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
                                                 <option value="">Semua</option>
                                                 <option value="cancel">Cancel</option>
+                                                <option value="claim garansi">Claim Garansi</option>
                                                 <option value="process">Process</option>
                                                 <option value="sudah diambil">Sukses</option>
                                             </SelectModal>
@@ -532,9 +533,14 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
         if (props.status === 'cancel' && (props.tglKeluar === 'null' || props.tglKeluar === '')) {
             return '#FE9900';
         }
+        if (props.status === 'claim garansi' && (props.tglKeluar === 'null' || props.tglKeluar === '')){
+            return 'gray'
+        }
           switch (props.status) {
             case 'sukses':
               return 'green'; 
+            case 'claim garansi':
+                return 'white';
             case 'cancel':
               return 'red';
             default:
@@ -543,30 +549,6 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
         }};
 `;
 
-/*const Button = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  margin-left: 10px;
-
-  &:first-child {
-    margin-left: 0; 
-  }
-
-  &:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-  }
-
-  &:active {
-    background-color: #004494;
-  }
-`;*/
 const Buttons = styled.button`
   background-color: #007bff;
   color: white;

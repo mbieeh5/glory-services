@@ -416,6 +416,7 @@ export default function UpdateResi() {
                                 <Select name='status' required>
                                 <option value={'sudah diambil'}>sukses</option>
                                 <option value={'sudah diambil'}>sudah diambil</option>
+                                <option value={'claim garansi'}>claim garansi</option>
                                 <option value={'cancel'}>cancel</option>
                                 </Select>
                             </Label>
