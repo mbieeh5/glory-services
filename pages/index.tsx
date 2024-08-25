@@ -423,7 +423,7 @@ export default function Admin() {
                                     <TableRow status={a.status} tglKeluar={a.TglKeluar}>
                                     <TableData>
                                         <TableDataA
-                                            href={`https://wa.me/${noHpConverter}?text=Nota Penjualan ${a.NoNota}, dibuat oleh ${
+                                            href={`https://wa.me/${noHpConverter}?text=Nota Services ${a.NoNota}, dibuat oleh ${
                                             a.Lokasi === 'Cikaret' 
                                                 ? `CKRT-${a.Penerima}` 
                                                 : a.Lokasi === 'Sukahati' 
@@ -511,7 +511,7 @@ export default function Admin() {
                                         <TableRow status={a.status} tglKeluar={a.TglKeluar}>
                                         <TableData>
                                         <TableDataA
-                                            href={`https://wa.me/${noHpConverter}?text=Nota Penjualan ${a.NoNota}, dibuat oleh ${
+                                            href={`https://wa.me/${noHpConverter}?text=Nota Services ${a.NoNota}, dibuat oleh ${
                                             a.Lokasi === 'Cikaret' 
                                                 ? `CKRT-${a.Penerima}` 
                                                 : a.Lokasi === 'Sukahati' 
