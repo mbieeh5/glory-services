@@ -421,8 +421,26 @@ export default function Admin() {
                             return(
                                 <tbody key={i}>
                                     <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                    <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${a.MerkHp} dengan kerusakan ${a.Kerusakan} sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}`} 
-                                        target="_blank">{a.NoNota}</TableDataA></TableData>   
+                                    <TableData>
+                                        <TableDataA
+                                            href={`https://wa.me/${noHpConverter}?text=Nota Penjualan ${a.NoNota}, dibuat oleh ${
+                                            a.Lokasi === 'Cikaret' 
+                                                ? `CKRT-${a.Penerima}` 
+                                                : a.Lokasi === 'Sukahati' 
+                                                ? `SKHT-${a.Penerima}` 
+                                                : 'null'
+                                            }.%0A%0A Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${
+                                            a.MerkHp
+                                            } dengan kerusakan ${
+                                            a.Kerusakan
+                                            } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
+                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp 0899908100*
+                                            `}
+                                            target="_blank"
+                                        >
+                                            {a.NoNota}
+                                        </TableDataA>
+                                        </TableData>
                                         <TableData>{dateFormater(a.TglMasuk)}</TableData>
                                         <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                         <TableData>{a.MerkHp}</TableData>
@@ -491,8 +509,26 @@ export default function Admin() {
                                     return (
                                     <tbody key={i}>
                                         <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}?text=Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${a.MerkHp} dengan kerusakan ${a.Kerusakan} sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}`} 
-                                        target="_blank">{a.NoNota}</TableDataA></TableData>   
+                                        <TableData>
+                                        <TableDataA
+                                            href={`https://wa.me/${noHpConverter}?text=Nota Penjualan ${a.NoNota}, dibuat oleh ${
+                                            a.Lokasi === 'Cikaret' 
+                                                ? `CKRT-${a.Penerima}` 
+                                                : a.Lokasi === 'Sukahati' 
+                                                ? `SKHT-${a.Penerima}` 
+                                                : 'null'
+                                            }.%0A%0A Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${
+                                            a.MerkHp
+                                            } dengan kerusakan ${
+                                            a.Kerusakan
+                                            } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
+                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp 0899908100*
+                                            `}
+                                            target="_blank"
+                                        >
+                                            {a.NoNota}
+                                        </TableDataA>
+                                        </TableData>
                                         <TableData>{dateFormater(a.TglMasuk)}</TableData>
                                         <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                         <TableData>{a.MerkHp}</TableData>
