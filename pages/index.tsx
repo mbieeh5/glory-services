@@ -434,7 +434,7 @@ export default function Admin() {
                                             } dengan kerusakan ${
                                             a.Kerusakan
                                             } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
-                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp 0899908100*
+                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp* 08999081100
                                             `}
                                             target="_blank"
                                         >
@@ -522,7 +522,7 @@ export default function Admin() {
                                             } dengan kerusakan ${
                                             a.Kerusakan
                                             } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
-                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp 0899908100*
+                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp* 08999081100
                                             `}
                                             target="_blank"
                                         >
