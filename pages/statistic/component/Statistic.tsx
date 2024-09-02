@@ -1,11 +1,11 @@
 /* eslint-disable import/order */
-import React, { useState} from "react";
+import React, { useCallback, useEffect, useState} from "react";
 import styled from "styled-components";
 import {  CartesianGrid, Legend, Line, LineChart,  ReferenceLine , ResponsiveContainer, Tooltip, XAxis , YAxis} from 'recharts';
 import BasicSection from "components/BasicSection";
 import Button from "components/Button";
 import ButtonGroup from "components/ButtonGroup";
-import { getDatabase, ref, update } from "firebase/database";
+import { child, get , getDatabase, ref, update } from "firebase/database";
 
 
 interface DataTarget {
@@ -17,10 +17,12 @@ interface DataTarget {
 
 export default function Statistics({Data, TotalU, TotalP, Target}:any) {
     
-    
     const [isError, setIsError] = useState<Boolean>(false);
     const [isErrorText, setIsErrorText] = useState<string>('');
-    const DataArray:DataTarget[] = Object.values(Data);
+    const [bulan, setBulan] = useState<string>('');
+    const [totalU, setTotalU] = useState<Number>(0);
+    const [totalP, setTotalP] = useState<Number>(0);
+    const [data, setData] = useState<DataTarget[]>([])
     const handleSubmit = (e:any) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -51,6 +53,74 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
             setIsError(false)
         }
     }
+
+    const GetDatas = useCallback(async () => {
+
+        const DB = ref(getDatabase());
+        
+        const dataServicec = await get(child(DB, `Service/sandboxDS`));
+        const ssDataService = dataServicec.val() || {};
+        
+        const dataPengguna = await get(child(DB, `Users/dataPenerima`));
+        const ssDataPengguna = dataPengguna.val() || {};
+        
+        const ArrayDataPengguna:DataTarget[] = Object.values(ssDataPengguna);
+        const FilterPengguna = ArrayDataPengguna.filter(items => items.nama).map(nama => nama.nama);
+        
+        const ArrayDataServices:any[] = Object.values(ssDataService);
+        const FilteredData = ArrayDataServices.filter(items => {
+            const status = items.status === "sudah diambil";
+            const bulanAja = bulan.slice(5, 7);
+        
+            if (items.TglKeluar && items.TglKeluar.length > 6) {
+                if (!bulanAja) {
+                    // Jika bulanAja kosong, tampilkan semua data TglKeluar
+                    return status;
+                } else {
+                    // Jika bulanAja tidak kosong, lakukan filter berdasarkan bulan
+                    const bulanKeluar = items.TglKeluar.slice(5, 7); // Mendapatkan bulan dari TglKeluar
+                    const tglKeluar = bulanKeluar === bulanAja; // Membandingkan dengan bulan yang diinginkan
+        
+                    return status && tglKeluar;
+                }
+            }
+        
+            return false;
+        });
+        
+        // Menghitung total penerimaan per penerima
+        const penerimaanTotal:any[] = FilteredData.reduce((acc, item) => {
+            if (acc[item.Penerima]) {
+                acc[item.Penerima] += 1; // Menambah 1 jika penerima sudah ada
+            } else {
+                acc[item.Penerima] = 1; // Inisialisasi dengan 1 jika penerima belum ada
+            }
+            return acc;
+        }, {});
+    
+        const result = Object.entries(penerimaanTotal).map(([nama, unit]) => ({
+            nama,
+            unit, 
+            point: unit * 5000
+        }));
+
+        const Totals = result.reduce((acc, item) => {
+            acc.totalPoints += item.point
+            acc.totalUnits += item.unit
+            return acc
+        }, {totalPoints: 0, totalUnits: 0})
+        
+         await setData(result);
+         await setTotalU(Totals.totalUnits);
+         await setTotalP(Totals.totalPoints);
+        console.log({ FilterPengguna, result, Totals });
+    }, [bulan])
+    
+    
+        useEffect(() => {
+            GetDatas();
+        },[GetDatas])
+
     return(
         <>
             <BasicSection title="Atur Target" />
@@ -71,12 +141,15 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                             </Form>
                 </Wrapper>
                 <br />
+                <Wrapper>
+                    <Input type="month" onChange={(e) => {setBulan(e.target.value)}}/>
+                </Wrapper>
             <BasicSection title="Statistic Service">
-                <UL>Total Unit Keseluruhan: {TotalU.toLocaleString('id-ID')}</UL>
+                <UL>Total Unit Keseluruhan: {totalU.toLocaleString('id-ID')}</UL>
             </BasicSection>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart
-                            data={Data}
+                            data={data}
                             margin={{
                             top: 20, right: 30, left: 20, bottom: 5,
                         }}
@@ -92,11 +165,11 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                         </LineChart>
                     </ResponsiveContainer>
                 <BasicSection title="Point Terkumpul">
-                            <UL>Total Point Keseluruhan: {TotalP.toLocaleString('id-ID')}</UL>
+                            <UL>Total Point Keseluruhan: {totalP.toLocaleString('id-ID')}</UL>
                 </BasicSection>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart
-                            data={Data}
+                            data={data}
                             margin={{
                                 top: 20, right: 30, left: 30, bottom: 10,
                         }}
@@ -110,15 +183,15 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                         <ReferenceLine y={(Target*5000)} label={`Min ${(Target*5000).toLocaleString()} points`} stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
-                <BasicSection title="Laporan Target Bulan Lalu">
-                        <ol>Data Unit
-                            {DataArray.map((a: any, i: any) => (
-                                <div key={i}>
-                                    <li>{a.nama} || <strong>{a.oldUnit} Units</strong> || <strong>{(a.oldUnit * 5000).toLocaleString()} Point</strong></li>
-                                </div>
-                            ))}
-                        </ol>
-                    </BasicSection>
+                <BasicSection title="Ringkasan">
+                    {data.map((a, i) => {
+                        return (
+                                <ol key={i}>
+                                    <li>{a.nama} || {a.unit} Units || {(a.unit * 5000).toLocaleString("ID-id")} Point</li>
+                                </ol>
+                        )
+                    })}
+                </BasicSection>
         </>
     )
 }

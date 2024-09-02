@@ -6,6 +6,7 @@ import styled, {keyframes} from "styled-components";
 import { child, get, getDatabase, ref } from "firebase/database";
 import Statistics from "./component/Statistic";
 import Head from "next/head";
+import Page from "components/Page";
 
 
 interface DataStatistic {
@@ -37,10 +38,10 @@ export default function Statistic() {
                 get(child(DB, "Users/dataPenerima")).then((snapshot) => {
                     if(snapshot.exists()){
                         const datas = snapshot.val() || {};
-                        const dataArr:DataStatistic[] = Object.values(datas);
+                        const dataArr:any = Object.values(datas);
                         setDataStatic(dataArr);
                         const totals = dataArr.reduce(
-                            (acc, item:any) => {
+                            (acc:any, item:any) => {
                                 acc.totalPoints += item.point;
                                 acc.totalUnits += item.unit;
                                 return acc
@@ -87,9 +88,11 @@ export default function Statistic() {
             </WrapperLoading>
         </Wrapper>
         : 
+                <Page title="Statistic">
                 <Wrapper>
                     <Statistics Data={dataStatic} TotalU={totalUnits} TotalP={totalPoints} Target={Target}/>
                 </Wrapper>
+                </Page>
         }
         </>
     )
