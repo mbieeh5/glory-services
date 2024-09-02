@@ -19,9 +19,10 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
     
     const [isError, setIsError] = useState<Boolean>(false);
     const [isErrorText, setIsErrorText] = useState<string>('');
+    const [totalUnitSah, setTotalUnitSah] = useState<number>(0);
     const [bulan, setBulan] = useState<string>('');
-    const [totalU, setTotalU] = useState<Number>(0);
-    const [totalP, setTotalP] = useState<Number>(0);
+    const [totalU, setTotalU] = useState<number>(0);
+    const [totalP, setTotalP] = useState<number>(0);
     const [data, setData] = useState<DataTarget[]>([])
     const handleSubmit = (e:any) => {
         e.preventDefault();
@@ -53,6 +54,8 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
             setIsError(false)
         }
     }
+    const aldi30Persen = totalUnitSah * 0.65;
+    const rraf30Persen = totalUnitSah * 0.35;
 
     const GetDatas = useCallback(async () => {
 
@@ -60,12 +63,6 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
         
         const dataServicec = await get(child(DB, `Service/sandboxDS`));
         const ssDataService = dataServicec.val() || {};
-        
-        const dataPengguna = await get(child(DB, `Users/dataPenerima`));
-        const ssDataPengguna = dataPengguna.val() || {};
-        
-        const ArrayDataPengguna:DataTarget[] = Object.values(ssDataPengguna);
-        const FilterPengguna = ArrayDataPengguna.filter(items => items.nama).map(nama => nama.nama);
         
         const ArrayDataServices:any[] = Object.values(ssDataService);
         const FilteredData = ArrayDataServices.filter(items => {
@@ -101,9 +98,22 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
         const result = Object.entries(penerimaanTotal).map(([nama, unit]) => ({
             nama,
             unit, 
-            point: unit * 5000
+            point: unit * 5
         }));
 
+        const totalPajak = result.filter(a => {
+            if(bulan.slice(5,7) === '07'){
+                return a.unit >= 25
+            }else {
+                return a.unit >= Target;
+            }
+        }).map(items => {
+            const totalPointsah = items.unit * 5 * 0.25;
+            return totalPointsah;
+        })
+        const totalKeseluruhanPajak = totalPajak.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        console.log(totalKeseluruhanPajak)
+        setTotalUnitSah(totalKeseluruhanPajak)
         const Totals = result.reduce((acc, item) => {
             acc.totalPoints += item.point
             acc.totalUnits += item.unit
@@ -113,8 +123,7 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
          await setData(result);
          await setTotalU(Totals.totalUnits);
          await setTotalP(Totals.totalPoints);
-        console.log({ FilterPengguna, result, Totals });
-    }, [bulan])
+    }, [bulan, Target])
     
     
         useEffect(() => {
@@ -180,17 +189,55 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                             <Tooltip />
                             <Legend />
                             <Line type="monotone" dataKey='point' stroke="#8884d8" activeDot={{ r: 5 }} />
-                        <ReferenceLine y={(Target*5000)} label={`Min ${(Target*5000).toLocaleString()} points`} stroke="red" strokeDasharray="6 6" />
+                        <ReferenceLine y={(Target*5)} label={`Min ${(Target*5).toLocaleString()} points`} stroke="red" strokeDasharray="6 6" />
                         </LineChart>
                     </ResponsiveContainer>
                 <BasicSection title="Ringkasan">
-                    {data.map((a, i) => {
-                        return (
+                {data.filter(a => {
+                        if(bulan.slice(5,7) === '07'){
+                            return a.unit >= 25
+                        }else {
+                            return a.unit >= Target
+                        }
+                            })
+                            .map((a, i) => {
+                                const totalPoint = a.unit * 5;
+                                const reducedPoint = totalPoint - (totalPoint * 0.25);
+                                
+                                return (
                                 <ol key={i}>
-                                    <li>{a.nama} || {a.unit} Units || {(a.unit * 5000).toLocaleString("ID-id")} Point</li>
+                                    <li>
+                                    {a.nama} || {a.unit} Units || {totalPoint.toLocaleString("ID-id")} Point<br/>
+                                    {totalPoint.toLocaleString("ID-id")} Point - 25% = {reducedPoint.toLocaleString("ID-id")} Point
+                                    </li>
                                 </ol>
-                        )
-                    })}
+                                );
+                            })}
+                {data.filter(a => {
+                    if(bulan.slice(5,7) === '07'){
+                        return a.unit <= 25
+                    }else{
+                        return a.unit < Target
+                    }
+                })
+                .map((a,i ) => {
+                    const totalPoint = a.unit * 5;
+                    const reducedPoint = totalPoint - (totalPoint * 0.25);
+                    return (
+                        <ul key={i}>
+                            <li>
+                                    {a.nama} || {a.unit} Units || {totalPoint.toLocaleString("ID-id")} Point<br/>
+                                    {totalPoint.toLocaleString("ID-id")} Point - 25% = {reducedPoint.toLocaleString("ID-id")} Point
+                            </li>
+                        </ul>    
+                    )
+                })}
+                    <ol>BONUS: {totalUnitSah}
+                        <ol>
+                            <li>ALDI : {aldi30Persen}</li>
+                             <li>RRAF : {rraf30Persen}</li>
+                        </ol>
+                    </ol>
                 </BasicSection>
         </>
     )
