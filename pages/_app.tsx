@@ -13,6 +13,7 @@ import { LoginProvider, useLogin } from 'contexts/LoginContext';
 import { NewsletterModalContextProvider } from 'contexts/newsletter-modal.context';
 import { NavItems } from 'types';
 import Page from 'components/Page';
+import Swal from 'sweetalert2';
 import Input from 'components/Input';
 import Button from 'components/Button';
 import styled from 'styled-components';
@@ -51,7 +52,13 @@ function MyAppContents({ Component, pageProps }: { Component: React.ComponentTyp
     if (isValidEmail && isValidPassword) {
         await login({email, password});
     } else {
-      alert('Invalid email or password');
+      Swal.fire({
+        title: "Invalid ID & Password",
+        text: "silahkan masukan ID & Password dengan benar",
+        icon: "warning",
+        background: "rgb(var(--cardBackground))",
+        color: "rgb(var(--text))"
+      });
     }
   };
 

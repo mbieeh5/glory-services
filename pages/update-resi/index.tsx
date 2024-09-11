@@ -6,6 +6,7 @@ import BasicSection2 from "components/BasicSection2";
 import Button from "components/Button";
 import ButtonGroup from "components/ButtonGroup";
 import Head from "next/head";
+import Swal from "sweetalert2";
 
 interface DataRes {
     NoNota: string;
@@ -129,92 +130,113 @@ export default function UpdateResi() {
         const Penerima = formData.get('penerima')?.toString() || "null";
         const NoHpUser = formData.get('noHpUser')?.toString() || "null";
         const MerkHp = formData.get('merkHp')?.toString() || "null";
-        const Imei = formData.get('imei')?.toString() || "null"
-        const HargaIbnu = formData.get('hargaIbnu')?.toString() || "0"
+        const Imei = formData.get('imei')?.toString() || "null";
+        const HargaIbnu = formData.get('hargaIbnu')?.toString() || "0";
         const Kerusakan = formData.get('kerusakan')?.toString() || "null";
         const Lokasi = formData.get('lokasi')?.toString() || "null";
         const Harga = formData.get('hargaAkhir')?.toString() || "null";
         const Teknisi = formData.get('teknisi')?.toString() || "null";
         const status = formData.get('status')?.toString() || "null";
-
+    
         const spareparts: Record<string, SparepartInterface> = {};
-        formData.forEach((val, key)=> {
-              if(key.startsWith('sparepart')) {
+        formData.forEach((val, key) => {
+            if (key.startsWith('sparepart')) {
                 const index = key.match(/\d+/)?.[0] || 0;
                 const partName = formData.get(`sparepart-${index}`)?.toString() || "null";
                 const typeOrColor = formData.get(`typeOrColor-${index}`)?.toString() || "-";
-                const hargaSparepart = formData.get(`hargaSparepart-${index}`)?.toString() || "null"
-
-                if(partName !== 'null'){
-                    spareparts[index]= {
+                const hargaSparepart = formData.get(`hargaSparepart-${index}`)?.toString() || "null";
+    
+                if (partName !== 'null') {
+                    spareparts[index] = {
                         Sparepart: partName,
                         TypeOrColor: typeOrColor,
                         HargaSparepart: hargaSparepart,
-                    }
+                    };
                 }
             }
         });
-
-            const newData = {
-                [NoNota] : {
-                    NoNota,
-                    NamaUser,
-                    TglMasuk,
-                    TglKeluar,
-                    NoHpUser,
-                    MerkHp,
-                    Penerima, 
-                    Kerusakan, 
-                    Imei,
-                    Harga,
-                    Lokasi,
-                    Teknisi,
-                    HargaIbnu,
-                    status,
-                    sparepart: spareparts
-                }
-            };
-          const notaRef = ref(getDatabase(), `Service/sandboxDS/`);
-            update(notaRef, newData)
-            .then(() => {
-                alert('Resi Berhasil di Update')
-                e.target.reset();
-                window.location.reload();
-                get(child(DB, `Users/dataPenerima/${Penerima}`)).then(async(datas) => {
-                    const exsist = datas.val() || {};
-                    const points = exsist.point || 0;
-                    const units = exsist.unit || 0;
-                    const oldUnit = exsist.oldUnit || 0;
-                        const pts = points + 5000
-                        const unit = units + 1;
+    
+        const newData = {
+            [NoNota]: {
+                NoNota,
+                NamaUser,
+                TglMasuk,
+                TglKeluar,
+                NoHpUser,
+                MerkHp,
+                Penerima,
+                Kerusakan,
+                Imei,
+                Harga,
+                Lokasi,
+                Teknisi,
+                HargaIbnu,
+                status,
+                sparepart: spareparts,
+            },
+        };
+    
+        // SweetAlert2 konfirmasi sebelum update
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Data akan diperbarui dan tidak dapat diubah.',
+            icon: 'warning',
+            showCancelButton: true,
+            background: "rgb(var(--cardBackground))",
+            color: "rgb(var(--text))",
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: 'rgb(var(--errorColor))',
+            confirmButtonText: 'Ya, simpan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Update database jika konfirmasi
+                const notaRef = ref(getDatabase(), `Service/sandboxDS/`);
+                update(notaRef, newData)
+                    .then(() => {
+                        Swal.fire('Berhasil!', 'Resi Berhasil di Update', 'success');
+                        e.target.reset();
+                        window.location.reload();
+                        
+                        get(child(DB, `Users/dataPenerima/${Penerima}`)).then(async (datas) => {
+                            const exsist = datas.val() || {};
+                            const points = exsist.point || 0;
+                            const units = exsist.unit || 0;
+                            const oldUnit = exsist.oldUnit || 0;
+                            const pts = points + 5000;
+                            const unit = units + 1;
                             const pointData = {
-                                [Penerima] : {
+                                [Penerima]: {
                                     nama: Penerima,
                                     point: pts,
                                     oldUnit: oldUnit,
                                     unit: unit,
                                 }
-                            }
-                            if(status === 'sudah diambil' && TglKeluar.length > 5){
-                                if(Imei.length > 5){
+                            };
+                            if (status === 'sudah diambil' && TglKeluar.length > 5) {
+                                if (Imei.length > 5) {
                                     const pointRef = ref(getDatabase(), `Users/dataPenerima/`);
-                                    update(pointRef, pointData)
+                                    update(pointRef, pointData);
                                 }
                             }
-                    }).catch((err) => {
-                        console.error(err);
+                        }).catch((err) => {
+                            console.error(err);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Gagal menyimpan data:', error);
+                        Swal.fire('Gagal!', 'Terjadi kesalahan saat menyimpan data.', 'error');
                     });
-            })
-            .catch((error) => {
-                console.error('Gagal menyimpan data:', error);
-            });
+            }
+        });
     };
+    
     const handleChange = (e:any) => {
     setIsKerusakan(e);
     };
     const SearchNota = () => {
         if(cekNota.length < 3){
-            alert('HARAP ISI NO NOTA')
+            Swal.fire('Gagal!', 'NO Nota Tidak ditemukan', 'error')
             setIsCekNota(false);
         }else{
             setIsloading(true);
@@ -227,7 +249,7 @@ export default function UpdateResi() {
                         const Array:DataRes[] = Object.values({datas});
                         setCekNotaSearch(Array);
                     }else{
-                        return alert('No Nota Tidak Di Temukan')
+                        return Swal.fire('Gagal!', 'NO Nota Tidak ditemukan', 'error');
                     }
                     setIsCekNota(true);
                 })

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import Cookies from 'js-cookie';
+import Swal from 'sweetalert2';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
@@ -63,9 +64,21 @@ export const LoginProvider = ({ children }: { children: ReactNode }) => {
       const token = await userCredential.user?.getIdToken();
       if (token) {
         Cookies.set('token', token, { expires: 30, secure:true });
+        Swal.fire({
+          title: "Login Berhasil",
+          text: "Selamat menginput",
+          showConfirmButton: false,
+          timer: 1500,
+          icon: "success"
+        })
         setIsLogin(true);
       }
     } catch (error) {
+      Swal.fire({
+        title: "Login Gagal",
+        text: "Pastikan ID & Password benar, atau hub admin",
+        icon: "error"
+      })
       console.error('Error logging in:', error);
     }
   };

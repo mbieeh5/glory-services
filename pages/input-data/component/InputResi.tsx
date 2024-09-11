@@ -4,6 +4,7 @@ import ButtonGroup from "components/ButtonGroup";
 import { getDatabase, ref, update } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import React, { useState } from "react"
+import Swal from "sweetalert2";
 import styled from "styled-components"
 import { useRouter } from "next/router";
 
@@ -32,57 +33,87 @@ export default function InputResi() {
         return `GL${notaID}`;
     };
     
-        const handleSubmit = (e: any) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const Harga = hargaBaru;
-            const Kerusakan = formData.get('kerusakan');
-            const MerkHp = formData.get('merkHp');
-            const NamaUser = formData.get('namaUser');
-            const NoHpUser = formData.get('noHpUser');
-            const NoNota = formData.get('noNota');
-            const Imei = formData.get('imei');
-            const Lokasi = formData.get('lokasi');
-            const Penerima = formData.get('penerima');
-            const TglMasuk = formData.get('tglMasuk');
-                const newData = {
-                    [notaId] : {
-                        Harga,
-                        Kerusakan,
-                        MerkHp,
-                        NamaUser,
-                        NoHpUser, 
-                        NoNota,
-                        Imei,
-                        Penerima,
-                        Lokasi,
-                        TglMasuk,
-                        status: 'process',
-                    }
-                };
-            if(notaId === ''){
-                setIsError(true)
-                setError('No Nota Harap di isi');
-                window.scrollTo({ top: 0, behavior: "smooth" });
-                return;
-            }else if(Harga < 10000){
-                setIsError(true)
-                setError('Harap Masukan Nominal Lengkap')
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            }else{
-                setIsError(false)
-                const resiRef = ref(getDatabase(), `Service/sandboxDS`);
-                update(resiRef, newData)
-                .then(() => {
-                alert('Service Berhasil di Input')
-                e.target.reset();
-                router.push('/');
-            })
-            .catch((error) => {
-                console.error('Gagal menyimpan data:', error);
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const Harga = hargaBaru;
+        const Kerusakan = formData.get('kerusakan');
+        const MerkHp = formData.get('merkHp');
+        const NamaUser = formData.get('namaUser');
+        const NoHpUser = formData.get('noHpUser');
+        const NoNota = formData.get('noNota');
+        const Imei = formData.get('imei');
+        const Lokasi = formData.get('lokasi');
+        const Penerima = formData.get('penerima');
+        const TglMasuk = formData.get('tglMasuk');
+        
+        const newData = {
+            [notaId]: {
+                Harga,
+                Kerusakan,
+                MerkHp,
+                NamaUser,
+                NoHpUser,
+                NoNota,
+                Imei,
+                Penerima,
+                Lokasi,
+                TglMasuk,
+                status: 'process',
+            },
+        };
+    
+        if (notaId === '') {
+            setIsError(true);
+            setError('No Nota Harap di isi');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        } else if (Harga < 10000) {
+            setIsError(true);
+            setError('Harap Masukan Nominal Lengkap');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            // Tampilkan SweetAlert2 untuk konfirmasi
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Anda tidak akan bisa mengembalikan perubahan ini!",
+                icon: 'warning',
+                background: "rgb(var(--cardBackground))",
+                color: "rgb(var(--text))",
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: 'rgb(var(--errorColor))',
+                confirmButtonText: 'Ya, simpan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Jika pengguna mengonfirmasi, lanjutkan menyimpan ke database
+                    setIsError(false);
+                    const resiRef = ref(getDatabase(), `Service/sandboxDS`);
+                    update(resiRef, newData)
+                        .then(() => {
+                            Swal.fire(
+                                'Berhasil!',
+                                'Service telah berhasil di input.',
+                                'success'
+                            );
+                            e.target.reset();
+                            router.push('/');
+                        })
+                        .catch((error) => {
+                            console.error('Gagal menyimpan data:', error);
+                            Swal.fire(
+                                'Gagal!',
+                                'Terjadi kesalahan saat menyimpan data.',
+                                'error'
+                            );
+                        });
+                }
             });
         }
-        }
+    };
+    
+
     const [hargaBaru, setHargaBaru] = useState<number>(0);
     const [notaId, setNotaId] = useState("");
     const [error, setError] = useState('null')
