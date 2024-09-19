@@ -371,6 +371,8 @@ export default function UpdateResi() {
                                     <option>BATERAI</option>
                                     <option>CON T/C</option>
                                     <option>FLEXI BOARD</option>
+                                    <option>FLEXI CON SIM</option>
+                                    <option>FLEXI FINGERPRINT</option>
                                     <option>FLEXI O/F</option>
                                     <option>FLEXI O/F + VOL</option>
                                     <option>FLEXI VOL</option>
