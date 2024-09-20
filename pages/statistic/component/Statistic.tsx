@@ -14,7 +14,6 @@ interface DataTarget {
     unit: number;
 }
 
-
 export default function Statistics({Data, TotalU, TotalP, Target}:any) {
     
     const [isError, setIsError] = useState<Boolean>(false);
@@ -74,11 +73,11 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                     // Jika bulanAja kosong, tampilkan semua data TglKeluar
                     return status;
                 } else {
-                    // Jika bulanAja tidak kosong, lakukan filter berdasarkan bulan
-                    const bulanKeluar = items.TglKeluar.slice(5, 7); // Mendapatkan bulan dari TglKeluar
-                    const tglKeluar = bulanKeluar === bulanAja; // Membandingkan dengan bulan yang diinginkan
-        
-                    return status && tglKeluar;
+                    const bulanKeluar = items.TglKeluar.slice(5, 7);
+                    const tglKeluar = bulanKeluar === bulanAja;
+                    const imei = items.Imei;
+                    const ImeiValid = imei ? imei : null;
+                    return status && tglKeluar && ImeiValid;
                 }
             }
         
