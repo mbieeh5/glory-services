@@ -43,6 +43,9 @@ export default function Admin() {
     const [tglMskAwal, setTglMskAwal] = useState<string>('');
     const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
     const [tglKeluar, setTglKeluar] = useState<string>('')
+    const [sBerhasil, setSBerhasil] = useState<number>(0);
+    const [sProcess, setSProcess] = useState<number>(0);
+    const [sBatal, setSBatal] = useState<number>(0);
     
 
     const today = new Date();
@@ -65,6 +68,22 @@ export default function Admin() {
             return 'Belum Di Ambil'
         }
     }
+
+    /**
+     * Tambahan untuk status service yang sudah di ambil,
+     * memunculkan kembali data servicenya untuk di infokan kembali ke user
+     * tambah parameter baru di database untuk per key nya,
+     * if(dikabarin === undefined && status === "sukses" && tglKeluar.length > 5)
+     * template from <TableDataA 
+     *      {   Pelanggan Yth, Terimakasih telah mempercayakan Service Handphone anda kepada GloryCell.
+     *           Kami ingin tau perkembangan dari perbaikan yang kami lakukan, Sebagai bentuk Pelayanan dari kami
+     *           jika ada keluhan, silahkan hubungi kami kembali. 
+     *          Simpan nomor kami untuk bantuan instan dan informasi penting seputar produk dan layanan langsung di chat Anda!
+     *       }
+     * 
+     * Muncul Data Warna Ungu on All Users
+     * 
+     */
 
     const TanggalMasukComponent = () => {
         return (
@@ -250,7 +269,14 @@ export default function Admin() {
                             const dateB:any = new Date(b.TglMasuk);
                             return dateB - dateA;
                         })
+                        const countSuccess = sortedArray.filter(item => item.status === 'sukses').length;
+                        const countProcess = sortedArray.filter(item => item.status === 'process').length;
+                        const countCancel = sortedArray.filter(item => item.status === 'cancel').length;
+                        setSBerhasil(countSuccess);
+                        setSProcess(countProcess);
+                        setSBatal(countCancel);
                         setIsLoading(false);
+
                         return setDataResi(sortedArray);
                     }).catch((err) => {
                         console.error(err);
@@ -378,7 +404,7 @@ export default function Admin() {
                                 </ButtonWrapper>
                         </Search>
                 </Wrapper2>
-            <BasicSection2 title={`Data Services: ${DataResi.length}`}>
+            <BasicSection2 title={`Berhasil: ${sBerhasil}, Process: ${sProcess}, Gagal: ${sBatal}`}>
                     <Wrapper>
                         <Table>
                             <thead>
@@ -436,7 +462,7 @@ export default function Admin() {
                                             } dengan kerusakan ${
                                             a.Kerusakan
                                             } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
-                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
+                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Hubungi kami lebih mudah, simpan nomor ini!* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
                                             `}
                                             target="_blank"
                                         >
@@ -463,7 +489,7 @@ export default function Admin() {
                                         <TableData>{a.Lokasi}</TableData>
                                         <TableData>{a.Teknisi || a.status}</TableData>
                                         <TableData>{a.Penerima}</TableData>
-                                        <TableData>{a.status}</TableData>                                     
+                                        <TableData>{a.status}</TableData>
                                     </TableRow>
                                 </tbody>
                                 )
@@ -526,7 +552,7 @@ export default function Admin() {
                                             } dengan kerusakan ${
                                             a.Kerusakan
                                             } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
-                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Telp* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
+                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Hubungi kami lebih mudah, simpan nomor ini!* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
                                             `}
                                             target="_blank"
                                         >
