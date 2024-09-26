@@ -387,11 +387,11 @@ export default function Admin() {
                                     <TableHeader>Tanggal Masuk</TableHeader>
                                     <TableHeader>Tanggal Keluar</TableHeader>
                                     <TableHeader>Merk HP</TableHeader>
-                                    <TableHeader>Imei</TableHeader>
                                     <TableHeader>Kerusakan</TableHeader>
                                     <TableHeader>Spareparts</TableHeader>
                                     <TableHeader>Harga Sparepart</TableHeader>
                                     <TableHeader>Harga User</TableHeader>
+                                    <TableHeader>Imei</TableHeader>
                                     <TableHeader>Nama user</TableHeader>
                                     <TableHeader>Nomor HP User</TableHeader>
                                     <TableHeader>Lokasi</TableHeader>
@@ -446,7 +446,6 @@ export default function Admin() {
                                         <TableData>{dateFormater(a.TglMasuk)}</TableData>
                                         <TableData>{dateFormater(a.TglKeluar)}</TableData>
                                         <TableData>{a.MerkHp}</TableData>
-                                        <TableData>{a.Imei ? a.Imei : "0"}</TableData>
                                         <TableData>{a.Kerusakan}</TableData>
                                         <TableData>{sparepartList.join(', ')}</TableData>
                                         <TableData>{a.HargaIbnu && parseInt(a.HargaIbnu) !== 0 
@@ -454,8 +453,11 @@ export default function Admin() {
                                             : (totalSparepartPrice !== 0 
                                                 ? totalSparepartPrice.toLocaleString() 
                                                 : 0)
-                                        }</TableData>
+                                            }</TableData>
                                         <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
+                                        <TableData>
+                                        {a.Imei ? a.Imei.slice(0, -4).replace(/\d/g, '*') + a.Imei.slice(-4) : "0"}
+                                        </TableData>
                                         <TableData>{a.NamaUser}</TableData>
                                         <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
                                         <TableData>{a.Lokasi}</TableData>
