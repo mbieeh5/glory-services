@@ -45,6 +45,7 @@ export default function Admin() {
     const [tglKeluar, setTglKeluar] = useState<string>('')
     const [sBerhasil, setSBerhasil] = useState<number>(0);
     const [sProcess, setSProcess] = useState<number>(0);
+    const [sPending, setSPending] = useState<number>(0);
     const [sBatal, setSBatal] = useState<number>(0);
     
 
@@ -124,7 +125,9 @@ export default function Admin() {
                             const isTanggalMasukValid = tglMasuk >= masukAwal && tglMasuk <= masukAkhir;
                             const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
                             const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            const isStatusValid = (!statusSelected || 
+                                items.status?.toLowerCase().includes(statusSelected.toLowerCase())) ||
+                                (statusSelected.toLowerCase() === 'belum diambil' && items.TglKeluar === 'null');    
                             return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
                         });
                         const sorterData = filterData.sort((a, b) => {
@@ -193,7 +196,9 @@ export default function Admin() {
                             const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
                             const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
                             const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            const isStatusValid = (!statusSelected || 
+                                items.status?.toLowerCase().includes(statusSelected.toLowerCase())) ||
+                                (statusSelected.toLowerCase() === 'belum diambil' && items.TglKeluar === 'null');                              
                             const isLokasiValid = !lokasiSelected || items.Lokasi?.toLowerCase().includes(lokasiSelected.toLowerCase());
                             return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid && isLokasiValid;
                         });
@@ -271,10 +276,12 @@ export default function Admin() {
                         })
                         const countSuccess = sortedArray.filter(item => item.status === 'sukses').length;
                         const countProcess = sortedArray.filter(item => item.status === 'process').length;
+                        const countPending = sortedArray.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses').length;
                         const countCancel = sortedArray.filter(item => item.status === 'cancel').length;
                         setSBerhasil(countSuccess);
                         setSProcess(countProcess);
                         setSBatal(countCancel);
+                        setSPending(countPending);
                         setIsLoading(false);
 
                         return setDataResi(sortedArray);
@@ -389,6 +396,7 @@ export default function Admin() {
                                         <LabelModal>Status:
                                             <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
                                                 <option value="">Semua</option>
+                                                <option value="belum diambil">Belum Diambil</option>
                                                 <option value="cancel">Cancel</option>
                                                 <option value="claim garansi">Claim Garansi</option>
                                                 <option value="process">Process</option>
@@ -404,7 +412,7 @@ export default function Admin() {
                                 </ButtonWrapper>
                         </Search>
                 </Wrapper2>
-            <BasicSection2 title={`Berhasil: ${sBerhasil}, Process: ${sProcess}, Gagal: ${sBatal}`}>
+            <BasicSection2 title={`Berhasil: ${sBerhasil}, Process: ${sProcess},Pending: ${sPending}, Gagal: ${sBatal}, Total: ${DataResi.length}`}>
                     <Wrapper>
                         <Table>
                             <thead>

@@ -18,15 +18,15 @@ export default function BasicSection2({ title, children }: PropsWithChildren<Bas
   );
 }
 
-const Title = styled.h1`
-  font-size: 5.2rem;
+const Title = styled.h2`
+  font-size: 2.5rem;
   font-weight: bold;
   line-height: 1.1;
   margin-bottom: 4rem;
   letter-spacing: -0.03em;
 
   ${media('<=tablet')} {
-    font-size: 4.6rem;
+    font-size: 2.5rem;
     margin-bottom: 2rem;
   }
 `;
@@ -39,9 +39,10 @@ const ContentContainer = styled.div`
 const BasicSectionWrapper = styled(Container)`
   padding-bottom: 12rem;
   padding-top: 2rem;
-
+  text-align: center;
   ${media('<=desktop')} {
     flex-direction: column;
+
 
   }
 `;
