@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { getAuth } from "firebase/auth";
 
 interface DataRes {
