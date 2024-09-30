@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { getAuth } from "firebase/auth";
 
 interface DataRes {
@@ -44,10 +46,9 @@ export default function Admin() {
     const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
     const [tglKeluar, setTglKeluar] = useState<string>('')
     const [sBerhasil, setSBerhasil] = useState<number>(0);
-    const [sProcess, setSProcess] = useState<number>(0);
     const [sPending, setSPending] = useState<number>(0);
-    const [sBatal, setSBatal] = useState<number>(0);
-    
+    const [sTotalData, setSTotalData] = useState<number>(0);
+    const [sBatal, setSBatal] = useState<number>(0); 
 
     const today = new Date();
     const day = today.getDate().toString().padStart(2, '0');
@@ -106,8 +107,6 @@ export default function Admin() {
         )
     };
 
-
-
     const filteredData = () => {
         setIsLoading(true)
         setDataResi([]);
@@ -117,6 +116,10 @@ export default function Admin() {
                 .then(async (ss) => {
                     const dataSS = ss.val() || {};
                     const Array:DataRes[] = Object.values(dataSS);
+                    let countSuccess = 0;
+                    let countPending = 0;
+                    let countCancel = 0;
+                    let countTotal = 0;
                     if (tglMskAwal && tglMskAkhir) {
                         const filterData = Array.filter(items => {
                             const masukAwal = new Date(tglMskAwal).setHours(0, 0, 0, 0);
@@ -125,10 +128,15 @@ export default function Admin() {
                             const isTanggalMasukValid = tglMasuk >= masukAwal && tglMasuk <= masukAkhir;
                             const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
                             const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const sparepartArray:SparepartData[] = Object.values(items.sparepart || {});
+                            const isSparepartValid = sparepartArray.some(sparepartItem => {
+                                return !sparepartSelected || sparepartItem.Sparepart?.toLowerCase().includes(sparepartSelected.toLowerCase());
+                            });
+
                             const isStatusValid = (!statusSelected || 
                                 items.status?.toLowerCase().includes(statusSelected.toLowerCase())) ||
                                 (statusSelected.toLowerCase() === 'belum diambil' && items.TglKeluar === 'null');    
-                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid && isSparepartValid;
                         });
                         const sorterData = filterData.sort((a, b) => {
                             const dateA:any = new Date(a.TglMasuk);
@@ -141,6 +149,11 @@ export default function Admin() {
                             }
                             return item
                         });
+                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
+                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
+                        
                         setDataResi(converter);
                     }else if(tglKeluar){
                         const filterData = Array.filter(items => {
@@ -164,6 +177,10 @@ export default function Admin() {
                             }
                             return item
                         });
+                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
+                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
                         setDataResi(converter);
                     }else if(sparepartSelected){
                         const filterData = Array.filter(items => {
@@ -189,6 +206,11 @@ export default function Admin() {
                             }
                             return item
                         });
+                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
+                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
+
                         setDataResi(converter);
                     }else{
                         const filterData = Array.filter(items => {
@@ -213,14 +235,22 @@ export default function Admin() {
                             }
                             return item;
                         });
+                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
+                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
                         setDataResi(converter);
-                    }                    
+                    }              
+                    setSBerhasil(countSuccess);
+                    setSBatal(countCancel);
+                    setSPending(countPending);      
+                    setSTotalData(countTotal);      
                 setIsLoading(false);
                 }).catch((error) => {
                     console.error(error)
                     setIsLoading(false);
                 })
-        },1500)
+        })
     };
     
     useEffect(() => {
@@ -274,14 +304,16 @@ export default function Admin() {
                             const dateB:any = new Date(b.TglMasuk);
                             return dateB - dateA;
                         })
-                        const countSuccess = sortedArray.filter(item => item.status === 'sukses').length;
-                        const countProcess = sortedArray.filter(item => item.status === 'process').length;
-                        const countPending = sortedArray.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses').length;
-                        const countCancel = sortedArray.filter(item => item.status === 'cancel').length;
+                        const countSuccess = sortedArray.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+                        const countPending = sortedArray.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
+                        const countCancel = sortedArray.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+                        const countTotal = sortedArray.filter(item => 
+                            item.status !== 'claim garansi'
+                          ).length;
                         setSBerhasil(countSuccess);
-                        setSProcess(countProcess);
                         setSBatal(countCancel);
                         setSPending(countPending);
+                        setSTotalData(countTotal)
                         setIsLoading(false);
 
                         return setDataResi(sortedArray);
@@ -412,8 +444,9 @@ export default function Admin() {
                                 </ButtonWrapper>
                         </Search>
                 </Wrapper2>
-            <BasicSection2 title={`Berhasil: ${sBerhasil}, Process: ${sProcess},Pending: ${sPending}, Gagal: ${sBatal}, Total: ${DataResi.length}`}>
-                    <Wrapper>
+
+            <BasicSection2 title={`Berhasil: ${sBerhasil}, Pending: ${sPending}, Gagal: ${sBatal}, Total: ${sTotalData}`}>
+                    <TableContainer>
                         <Table>
                             <thead>
                                 <tr>
@@ -503,9 +536,9 @@ export default function Admin() {
                                 )
                             })}
                     </Table>
-            </Wrapper>
-            </BasicSection2>
-            </> : 
+            </TableContainer>
+            </BasicSection2>     
+           </> : 
             <>
             <MainWrapper>
                 <BasicSection2 title={`Service ${isFinish}`}>
@@ -593,10 +626,22 @@ export default function Admin() {
 const MainWrapper = styled.div`
 margin-top: 3rem;
 `
+const TableContainer = styled.div`
+  max-height: 500px;  /* Membatasi tinggi maksimal 500px */
+  overflow-y: auto;   /* Menambahkan scroll vertikal */
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+`;
+
 
 const Table = styled.table`
   width: 100%;
+  font-size: 12px;
   border-collapse: collapse;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
 `;
 
 const TableRow = styled.tr<{status : string, tglKeluar: string}>`
@@ -644,22 +689,25 @@ const ButtonWrapper = styled.div`
 `;
 
 const TableHeader = styled.th`
-  padding: 12px;
-  text-align: left;
+  padding: 10px;
+  text-align: center;
   background-color: blue;
+  white-space: nowrap;
+  width: 150px; /* Sesuaikan lebar kolom */
   color: rgb(var(--textSecondary));
   `;
   
   const TableData = styled.td`
-  padding: 12px;
+  padding: 10px;
   border-bottom: 1px solid #ddd;
+  width: 150px; /* Sesuaikan lebar kolom */
+  white-space: nowrap;
   color: black;
 `;
   
   const TableDataA = styled.a`
   color: black;
-  `
-
+  `;
 
 const spin = keyframes`
   0% {
