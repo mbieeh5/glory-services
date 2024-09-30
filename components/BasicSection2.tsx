@@ -37,7 +37,7 @@ const ContentContainer = styled.div`
 `;
 
 const BasicSectionWrapper = styled(Container)`
-  padding-bottom: 12rem;
+  padding-bottom: 1rem;
   padding-top: 2rem;
   text-align: center;
   ${media('<=desktop')} {

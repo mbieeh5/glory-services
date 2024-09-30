@@ -365,8 +365,102 @@ export default function Admin() {
             </> : <>
             {isAdmin ? 
             <>
-                <Wrapper2>
-                        <Search>
+            <BasicSection2 title={`BERHASIL : ${sBerhasil} | PENDING : ${sPending} | GAGAL : ${sBatal} | TOTAL : ${sTotalData}`}>
+                    <TableContainer>
+                        <Table>
+                            <THead>
+                                <tr>
+                                    <TableHeader>No Nota</TableHeader>
+                                    <TableHeader>Tanggal Masuk</TableHeader>
+                                    <TableHeader>Tanggal Keluar</TableHeader>
+                                    <TableHeader>Merk HP</TableHeader>
+                                    <TableHeader>Kerusakan</TableHeader>
+                                    <TableHeader>Spareparts</TableHeader>
+                                    <TableHeader>Harga Sparepart</TableHeader>
+                                    <TableHeader>Harga User</TableHeader>
+                                    <TableHeader>Imei</TableHeader>
+                                    <TableHeader>Nama user</TableHeader>
+                                    <TableHeader>Nomor HP User</TableHeader>
+                                    <TableHeader>Lokasi</TableHeader>
+                                    <TableHeader>Teknisi</TableHeader>
+                                    <TableHeader>Penerima</TableHeader>
+                                    <TableHeader>Status</TableHeader>
+                                </tr>
+                             </THead>
+                        {DataResi.map((a, i) => {
+                            const ConvertNumber = (noHP:string) => {
+                                if(noHP.startsWith('0')){
+                                    return '62' + noHP.slice(1);
+                                }
+                                return noHP
+                            }
+                            const noHpConverter = ConvertNumber(a.NoHpUser);
+                            const spareparts:any = a.sparepart || {};
+                            let sparepartList = [];
+                            let totalSparepartPrice = 0;
+
+                            for(let key in spareparts){
+                                if(spareparts.hasOwnProperty(key)){
+                                    const part = spareparts[key];
+                                    sparepartList.push(`${part.Sparepart}(${part.TypeOrColor})`);
+                                    totalSparepartPrice += parseInt(part.HargaSparepart || "0")
+                                }
+                            }
+
+                            return(
+                                <tbody key={i}>
+                                    <TableRow status={a.status} tglKeluar={a.TglKeluar}>
+                                    <TableData>
+                                    <TableDataA
+                                            href={`https://wa.me/${noHpConverter}?text=Nota Services ${a.NoNota}, dibuat oleh ${
+                                            a.Lokasi === 'Cikaret' 
+                                                ? `CKRT-${a.Penerima}` 
+                                                : a.Lokasi === 'Sukahati' 
+                                                ? `SKHT-${a.Penerima}` 
+                                                : 'null'
+                                            }.%0A%0A Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${
+                                            a.MerkHp
+                                            } dengan kerusakan ${
+                                            a.Kerusakan
+                                            } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
+                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Hubungi kami lebih mudah, simpan nomor ini!* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
+                                            `}
+                                            target="_blank"
+                                        >
+                                            {a.NoNota}
+                                        </TableDataA>
+                                        </TableData>
+                                        <TableData>{dateFormater(a.TglMasuk)}</TableData>
+                                        <TableData>{dateFormater(a.TglKeluar)}</TableData>
+                                        <TableData>{a.MerkHp}</TableData>
+                                        <TableData>{a.Kerusakan}</TableData>
+                                        <TableData>{sparepartList.join(', ')}</TableData>
+                                        <TableData>{a.HargaIbnu && parseInt(a.HargaIbnu) !== 0 
+                                            ? parseInt(a.HargaIbnu).toLocaleString() 
+                                            : (totalSparepartPrice !== 0 
+                                                ? totalSparepartPrice.toLocaleString() 
+                                                : 0)
+                                            }</TableData>
+                                        <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
+                                        <TableData>
+                                        {a.Imei ? a.Imei.slice(0, -4).replace(/\d/g, '*') + a.Imei.slice(-4) : "0"}
+                                        </TableData>
+                                        <TableData>{a.NamaUser}</TableData>
+                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
+                                        <TableData>{a.Lokasi}</TableData>
+                                        <TableData>{a.Teknisi || a.status}</TableData>
+                                        <TableData>{a.Penerima}</TableData>
+                                        <TableData>{a.status}</TableData>
+                                    </TableRow>
+                                </tbody>
+                                )
+                            })}
+                    </Table>
+            </TableContainer>
+            </BasicSection2>  
+            
+            <Wrapper2>
+                <Search>
                                 <Splitter>
                                     <div>
                                     <LabelModal>Sparepart:
@@ -440,102 +534,9 @@ export default function Admin() {
                                 </Splitter2>
                                 <ButtonWrapper>
                                 </ButtonWrapper>
-                        </Search>
-                </Wrapper2>
+                </Search>
+            </Wrapper2>
 
-            <BasicSection2 title={`Berhasil: ${sBerhasil}, Pending: ${sPending}, Gagal: ${sBatal}, Total: ${sTotalData}`}>
-                    <TableContainer>
-                        <Table>
-                            <thead>
-                                <tr>
-                                    <TableHeader>No Nota</TableHeader>
-                                    <TableHeader>Tanggal Masuk</TableHeader>
-                                    <TableHeader>Tanggal Keluar</TableHeader>
-                                    <TableHeader>Merk HP</TableHeader>
-                                    <TableHeader>Kerusakan</TableHeader>
-                                    <TableHeader>Spareparts</TableHeader>
-                                    <TableHeader>Harga Sparepart</TableHeader>
-                                    <TableHeader>Harga User</TableHeader>
-                                    <TableHeader>Imei</TableHeader>
-                                    <TableHeader>Nama user</TableHeader>
-                                    <TableHeader>Nomor HP User</TableHeader>
-                                    <TableHeader>Lokasi</TableHeader>
-                                    <TableHeader>Teknisi</TableHeader>
-                                    <TableHeader>Penerima</TableHeader>
-                                    <TableHeader>Status</TableHeader>
-                                </tr>
-                             </thead>
-                        {DataResi.map((a, i) => {
-                            const ConvertNumber = (noHP:string) => {
-                                if(noHP.startsWith('0')){
-                                    return '62' + noHP.slice(1);
-                                }
-                                return noHP
-                            }
-                            const noHpConverter = ConvertNumber(a.NoHpUser);
-                            const spareparts:any = a.sparepart || {};
-                            let sparepartList = [];
-                            let totalSparepartPrice = 0;
-
-                            for(let key in spareparts){
-                                if(spareparts.hasOwnProperty(key)){
-                                    const part = spareparts[key];
-                                    sparepartList.push(`${part.Sparepart}(${part.TypeOrColor})`);
-                                    totalSparepartPrice += parseInt(part.HargaSparepart || "0")
-                                }
-                            }
-
-                            return(
-                                <tbody key={i}>
-                                    <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                    <TableData>
-                                    <TableDataA
-                                            href={`https://wa.me/${noHpConverter}?text=Nota Services ${a.NoNota}, dibuat oleh ${
-                                            a.Lokasi === 'Cikaret' 
-                                                ? `CKRT-${a.Penerima}` 
-                                                : a.Lokasi === 'Sukahati' 
-                                                ? `SKHT-${a.Penerima}` 
-                                                : 'null'
-                                            }.%0A%0A Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${
-                                            a.MerkHp
-                                            } dengan kerusakan ${
-                                            a.Kerusakan
-                                            } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
-                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Hubungi kami lebih mudah, simpan nomor ini!* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
-                                            `}
-                                            target="_blank"
-                                        >
-                                            {a.NoNota}
-                                        </TableDataA>
-                                        </TableData>
-                                        <TableData>{dateFormater(a.TglMasuk)}</TableData>
-                                        <TableData>{dateFormater(a.TglKeluar)}</TableData>
-                                        <TableData>{a.MerkHp}</TableData>
-                                        <TableData>{a.Kerusakan}</TableData>
-                                        <TableData>{sparepartList.join(', ')}</TableData>
-                                        <TableData>{a.HargaIbnu && parseInt(a.HargaIbnu) !== 0 
-                                            ? parseInt(a.HargaIbnu).toLocaleString() 
-                                            : (totalSparepartPrice !== 0 
-                                                ? totalSparepartPrice.toLocaleString() 
-                                                : 0)
-                                            }</TableData>
-                                        <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
-                                        <TableData>
-                                        {a.Imei ? a.Imei.slice(0, -4).replace(/\d/g, '*') + a.Imei.slice(-4) : "0"}
-                                        </TableData>
-                                        <TableData>{a.NamaUser}</TableData>
-                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
-                                        <TableData>{a.Lokasi}</TableData>
-                                        <TableData>{a.Teknisi || a.status}</TableData>
-                                        <TableData>{a.Penerima}</TableData>
-                                        <TableData>{a.status}</TableData>
-                                    </TableRow>
-                                </tbody>
-                                )
-                            })}
-                    </Table>
-            </TableContainer>
-            </BasicSection2>     
            </> : 
             <>
             <MainWrapper>
@@ -625,13 +626,20 @@ const MainWrapper = styled.div`
 margin-top: 3rem;
 `
 const TableContainer = styled.div`
-  max-height: 500px;  /* Membatasi tinggi maksimal 500px */
+  max-height: 608px;  /* Membatasi tinggi maksimal 500px */
   overflow-y: auto;   /* Menambahkan scroll vertikal */
   border: 1px solid #ddd;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
 `;
 
+const THead = styled.thead`
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 10;   
+    width: 100%;
+`
 
 const Table = styled.table`
   width: 100%;
