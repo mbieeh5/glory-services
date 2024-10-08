@@ -135,7 +135,7 @@ export default function Settings() {
                                 <Buttons transparent onClick={() => handleStatistic()}>Statistic</Buttons>
                                 <ButtonsLogout onClick={(e) => logout()}>LogOut</ButtonsLogout>
                             </ButtonWrapper>
-                        </BasicSection2>
+                        </BasicSection3>
                     </Card>
                     {showModalAdd && (
                 <ModalWrapper>
