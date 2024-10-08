@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
+import BasicSection3 from "components/BasicSection3";
 import { getAuth } from "firebase/auth";
 
 interface DataRes {
@@ -23,15 +24,17 @@ interface DataRes {
     status: string;
 }
 
-interface SparepartData {
+/*interface SparepartData {
     Sparepart: string;
     HargaSparepart: any;
     TypeOrColor: string;
-}
+}*/
 
 export default function Admin() { 
 
     const [DataResi, setDataResi] = useState<DataRes[]>([]);
+    const [dataResiBak, setDataResiBak] = useState<DataRes[]>([]);
+    const [isActivatedBtn, setIsActivatedBtn] = useState<string>('total');
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isFinish, setIsFinish] = useState<string>('null');
@@ -39,7 +42,6 @@ export default function Admin() {
     const [penerimaSelected, setPenerimaSelected] = useState<string>('');
     const [lokasiSelected, setLokasiSelected] = useState<string>('');
     const [statusSelected, setStatusSelected] = useState<string>('');
-    const [sparepartSelected, setSparepartSelected] = useState<string>('')
     const [tglMskAwal, setTglMskAwal] = useState<string>('');
     const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
     const [tglKeluar, setTglKeluar] = useState<string>('')
@@ -85,6 +87,31 @@ export default function Admin() {
      * 
      */
 
+    const handleOnFilterButtonTitle = async (params: string) => {
+        setIsActivatedBtn(params);
+        if (dataResiBak.length <= DataResi.length) {
+            setDataResiBak(DataResi);
+        }
+        
+        if(params === 'berhasil'){
+            const filteredDataResi =  dataResiBak.filter(val => val.status === 'sukses')
+            return setDataResi(filteredDataResi);
+        }
+        if(params === 'pending'){
+            const filteredDataResi =  dataResiBak.filter(val => val.status === 'process')
+            return setDataResi(filteredDataResi);
+        }
+        if(params === 'batal'){
+            const filteredDataResi =  dataResiBak.filter(val => val.status === 'cancel')
+            return setDataResi(filteredDataResi);
+        }
+        if(params === 'total'){
+            const filteredDataResi =  dataResiBak;
+            return setDataResi(filteredDataResi)
+        }
+        return null;
+    }
+
     const TanggalMasukComponent = () => {
         return (
         <SplitterInputTanggal>
@@ -126,15 +153,10 @@ export default function Admin() {
                             const isTanggalMasukValid = tglMasuk >= masukAwal && tglMasuk <= masukAkhir;
                             const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
                             const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const sparepartArray:SparepartData[] = Object.values(items.sparepart || {});
-                            const isSparepartValid = sparepartArray.some(sparepartItem => {
-                                return !sparepartSelected || sparepartItem.Sparepart?.toLowerCase().includes(sparepartSelected.toLowerCase());
-                            });
-
                             const isStatusValid = (!statusSelected || 
                                 items.status?.toLowerCase().includes(statusSelected.toLowerCase())) ||
                                 (statusSelected.toLowerCase() === 'belum diambil' && items.TglKeluar === 'null');    
-                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid && isSparepartValid;
+                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
                         });
                         const sorterData = filterData.sort((a, b) => {
                             const dateA:any = new Date(a.TglMasuk);
@@ -180,7 +202,7 @@ export default function Admin() {
                         countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
                         countTotal = converter.filter(item => item.status !== 'claim garansi').length;
                         setDataResi(converter);
-                    }else if(sparepartSelected){
+                    }/*else if(sparepartSelected){
                         const filterData = Array.filter(items => {
                             const sparepartArray:SparepartData[] = Object.values(items.sparepart || {});
 
@@ -210,7 +232,7 @@ export default function Admin() {
                         countTotal = converter.filter(item => item.status !== 'claim garansi').length;
 
                         setDataResi(converter);
-                    }else{
+                    }*/else{
                         const filterData = Array.filter(items => {
                             const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
                             const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
@@ -365,7 +387,31 @@ export default function Admin() {
             </> : <>
             {isAdmin ? 
             <>
-            <BasicSection2 title={`BERHASIL : ${sBerhasil} | PENDING : ${sPending} | GAGAL : ${sBatal} | TOTAL : ${sTotalData}`}>
+            <BasicSection2>
+                <Title onClick={() => {handleOnFilterButtonTitle('berhasil')}}
+                  style={{
+                    color: isActivatedBtn === 'berhasil' ? 'green' : 'white',
+                    fontSize: isActivatedBtn === 'berhasil' ? '2.5rem' : '2rem',
+                    textDecorationLine: isActivatedBtn === 'berhasil' ? 'underline' : 'none',
+                  }}>BERHASIL : {sBerhasil} |</Title>
+                <Title onClick={() => {handleOnFilterButtonTitle('pending')}}
+                style={{
+                    color: isActivatedBtn === 'pending' ? 'yellow' : 'white',
+                    fontSize: isActivatedBtn === 'pending' ? '2.5rem' : '2rem',
+                    textDecorationLine: isActivatedBtn === 'pending' ? 'underline' : 'none',
+                  }}>PENDING : {sPending} |</Title>
+                <Title onClick={() => {handleOnFilterButtonTitle('batal')}}
+                style={{
+                    color: isActivatedBtn === 'batal' ? 'red' : 'white',
+                    fontSize: isActivatedBtn === 'batal' ? '2.5rem' : '2rem',
+                    textDecorationLine: isActivatedBtn === 'batal' ? 'underline' : 'none',
+                  }}>BATAL : {sBatal} |</Title>
+                <Title onClick={() => {handleOnFilterButtonTitle('total')}}
+                style={{
+                    color: isActivatedBtn === 'total' ? 'white' : 'white',
+                    fontSize: isActivatedBtn === 'total' ? '2rem' : '2rem',
+                    textDecorationLine: isActivatedBtn === 'total' ? 'none' : 'none',
+                  }}>TOTAL : {sTotalData}</Title>
                     <TableContainer>
                         <Table>
                             <THead>
@@ -464,7 +510,9 @@ export default function Admin() {
                                 <Splitter>
                                     <div>
                                     <LabelModal>Sparepart:
-                                    <SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
+                                    <Input placeholder="Masukan Kata Kunci" onChange={(e) => {}}/>
+
+                                    {/*<SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
                                         <option value={""}>SEMUA</option>
                                         <option>ANT CABLE</option>
                                         <option>BAZEL HP</option>
@@ -482,7 +530,7 @@ export default function Admin() {
                                         <option>SIMLOCK</option>
                                         <option>SPEAKER</option>
                                         <option>TOMBOL LUAR</option>
-                                    </SelectModal>
+                                    </SelectModal>*/}
                                     </LabelModal>
                                     </div>
                                     <div>
@@ -532,15 +580,13 @@ export default function Admin() {
                                     <TanggalMasukComponent />
                                 <Splitter2>
                                 </Splitter2>
-                                <ButtonWrapper>
-                                </ButtonWrapper>
                 </Search>
             </Wrapper2>
 
            </> : 
             <>
             <MainWrapper>
-                <BasicSection2 title={`Service ${isFinish}`}>
+                <BasicSection3 title={`Service ${isFinish}`}>
                         <Wrapper>
                             <Table>
                                 <thead>
@@ -613,7 +659,7 @@ export default function Admin() {
                                 })}
                         </Table>
                 </Wrapper>
-                </BasicSection2>
+                </BasicSection3>
             </MainWrapper>
             </>}
             </>}        
@@ -689,10 +735,10 @@ const Buttons = styled.button`
   }
 `;
 
-const ButtonWrapper = styled.div`
+/*const ButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
-`;
+`;*/
 
 const TableHeader = styled.th`
   padding: 10px;
@@ -840,4 +886,16 @@ const SelectModal = styled.select`
 const Splitter2 = styled.div`
   height: 1px;
   background-color: #e0e0e0;
+`;
+
+const Title = styled.button`
+  font-size: 2rem;
+  padding: 2px;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 4rem;
+  letter-spacing: -0.00em;
+  background: rgb(var(--modalBackground));
+  color: rgb(var(--Text));
+  border: none;
 `;

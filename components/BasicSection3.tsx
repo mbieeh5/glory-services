@@ -4,20 +4,33 @@ import { media } from 'utils/media';
 import Container from './Container';
 
 export interface BasicSectionProps {
-
+  title: string;
 }
 
 
-export default function BasicSection2({ children }: PropsWithChildren<BasicSectionProps>) {
+export default function BasicSection3({ title, children }: PropsWithChildren<BasicSectionProps>) {
   return (
     <BasicSectionWrapper>
       <ContentContainer>
+        <Title>{title}</Title>
         <RichText>{children}</RichText>
       </ContentContainer>
     </BasicSectionWrapper>
   );
 }
 
+const Title = styled.button`
+  font-size: 2.5rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 4rem;
+  letter-spacing: -0.03em;
+
+  ${media('<=tablet')} {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+  }
+`;
 
 const ContentContainer = styled.div`
   display: absolute;
