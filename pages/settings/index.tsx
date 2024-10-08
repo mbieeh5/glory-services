@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import { useRouter } from "next/router"
 import { useState } from "react"
-import Button from "component/Button";
+import Button from "components/Button";
 import styled from "styled-components";
 import BasicSection3 from "components/BasicSection3";
 import ButtonGroup from "components/ButtonGroup";
