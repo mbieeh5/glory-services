@@ -1,9 +1,9 @@
 /* eslint-disable import/order */
 import { useRouter } from "next/router"
 import { useState } from "react"
-import Button from "components/Button";
+import Button from "component/Button";
 import styled from "styled-components";
-import BasicSection2 from "components/BasicSection2";
+import BasicSection3 from "components/BasicSection3";
 import ButtonGroup from "components/ButtonGroup";
 import { createUserWithEmailAndPassword, EmailAuthProvider, getAuth, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 import { useLogin } from "contexts/LoginContext";
