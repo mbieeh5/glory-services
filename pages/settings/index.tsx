@@ -125,7 +125,7 @@ export default function Settings() {
             {isLogin ? (
                 <Wrapper>
                     <Card>
-                        <BasicSection2 title={`Login As : `}>
+                        <BasicSection3 title={`Login As : `}>
                             <h2>{auth.currentUser?.email}</h2>
                             <ButtonWrapper>
                                 {auth.currentUser?.email === "admin@rraf.com" && (
