@@ -10,8 +10,8 @@ const Button = styled.button<ButtonProps>`
   text-decoration: none;
   text-align: center;
   background: ${(p) => (p.transparent ? 'transparent' : 'rgb(var(--primary))')};
-  padding: 1.75rem 2.25rem;
-  font-size: 1.2rem;
+  padding: 1.75rem 1.25rem;
+  font-size: 1rem;
   color: ${(p) => (p.transparent ? 'rgb(var(--text))' : 'rgb(var(--textSecondary))')};
   text-transform: uppercase;
   font-family: var(--font);
@@ -28,7 +28,7 @@ const Button = styled.button<ButtonProps>`
   }
 
   &:hover {
-    transform: scale(1.025);
+    transform: scale(1.000);
   }
 `;
 

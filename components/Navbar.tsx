@@ -116,8 +116,8 @@ function NavItem({ href, title, outlined }: SingleNavItem) {
 }
 
 const CustomButton = styled(Button)`
-  padding: 0.75rem 1.5rem;
-  line-height: 1.8;
+  padding: 0.75rem 1rem;
+  line-height: 0.8;
 `;
 
 const NavItemList = styled.div`
@@ -138,8 +138,8 @@ const HamburgerMenuWrapper = styled.div`
 const LogoWrapper = styled.div`
   display: flex;
   text-decoration: none;
-  padding: 2rem;
-  margin-top: -55px;
+  margin-top: -45px;
+  margin-left: 20px;
   color: rgb(var(--logoColor));
 `;
 
@@ -176,7 +176,7 @@ const NavbarContainer = styled.div<NavbarContainerProps>`
   top: 0;
   padding: 1.5rem 0;
   width: 100%;
-  height: 8rem;
+  height: 5rem;
   z-index: var(--z-navbar);
 
   background-color: rgb(var(--navbarBackground));

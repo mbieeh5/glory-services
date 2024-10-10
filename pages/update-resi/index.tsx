@@ -2,7 +2,7 @@
 import { child, get, getDatabase, ref, update } from "firebase/database";
 import { useState } from "react";
 import styled, {keyframes} from "styled-components";
-import BasicSection2 from "components/BasicSection2";
+import BasicSection3 from "components/BasicSection3";
 import Button from "components/Button";
 import ButtonGroup from "components/ButtonGroup";
 import Head from "next/head";
@@ -283,7 +283,7 @@ export default function UpdateResi() {
             <Divider />
             <WrapperContent>
                 {isSearch ? (
-                    <BasicSection2 title="Update Data Service">
+                    <BasicSection3 title="Update Data Service">
                 <Wrapper2>
                     {serviceDataToEdit.map((a) => {
 
@@ -369,6 +369,7 @@ export default function UpdateResi() {
                                     <option>BAZEL HP</option>
                                     <option>BACKDOOR</option>
                                     <option>BATERAI</option>
+                                    <option>BUZZER</option>
                                     <option>CON T/C</option>
                                     <option>FLEXI BOARD</option>
                                     <option>FLEXI CON SIM</option>
@@ -458,7 +459,7 @@ export default function UpdateResi() {
                     )}
                 })}
                 </Wrapper2>
-                    </BasicSection2>
+                    </BasicSection3>
                 ) : (
                 <>
                     <SearchWrapper>

@@ -26,7 +26,7 @@ const ContentContainer = styled.div`
 
 const BasicSectionWrapper = styled(Container)`
   padding-bottom: 1rem;
-  padding-top: 2rem;
+  padding-top: 1px;
   text-align: center;
   ${media('<=desktop')} {
     flex-direction: column;

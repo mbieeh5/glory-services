@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { useState } from "react"
 import Button from "components/Button";
 import styled from "styled-components";
-import BasicSection2 from "components/BasicSection2";
+import BasicSection3 from "components/BasicSection3";
 import ButtonGroup from "components/ButtonGroup";
 import { createUserWithEmailAndPassword, EmailAuthProvider, getAuth, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 import { useLogin } from "contexts/LoginContext";
@@ -125,7 +125,7 @@ export default function Settings() {
             {isLogin ? (
                 <Wrapper>
                     <Card>
-                        <BasicSection2 title={`Login As : `}>
+                        <BasicSection3 title={`Login As : `}>
                             <h2>{auth.currentUser?.email}</h2>
                             <ButtonWrapper>
                                 {auth.currentUser?.email === "admin@rraf.com" && (
@@ -135,7 +135,7 @@ export default function Settings() {
                                 <Buttons transparent onClick={() => handleStatistic()}>Statistic</Buttons>
                                 <ButtonsLogout onClick={(e) => logout()}>LogOut</ButtonsLogout>
                             </ButtonWrapper>
-                        </BasicSection2>
+                        </BasicSection3>
                     </Card>
                     {showModalAdd && (
                 <ModalWrapper>

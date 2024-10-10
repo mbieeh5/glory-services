@@ -17,24 +17,30 @@ interface DataRes {
     Penerima: string;
     Harga: any;
     Imei: string;
-    sparepart: any;
+    sparepart: {
+        HargaSparepart: string,
+        Sparepart: string,
+        TypeOrColor: string,
+    }[];
     HargaIbnu: any;
     Teknisi: string;
     Lokasi: string;
     status: string;
 }
 
-/*interface SparepartData {
+interface SparepartData {
     Sparepart: string;
     HargaSparepart: any;
     TypeOrColor: string;
-}*/
+}
 
 export default function Admin() { 
 
     const [DataResi, setDataResi] = useState<DataRes[]>([]);
     const [dataResiBak, setDataResiBak] = useState<DataRes[]>([]);
     const [isActivatedBtn, setIsActivatedBtn] = useState<string>('total');
+    const [isKeyword, setIsKeyword] = useState<string>('');
+    const [sparepartSelected, setSparepartSelected] = useState<string>('');
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isFinish, setIsFinish] = useState<string>('null');
@@ -94,15 +100,15 @@ export default function Admin() {
         }
         
         if(params === 'berhasil'){
-            const filteredDataResi =  dataResiBak.filter(val => val.status === 'sukses')
+            const filteredDataResi =  dataResiBak.filter(val => val.status === 'sukses' && val.TglKeluar.length > 5)
             return setDataResi(filteredDataResi);
         }
         if(params === 'pending'){
-            const filteredDataResi =  dataResiBak.filter(val => val.status === 'process')
+            const filteredDataResi =  dataResiBak.filter(val => val.status === 'process' && val.TglKeluar === undefined || val.TglKeluar.length < 5)
             return setDataResi(filteredDataResi);
         }
         if(params === 'batal'){
-            const filteredDataResi =  dataResiBak.filter(val => val.status === 'cancel')
+            const filteredDataResi =  dataResiBak.filter(val => val.status === 'cancel' && val.TglKeluar.length > 5)
             return setDataResi(filteredDataResi);
         }
         if(params === 'total'){
@@ -156,7 +162,32 @@ export default function Admin() {
                             const isStatusValid = (!statusSelected || 
                                 items.status?.toLowerCase().includes(statusSelected.toLowerCase())) ||
                                 (statusSelected.toLowerCase() === 'belum diambil' && items.TglKeluar === 'null');    
-                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+
+                                if(isKeyword === ""){
+                                    return  isTeknisiValid && isPenerimaValid && isStatusValid && isTanggalMasukValid
+                                }
+    
+                                const isKerusakanValid = items.Kerusakan?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                                const isMerkHPValid = items.MerkHp?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                                const isNoNotaValid = items.NoNota?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                                const isImeiValid = items.Imei?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                                const isNoHpValid = items.NoHpUser?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                                
+                                const isHargaUser = typeof items.Harga === 'number'
+                                    ? items.Harga.toString().includes(isKeyword)
+                                    : typeof items.Harga === 'string'
+                                    ? items.Harga.includes(isKeyword)
+                                    : false;
+                            
+                                const isKeywordValid = isKerusakanValid || isMerkHPValid || isNoNotaValid || isImeiValid || isNoHpValid || isHargaUser;
+    
+                                return (
+                                    isTanggalMasukValid &&
+                                    isTeknisiValid &&
+                                    isPenerimaValid && 
+                                    isStatusValid && 
+                                    isKeywordValid
+                                );
                         });
                         const sorterData = filterData.sort((a, b) => {
                             const dateA:any = new Date(a.TglMasuk);
@@ -174,6 +205,61 @@ export default function Admin() {
                         countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
                         countTotal = converter.filter(item => item.status !== 'claim garansi').length;
                         
+                        setDataResi(converter);
+                    }else if(sparepartSelected){
+                        const filterData = Array.filter(items => {
+                            const sparepartArray: SparepartData[] = Object.values(items.sparepart || {});
+                        
+                            const isSparepartValid = sparepartArray.some(sparepartItem => {
+                                return !sparepartSelected || sparepartItem.Sparepart?.toLowerCase().includes(sparepartSelected.toLowerCase());
+                            });
+                        
+                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
+                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
+                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
+                            
+                            if(isKeyword === ""){
+                                return isSparepartValid && isTeknisiValid && isPenerimaValid && isStatusValid
+                            }
+
+                            const isKerusakanValid = items.Kerusakan?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isMerkHPValid = items.MerkHp?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isNoNotaValid = items.NoNota?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isImeiValid = items.Imei?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isNoHpValid = items.NoHpUser?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            
+                            const isHargaUser = typeof items.Harga === 'number'
+                                ? items.Harga.toString().includes(isKeyword)
+                                : typeof items.Harga === 'string'
+                                ? items.Harga.includes(isKeyword)
+                                : false;
+                        
+                            const isKeywordValid = isKerusakanValid || isMerkHPValid || isNoNotaValid || isImeiValid || isNoHpValid || isHargaUser;
+
+                            return (
+                                isSparepartValid && 
+                                isTeknisiValid && 
+                                isPenerimaValid && 
+                                isStatusValid && 
+                                isKeywordValid
+                            );
+                        });                        
+                        const sorterData = filterData.sort((a, b) => {
+                            const dateA:any = new Date(a.TglMasuk);
+                            const dateB:any = new Date(b.TglMasuk);
+                            return dateA - dateB;
+                        });
+                        const converter = sorterData.map((item:any) => {
+                            if(item.status === 'sudah diambil'){
+                                item.status = 'sukses';
+                            }
+                            return item
+                        });
+                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
+                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
+
                         setDataResi(converter);
                     }else if(tglKeluar){
                         const filterData = Array.filter(items => {
@@ -202,18 +288,20 @@ export default function Admin() {
                         countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
                         countTotal = converter.filter(item => item.status !== 'claim garansi').length;
                         setDataResi(converter);
-                    }/*else if(sparepartSelected){
+                    }else if(isKeyword){
                         const filterData = Array.filter(items => {
-                            const sparepartArray:SparepartData[] = Object.values(items.sparepart || {});
+                            const isKerusakanValid = items.Kerusakan?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isMerkHPValid = items.MerkHp?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isNoNotaValid = items.NoNota?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isHargaUser = typeof items.Harga === 'number'
+                                                ? items.Harga.toString().includes(isKeyword)
+                                                : typeof items.Harga === 'string'
+                                                ? items.Harga.includes(isKeyword)
+                                                : false;
+                            const isImeiValid = items.Imei?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                            const isNoHpValid = items.NoHpUser?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
 
-                            const isSparepartValid = sparepartArray.some(sparepartItem => {
-                                return !sparepartSelected || sparepartItem.Sparepart?.toLowerCase().includes(sparepartSelected.toLowerCase());
-                            });
-                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                    
-                            return isSparepartValid && isTeknisiValid && isPenerimaValid && isStatusValid;
+                            return isKerusakanValid || isMerkHPValid || isNoNotaValid || isImeiValid || isNoHpValid || isHargaUser;
                         })
                         const sorterData = filterData.sort((a, b) => {
                             const dateA:any = new Date(a.TglMasuk);
@@ -232,7 +320,7 @@ export default function Admin() {
                         countTotal = converter.filter(item => item.status !== 'claim garansi').length;
 
                         setDataResi(converter);
-                    }*/else{
+                    }else{
                         const filterData = Array.filter(items => {
                             const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
                             const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
@@ -335,7 +423,7 @@ export default function Admin() {
                         setSPending(countPending);
                         setSTotalData(countTotal)
                         setIsLoading(false);
-
+                          setDataResiBak(sortedArray);
                         return setDataResi(sortedArray);
                     }).catch((err) => {
                         console.error(err);
@@ -489,7 +577,7 @@ export default function Admin() {
                                             }</TableData>
                                         <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
                                         <TableData>
-                                        {a.Imei ? a.Imei.slice(0, -4).replace(/\d/g, '*') + a.Imei.slice(-4) : "0"}
+                                        {a.Imei}
                                         </TableData>
                                         <TableData>{a.NamaUser}</TableData>
                                         <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
@@ -510,14 +598,13 @@ export default function Admin() {
                                 <Splitter>
                                     <div>
                                     <LabelModal>Sparepart:
-                                    <Input placeholder="Masukan Kata Kunci" onChange={(e) => {}}/>
-
-                                    {/*<SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
+                                    <SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
                                         <option value={""}>SEMUA</option>
                                         <option>ANT CABLE</option>
                                         <option>BAZEL HP</option>
                                         <option>BACKDOOR</option>
                                         <option>BATERAI</option>
+                                        <option>BUZZER</option>
                                         <option>CON T/C</option>
                                         <option>FLEXI BOARD</option>
                                         <option>FLEXI CON SIM</option>
@@ -530,7 +617,7 @@ export default function Admin() {
                                         <option>SIMLOCK</option>
                                         <option>SPEAKER</option>
                                         <option>TOMBOL LUAR</option>
-                                    </SelectModal>*/}
+                                    </SelectModal>
                                     </LabelModal>
                                     </div>
                                     <div>
@@ -577,6 +664,9 @@ export default function Admin() {
                                         </LabelModal>
                                     </div>
                                 </Splitter>
+                                        <LabelModal2> Pencarian :
+                                            <Input2 placeholder="Masukan Kata Kunci" onChange={(e) => {setIsKeyword(e.target.value.toLocaleLowerCase())}}/>
+                                        </LabelModal2>
                                     <TanggalMasukComponent />
                                 <Splitter2>
                                 </Splitter2>
@@ -669,7 +759,7 @@ export default function Admin() {
     }
 
 const MainWrapper = styled.div`
-margin-top: 3rem;
+margin-top: 1rem;
 `
 const TableContainer = styled.div`
   max-height: 608px;  /* Membatasi tinggi maksimal 500px */
@@ -734,11 +824,6 @@ const Buttons = styled.button`
     transform: scale(1.05);
   }
 `;
-
-/*const ButtonWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-`;*/
 
 const TableHeader = styled.th`
   padding: 10px;
@@ -808,7 +893,25 @@ const Input = styled.input`
     outline: none;
     box-shadow: var(--shadow-lg);
   }
-`
+`;
+
+const Input2 = styled.input`
+    background-color: rgb(var(--modalBackground));
+    border: rgb(var(--modalBackground));
+    color: rgb(var(--text));
+    border-radius: 0.6rem;
+    min-width: 100%;
+    max-height: 2rem;
+    text-align: center;
+    font-size: 1.6rem;
+    padding: 1.8rem;
+    box-shadow: var(--shadow-md);
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--shadow-lg);
+  }
+`;
 
 
 const Wrapper = styled.div`
@@ -839,6 +942,8 @@ const Search = styled.div`
 
 const Splitter = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 20px;
 `;
@@ -858,6 +963,14 @@ const Label = styled.label`
 `;
 
 const LabelModal = styled(Label)`
+margin-bottom: 1px;
+display: flex;
+flex-direction: column;
+text-align: center;
+color: rgb(var(--Text));
+`;
+
+const LabelModal2 = styled(Label)`
 display: flex;
 flex-direction: column;
 text-align: center;
@@ -893,7 +1006,7 @@ const Title = styled.button`
   padding: 2px;
   font-weight: bold;
   line-height: 1.1;
-  margin-bottom: 4rem;
+  margin-bottom: 1rem;
   letter-spacing: -0.00em;
   background: rgb(var(--modalBackground));
   color: rgb(var(--Text));
