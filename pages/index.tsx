@@ -5,6 +5,8 @@ import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
 import BasicSection3 from "components/BasicSection3";
 import { getAuth } from "firebase/auth";
+import { Button, Input as Inputs} from "antd";
+import { SearchOutlined } from '@ant-design/icons';
 
 interface DataRes {
     NoNota: string;
@@ -58,7 +60,7 @@ export default function Admin() {
 
     const today = new Date();
     const day = today.getDate().toString().padStart(2, '0');
-    const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Bulan dimulai dari 0
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
     const year = today.getFullYear();
     const localDate = `${year}-${month}-${day}`;
 
@@ -76,6 +78,97 @@ export default function Admin() {
             return 'Belum Di Ambil'
         }
     }
+
+
+    /*const columns: TableProps<DataRes>['columns'] = [
+        {
+            title: "No Nota",
+            dataIndex: "NoNota",
+            key: 'NoNota',
+            render: (text) => <a>{text}</a>
+        },
+        {
+            title: "Tanggal Masuk",
+            dataIndex: "TglMasuk",
+            key: "TglMasuk"
+        },
+        {
+            title: "Tanggal Keluar",
+            dataIndex: "TglKeluar",
+            key: "TglKeluar",
+        },
+        {
+            title: "Merek HP",
+            dataIndex: "MerkHp",
+            key: "MerkHp"
+        },
+        {
+            title: "Kerusakan",
+            dataIndex: "Kerusakan",
+            key: "Kerusakan"
+        },
+        {
+            title: "Spareparts",
+            dataIndex: "sparepart",
+            key: "sparepart",
+            render: (_, {sparepart}) => (
+                <>
+                    {sparepart?.map((a) => {
+                        let color = a.Sparepart.length > 1 ? 'geekblue' : 'ggreen';
+                        if(a.Sparepart === 'LCD'){
+                            color = 'volcano'
+                        }
+                        return(
+                           <Tag key={a.HargaSparepart} color={color}>
+                           {a.Sparepart}
+                           </Tag> 
+                        )
+                    })}
+                </>
+            )
+        },
+        {
+            title: "Harga User",
+            dataIndex: "Harga",
+            key: "Harga",
+        },
+        {
+            title: 'Imei',
+            dataIndex: "Imei",
+            key: "Imei",
+        },
+        {
+            title: "Nama User",
+            dataIndex: "NamaUser",
+            key: "NamaUser"
+        },
+        {
+            title: "No Hp User",
+            dataIndex: "NoHpUser",
+            key: "NoHpUser",
+        },
+        {
+            title: "Lokasi",
+            dataIndex: "Lokasi",
+            key: "Lokasi",
+        },
+        {
+            title: "Teknisi",
+            dataIndex: "Teknisi",
+            key: "Teknisi",
+        },
+        {
+            title: "Penerima",
+            dataIndex: "Penerima",
+            key: 'Penerima'
+        },
+        {
+            title: "status",
+            dataIndex: "status",
+            key: 'status1'
+        }
+
+    ]*/
 
     /**
      * Tambahan untuk status service yang sudah di ambil,
@@ -133,7 +226,11 @@ export default function Admin() {
                 Tanggal Akhir
                 <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
             </LabelModal> 
-            <Buttons onClick={() => {filteredData()}}>Filter</Buttons>
+            <Buttons shape="circle" icon={<SearchOutlined />} onClick={() => {filteredData()}} />
+            {/*
+                <Buttons onClick={() => {filteredData()}}></Buttons>
+               */ 
+            }
         </SplitterInputTanggal>
         )
     };
@@ -150,7 +247,7 @@ export default function Admin() {
                     let countSuccess = 0;
                     let countPending = 0;
                     let countCancel = 0;
-                    let countTotal = 0;
+                    let countTotal = 0; 
                     if (tglMskAwal && tglMskAkhir) {
                         const filterData = Array.filter(items => {
                             const masukAwal = new Date(tglMskAwal).setHours(0, 0, 0, 0);
@@ -478,31 +575,32 @@ export default function Admin() {
             <BasicSection2>
                 <Title onClick={() => {handleOnFilterButtonTitle('berhasil')}}
                   style={{
-                    color: isActivatedBtn === 'berhasil' ? 'green' : 'white',
+                    color: isActivatedBtn === 'berhasil' ? 'green' : 'rgb(var(--Text))',
                     fontSize: isActivatedBtn === 'berhasil' ? '2.5rem' : '2rem',
                     textDecorationLine: isActivatedBtn === 'berhasil' ? 'underline' : 'none',
                   }}>BERHASIL : {sBerhasil} |</Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('pending')}}
                 style={{
-                    color: isActivatedBtn === 'pending' ? 'yellow' : 'white',
+                    color: isActivatedBtn === 'pending' ? 'yellow' : 'rgb(var(--Text))',
                     fontSize: isActivatedBtn === 'pending' ? '2.5rem' : '2rem',
                     textDecorationLine: isActivatedBtn === 'pending' ? 'underline' : 'none',
                   }}>PENDING : {sPending} |</Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('batal')}}
                 style={{
-                    color: isActivatedBtn === 'batal' ? 'red' : 'white',
+                    color: isActivatedBtn === 'batal' ? 'red' : 'rgb(var(--Text))',
                     fontSize: isActivatedBtn === 'batal' ? '2.5rem' : '2rem',
                     textDecorationLine: isActivatedBtn === 'batal' ? 'underline' : 'none',
                   }}>BATAL : {sBatal} |</Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('total')}}
                 style={{
-                    color: isActivatedBtn === 'total' ? 'white' : 'white',
+                    color: isActivatedBtn === 'total' ? 'rgb(var(--Text))' : 'rgb(var(--Text))',
                     fontSize: isActivatedBtn === 'total' ? '2rem' : '2rem',
                     textDecorationLine: isActivatedBtn === 'total' ? 'none' : 'none',
                   }}>TOTAL : {sTotalData}</Title>
-                    <TableContainer>
+
+            <TableContainer>
                         <Table>
-                            <THead>
+                        <THead>
                                 <tr>
                                     <TableHeader>No Nota</TableHeader>
                                     <TableHeader>Tanggal Masuk</TableHeader>
@@ -592,8 +690,7 @@ export default function Admin() {
                     </Table>
             </TableContainer>
             </BasicSection2>  
-            
-            <Wrapper2>
+            <Wrapper2>{/* BAGIAN FILTER ETC */}
                 <Search>
                                 <Splitter>
                                     <div>
@@ -665,16 +762,14 @@ export default function Admin() {
                                     </div>
                                 </Splitter>
                                         <LabelModal2> Pencarian :
-                                            <Input2 placeholder="Masukan Kata Kunci" onChange={(e) => {setIsKeyword(e.target.value.toLocaleLowerCase())}}/>
+                                            <Input placeholder="Masukan Kata Kunci" onChange={(e) => {setIsKeyword(e.target.value.toLocaleLowerCase())}}/>
                                         </LabelModal2>
-                                    <TanggalMasukComponent />
-                                <Splitter2>
-                                </Splitter2>
+                                <TanggalMasukComponent />
                 </Search>
             </Wrapper2>
 
            </> : 
-            <>
+            <>{/* BAGIAN MOD & USER */}
             <MainWrapper>
                 <BasicSection3 title={`Service ${isFinish}`}>
                         <Wrapper>
@@ -810,10 +905,11 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
         }};
 `;
 
-const Buttons = styled.button`
+const Buttons = styled(Button)`
   background-color: #007bff;
   color: white;
-  margin-top: 23px;
+  margin-top: 27px;
+  margin-left: 17px;
   border: none;
   border-radius: 12px;
   max-height: 30px;
@@ -877,42 +973,31 @@ const Spinner = styled.div`
 `;
 
 
-const Input = styled.input`
+const Input = styled(Inputs)`
     background-color: rgb(var(--modalBackground));
-    border: rgb(var(--modalBackground));
-    color: rgb(var(--text));
-    border-radius: 0.6rem;
-    max-width: 25rem;
-    max-height: 2rem;
+    color: rgb(var(--Text));
+    border: none; 
+    text-align:center;
+    padding: 10px;
+    border-radius: 8px; 
+    font-size: 16px;
+    
+  &::placeholder {
+    color: rgb(var(--Text));
     text-align: center;
-    font-size: 1.6rem;
-    padding: 1.8rem;
-    box-shadow: var(--shadow-md);
+    }
 
-  &:focus {
-    outline: none;
-    box-shadow: var(--shadow-lg);
+    &:hover {
+        color: rgb(var(--Background));
+    }
+    
+    &:focus {
+        border-color: #ff4d4f;
+        color: rgb(var(--Background));
+        background-color: rgb(var(--modalBackground));
+        box-shadow: 0 0 5px rgba(255, 77, 79, 0.5); 
   }
 `;
-
-const Input2 = styled.input`
-    background-color: rgb(var(--modalBackground));
-    border: rgb(var(--modalBackground));
-    color: rgb(var(--text));
-    border-radius: 0.6rem;
-    min-width: 100%;
-    max-height: 2rem;
-    text-align: center;
-    font-size: 1.6rem;
-    padding: 1.8rem;
-    box-shadow: var(--shadow-md);
-
-  &:focus {
-    outline: none;
-    box-shadow: var(--shadow-lg);
-  }
-`;
-
 
 const Wrapper = styled.div`
 overflow-x: auto;
@@ -994,11 +1079,6 @@ const SelectModal = styled.select`
     border-color: #007bff;
     outline: none;
   }
-`;
-
-const Splitter2 = styled.div`
-  height: 1px;
-  background-color: #e0e0e0;
 `;
 
 const Title = styled.button`

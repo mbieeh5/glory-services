@@ -19,13 +19,13 @@ export default function BasicSection3({ title, children }: PropsWithChildren<Bas
   );
 }
 
-const Title = styled.button`
+const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: bold;
   line-height: 1.1;
   margin-bottom: 4rem;
   letter-spacing: -0.03em;
-
+  color: rgb(var(--Text));
   ${media('<=tablet')} {
     font-size: 2.5rem;
     margin-bottom: 2rem;
