@@ -7,6 +7,7 @@ import BasicSection3 from "components/BasicSection3";
 import { getAuth } from "firebase/auth";
 import { Button, Input as Inputs} from "antd";
 import { SearchOutlined } from '@ant-design/icons';
+import Table from "../components/Table";
 
 interface DataRes {
     NoNota: string;
@@ -78,97 +79,6 @@ export default function Admin() {
             return 'Belum Di Ambil'
         }
     }
-
-
-    /*const columns: TableProps<DataRes>['columns'] = [
-        {
-            title: "No Nota",
-            dataIndex: "NoNota",
-            key: 'NoNota',
-            render: (text) => <a>{text}</a>
-        },
-        {
-            title: "Tanggal Masuk",
-            dataIndex: "TglMasuk",
-            key: "TglMasuk"
-        },
-        {
-            title: "Tanggal Keluar",
-            dataIndex: "TglKeluar",
-            key: "TglKeluar",
-        },
-        {
-            title: "Merek HP",
-            dataIndex: "MerkHp",
-            key: "MerkHp"
-        },
-        {
-            title: "Kerusakan",
-            dataIndex: "Kerusakan",
-            key: "Kerusakan"
-        },
-        {
-            title: "Spareparts",
-            dataIndex: "sparepart",
-            key: "sparepart",
-            render: (_, {sparepart}) => (
-                <>
-                    {sparepart?.map((a) => {
-                        let color = a.Sparepart.length > 1 ? 'geekblue' : 'ggreen';
-                        if(a.Sparepart === 'LCD'){
-                            color = 'volcano'
-                        }
-                        return(
-                           <Tag key={a.HargaSparepart} color={color}>
-                           {a.Sparepart}
-                           </Tag> 
-                        )
-                    })}
-                </>
-            )
-        },
-        {
-            title: "Harga User",
-            dataIndex: "Harga",
-            key: "Harga",
-        },
-        {
-            title: 'Imei',
-            dataIndex: "Imei",
-            key: "Imei",
-        },
-        {
-            title: "Nama User",
-            dataIndex: "NamaUser",
-            key: "NamaUser"
-        },
-        {
-            title: "No Hp User",
-            dataIndex: "NoHpUser",
-            key: "NoHpUser",
-        },
-        {
-            title: "Lokasi",
-            dataIndex: "Lokasi",
-            key: "Lokasi",
-        },
-        {
-            title: "Teknisi",
-            dataIndex: "Teknisi",
-            key: "Teknisi",
-        },
-        {
-            title: "Penerima",
-            dataIndex: "Penerima",
-            key: 'Penerima'
-        },
-        {
-            title: "status",
-            dataIndex: "status",
-            key: 'status1'
-        }
-
-    ]*/
 
     /**
      * Tambahan untuk status service yang sudah di ambil,
@@ -598,6 +508,9 @@ export default function Admin() {
                     textDecorationLine: isActivatedBtn === 'total' ? 'none' : 'none',
                   }}>TOTAL : {sTotalData}</Title>
 
+
+            {/*
+             
             <TableContainer>
                         <Table>
                         <THead>
@@ -689,7 +602,13 @@ export default function Admin() {
                             })}
                     </Table>
             </TableContainer>
-            </BasicSection2>  
+
+            */}
+            </BasicSection2>
+                <WrapperAntTable>
+                    <Table data={DataResi} />
+                </WrapperAntTable>
+            
             <Wrapper2>{/* BAGIAN FILTER ETC */}
                 <Search>
                                 <Splitter>
@@ -773,7 +692,7 @@ export default function Admin() {
             <MainWrapper>
                 <BasicSection3 title={`Service ${isFinish}`}>
                         <Wrapper>
-                            <Table>
+                            <Tables>
                                 <thead>
                                     <tr>
                                     <TableHeader>No Nota</TableHeader>
@@ -842,7 +761,7 @@ export default function Admin() {
                                     </tbody>
                                     )
                                 })}
-                        </Table>
+                        </Tables>
                 </Wrapper>
                 </BasicSection3>
             </MainWrapper>
@@ -856,9 +775,10 @@ export default function Admin() {
 const MainWrapper = styled.div`
 margin-top: 1rem;
 `
+/*
 const TableContainer = styled.div`
-  max-height: 608px;  /* Membatasi tinggi maksimal 500px */
-  overflow-y: auto;   /* Menambahkan scroll vertikal */
+  max-height: 608px;
+  overflow-y: auto; 
   border: 1px solid #ddd;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -871,8 +791,9 @@ const THead = styled.thead`
     z-index: 10;   
     width: 100%;
 `
+*/
 
-const Table = styled.table`
+const Tables = styled.table`
   width: 100%;
   font-size: 12px;
   border-collapse: collapse;
@@ -920,6 +841,14 @@ const Buttons = styled(Button)`
     transform: scale(1.05);
   }
 `;
+
+const WrapperAntTable = styled.div`
+display: flex;
+padding: 1rem;
+width: 100%;
+max-width: 95%;
+margin: auto;
+`
 
 const TableHeader = styled.th`
   padding: 10px;
@@ -1086,7 +1015,6 @@ const Title = styled.button`
   padding: 2px;
   font-weight: bold;
   line-height: 1.1;
-  margin-bottom: 1rem;
   letter-spacing: -0.00em;
   background: rgb(var(--modalBackground));
   color: rgb(var(--Text));
