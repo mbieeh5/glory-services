@@ -136,11 +136,11 @@ export default function Admin() {
                 Tanggal Akhir
                 <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
             </LabelModal> 
+            <LabelModal> 
+                Pencarian :
+                <Input placeholder="Masukan Kata Kunci" onChange={(e) => {setIsKeyword(e.target.value.toLocaleLowerCase())}}/>
+            </LabelModal>
             <Buttons shape="circle" icon={<SearchOutlined />} onClick={() => {filteredData()}} />
-            {/*
-                <Buttons onClick={() => {filteredData()}}></Buttons>
-               */ 
-            }
         </SplitterInputTanggal>
         )
     };
@@ -603,12 +603,12 @@ export default function Admin() {
                     </Table>
             </TableContainer>
 
-            */}
+        */}
             </BasicSection2>
-                <WrapperAntTable>
+
+               <WrapperAntTable>
                     <Table data={DataResi} />
                 </WrapperAntTable>
-            
             <Wrapper2>{/* BAGIAN FILTER ETC */}
                 <Search>
                                 <Splitter>
@@ -680,9 +680,6 @@ export default function Admin() {
                                         </LabelModal>
                                     </div>
                                 </Splitter>
-                                        <LabelModal2> Pencarian :
-                                            <Input placeholder="Masukan Kata Kunci" onChange={(e) => {setIsKeyword(e.target.value.toLocaleLowerCase())}}/>
-                                        </LabelModal2>
                                 <TanggalMasukComponent />
                 </Search>
             </Wrapper2>
@@ -775,23 +772,6 @@ export default function Admin() {
 const MainWrapper = styled.div`
 margin-top: 1rem;
 `
-/*
-const TableContainer = styled.div`
-  max-height: 608px;
-  overflow-y: auto; 
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-`;
-
-const THead = styled.thead`
-    position: sticky;
-    top: 0;
-    background-color: white;
-    z-index: 10;   
-    width: 100%;
-`
-*/
 
 const Tables = styled.table`
   width: 100%;
@@ -829,12 +809,9 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
 const Buttons = styled(Button)`
   background-color: #007bff;
   color: white;
-  margin-top: 27px;
-  margin-left: 17px;
   border: none;
   border-radius: 12px;
-  max-height: 30px;
-  font-size: 14px;
+  margin-top: 25px; 
 
   &:hover {
     background-color: #0056b3;
@@ -842,20 +819,20 @@ const Buttons = styled(Button)`
   }
 `;
 
-const WrapperAntTable = styled.div`
-display: flex;
-padding: 1rem;
-width: 100%;
-max-width: 95%;
-margin: auto;
-`
+    const WrapperAntTable = styled.div`
+    display: flex;
+    padding-bottom: 10px;
+    width: 100%;
+    max-width: 95%;
+    margin: auto;
+    `
 
 const TableHeader = styled.th`
   padding: 10px;
   text-align: center;
   background-color: blue;
   white-space: nowrap;
-  width: 150px; /* Sesuaikan lebar kolom */
+  width: 150px;
   color: rgb(var(--textSecondary));
   `;
   
@@ -964,6 +941,8 @@ const Splitter = styled.div`
 
 const SplitterInputTanggal = styled.div`
   display: flex;
+  flex-direction: row;
+  width: 100%;
   flex-wrap: wrap;
   gap: 5px;
 `;
@@ -978,13 +957,6 @@ const Label = styled.label`
 
 const LabelModal = styled(Label)`
 margin-bottom: 1px;
-display: flex;
-flex-direction: column;
-text-align: center;
-color: rgb(var(--Text));
-`;
-
-const LabelModal2 = styled(Label)`
 display: flex;
 flex-direction: column;
 text-align: center;
