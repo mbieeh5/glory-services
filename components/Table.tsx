@@ -11,6 +11,7 @@ interface DataRes {
   TglKeluar: string;
   MerkHp: string;
   Kerusakan: string;
+  Keluhan: string;
   Penerima: string;
   Harga: string;
   Imei: string;
@@ -78,11 +79,20 @@ const Columns: TableProps<DataRes>["columns"] = [
     },
     {
         title: "KERUSAKAN",
+        dataIndex: "Keluhan",
+        key: "Keluhan",
+        width: 350,
+        align: "start",
+        render: (_, {Keluhan, Kerusakan}) => (<div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{Keluhan ? Keluhan.toLocaleUpperCase() : Kerusakan}</div>),
+    },
+    {
+        title: "Perbaikan",
         dataIndex: "Kerusakan",
         key: "Kerusakan",
         width: 350,
+        hidden: true,
         align: "start",
-        render: (_, {Kerusakan}) => (<div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{Kerusakan.toLocaleUpperCase()}</div>),
+        render: (_, {Kerusakan}) => (<div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{Kerusakan?.toLocaleUpperCase() || 'null'}</div>),
     },
     {
     title: "SPAREPARTS",
@@ -210,10 +220,11 @@ const Table: React.FC<TableComponentProps> = ({ data }) => {
                         <Tag style={{display: 'flex'}} color={'default'}>NO NOTA <div style={{marginLeft: '56px'}}>:</div> <div style={{marginLeft: '1%'}}> {record.NoNota} </div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>HARGA USER <div style={{marginLeft: '34px'}}>:</div> <div style={{marginLeft: '1%'}}>Rp {parseInt(record.Harga).toLocaleString('id-ID')}</div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>IMEI <div style={{marginLeft: '83px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Imei.length > 5 ? record.Imei : "IMEI KOSONG"}</div></Tag>
+                        <Tag style={{display: 'flex'}} color={'default'}>PERBAIKAN <div style={{marginLeft: '41px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Kerusakan ? record.Kerusakan.toLocaleUpperCase() : "BELUM DI PERBAIKI"}</div></Tag>
                         {record.sparepart ? <Tag style={{display: 'flex'}} color={'default'}>SPAREPARTS <div style={{marginLeft: '34px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.sparepart?.map((a, i) => {return (<Tag color={'volcano'} key={i}>{a.Sparepart}({a.TypeOrColor}) Rp {parseInt(a.HargaSparepart).toLocaleString('id-ID')}</Tag>)})}</div></Tag> : <></>}
                         <Tag style={{display: 'flex'}} color={'default'}>NAMA USER <div style={{marginLeft: '39px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.NamaUser?.toLocaleUpperCase()}</div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>NO HP USER <div style={{marginLeft: '38px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.NoHpUser}</div></Tag>
-                        <Tag style={{display: 'flex'}} color={'default'}>TEKNISI <div style={{marginLeft: '62px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Teknisi ? record.Teknisi.toLocaleUpperCase() : 'BELUM DIKERJAKAN'}</div></Tag>
+                        {record.Teknisi ? <Tag style={{display: 'flex'}} color={'default'}>TEKNISI <div style={{marginLeft: '62px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Teknisi}</div></Tag> : <></> }
                         {record.Teknisi === 'Ibnu' ? <Tag style={{display: 'flex'}} color={'default'}>HARGA IBNU <div style={{marginLeft: '36px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.HargaIbnu ? `Rp ${parseInt(record.HargaIbnu).toLocaleString('id-ID')}` : 0} </div></Tag> : <></>}
                         <Tag style={{display: 'flex'}} color={'default'}>PENERIMA <div style={{marginLeft: '48px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Penerima?.toLocaleUpperCase()}</div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>TANGGAL KELUAR <div style={{marginLeft: '6px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.TglKeluar ? dateFormater(record.TglKeluar) : "BELUM DI AMBIL"}</div></Tag>

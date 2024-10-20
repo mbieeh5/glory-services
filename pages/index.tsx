@@ -17,6 +17,7 @@ interface DataRes {
     TglKeluar: string;
     MerkHp: string;
     Kerusakan: string;
+    Keluhan: string;
     Penerima: string;
     Harga: any;
     Imei: string;
@@ -431,6 +432,7 @@ export default function Admin() {
                         setSTotalData(countTotal)
                         setIsLoading(false);
                           setDataResiBak(sortedArray);
+                          console.log(sortedArray)
                         return setDataResi(sortedArray);
                     }).catch((err) => {
                         console.error(err);

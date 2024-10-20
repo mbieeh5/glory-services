@@ -37,7 +37,7 @@ export default function InputResi() {
         e.preventDefault();
         const formData = new FormData(e.target);
         const Harga = hargaBaru;
-        const Kerusakan = formData.get('kerusakan');
+        const Keluhan = formData.get('keluhan');
         const MerkHp = formData.get('merkHp');
         const NamaUser = formData.get('namaUser');
         const NoHpUser = formData.get('noHpUser');
@@ -50,7 +50,7 @@ export default function InputResi() {
         const newData = {
             [notaId]: {
                 Harga,
-                Kerusakan,
+                Keluhan,
                 MerkHp,
                 NamaUser,
                 NoHpUser,
@@ -150,8 +150,8 @@ export default function InputResi() {
                     <Input type="text" placeholder="Masukan Tipe HP LENGKAP" name="merkHp" required/>
                 </Label>
                 <Label>
-                    Kerusakan:
-                    <Input type="text" placeholder="Curhat Kerusakannya" name="kerusakan" required/>
+                    Keluhan:
+                    <Input type="text" placeholder="Curhat Keluhan User" name="keluhan" required/>
                 </Label>
                 <Label>
                     Imei:

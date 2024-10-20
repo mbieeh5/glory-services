@@ -16,6 +16,7 @@ interface DataRes {
     TglKeluar: string;
     MerkHp: string;
     Kerusakan: string;
+    Keluhan: string;
     Penerima: string;
     Harga: number;
     Sparepart: any;
@@ -43,6 +44,7 @@ export default function UpdateResi() {
     const [isIbnu, setIsIbnu] = useState<Boolean>(false);
     const [isTeknisiUpdate, setIsTeknisiUpdate] = useState<string>("")
     const [isKerusakan, setIsKerusakan] = useState<string>("")
+    const [isKeluhan, setIsKeluhan] = useState<string>("")
     const [isNoHpUser, setIsNoHpUser] = useState<string>("");
     const fakeKey = 1;
     
@@ -77,7 +79,8 @@ export default function UpdateResi() {
                     setTimeout(() => {
                             setIsloading(false)
                             const Data = data.val() || {};
-                            setIsKerusakan(Data.Kerusakan);
+                            setIsKeluhan(Data.Keluhan);
+                            setIsKerusakan(Data.Kerusakan)
                             setIsNoHpUser(Data.NoHpUser);
                             setIsMerkHp(Data.MerkHp);
                             setIsImei(Data.Imei);
@@ -133,6 +136,7 @@ export default function UpdateResi() {
         const Imei = formData.get('imei')?.toString() || "null";
         const HargaIbnu = formData.get('hargaIbnu')?.toString() || "0";
         const Kerusakan = formData.get('kerusakan')?.toString() || "null";
+        const Keluhan = formData.get('keluhan')?.toString() || "null";
         const Lokasi = formData.get('lokasi')?.toString() || "null";
         const Harga = formData.get('hargaAkhir')?.toString() || "null";
         const Teknisi = formData.get('teknisi')?.toString() || "null";
@@ -166,6 +170,7 @@ export default function UpdateResi() {
                 MerkHp,
                 Penerima,
                 Kerusakan,
+                Keluhan,
                 Imei,
                 Harga,
                 Lokasi,
@@ -231,8 +236,11 @@ export default function UpdateResi() {
         });
     };
     
-    const handleChange = (e:any) => {
+    const handleChangeKerusakan = (e:any) => {
     setIsKerusakan(e);
+    };
+    const handleChangeKeluhan = (e:any) => {
+    setIsKeluhan(e);
     };
     const SearchNota = () => {
         if(cekNota.length < 3){
@@ -337,11 +345,15 @@ export default function UpdateResi() {
                                 <Input type="text" value={isImei} onChange={(e) => {setIsImei(e.target.value)}} placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
                             </Label>
                             <Label>
-                                Kerusakan:
-                                <Input type="text" placeholder="Kerusakannya apa" value={isKerusakan} onChange={(e) => {handleChange(e.target.value)}} name="kerusakan" required/>
+                                Keluhan:
+                                <Input type="text" placeholder="Kerusakannya apa" value={isKeluhan} onChange={(e) => {handleChangeKeluhan(e.target.value)}} name="keluhan" required/>
                             </Label>
                             </Splitter>
                             <Splitter>
+                            <Label>
+                                Perbaikan:
+                                <Input type="text" placeholder="apa yang di benerin" value={isKerusakan} onChange={(e) => {handleChangeKerusakan(e.target.value)}} name="kerusakan" required/>
+                            </Label>
                             <Label>
                                 Estimasi Harga:
                                 <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
