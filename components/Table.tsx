@@ -53,9 +53,9 @@ const Columns: TableProps<DataRes>["columns"] = [
         dataIndex: "Lokasi",
         key: "Lokasi",
         width: 90,
-        render: (_, { Lokasi }) => (
+        render: (_, { Lokasi, Keluhan }) => (
             <>
-                <Tag style={{textAlign: 'left', width: '1000%', fontWeight: 'bold'}} color={Lokasi === 'Cikaret' ? 'geekblue' : 'volcano'}>{Lokasi.toLocaleUpperCase()}</Tag>
+                <Tag style={Keluhan?.length > 56 ? {textAlign: 'left', width: '1060%', padding: '1rem', fontWeight: 'bold'} : {textAlign: 'left', width: '1060%', fontWeight: 'bold'}} color={Lokasi === 'Cikaret' ? 'geekblue' : 'volcano'}>{Lokasi.toLocaleUpperCase()}</Tag>
             </>
         ),
     },
@@ -81,9 +81,9 @@ const Columns: TableProps<DataRes>["columns"] = [
         title: "KERUSAKAN",
         dataIndex: "Keluhan",
         key: "Keluhan",
-        width: 350,
+        width: 400,
         align: "start",
-        render: (_, {Keluhan, Kerusakan}) => (<div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{Keluhan ? Keluhan.toLocaleUpperCase() : Kerusakan}</div>),
+        render: (_, {Keluhan}) => (<div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{Keluhan?.toLocaleUpperCase()}</div>),
     },
     {
         title: "Perbaikan",

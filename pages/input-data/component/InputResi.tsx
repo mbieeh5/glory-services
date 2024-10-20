@@ -6,7 +6,9 @@ import { getAuth } from "firebase/auth";
 import React, { useState } from "react"
 import Swal from "sweetalert2";
 import styled from "styled-components"
+import {Col, Flex, Input as Inputs, Row } from "antd"
 import { useRouter } from "next/router";
+const {TextArea} = Inputs
 
 
 
@@ -73,7 +75,6 @@ export default function InputResi() {
             setError('Harap Masukan Nominal Lengkap');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            // Tampilkan SweetAlert2 untuk konfirmasi
             Swal.fire({
                 title: 'Apakah Anda yakin?',
                 text: "Anda tidak akan bisa mengembalikan perubahan ini!",
@@ -87,7 +88,6 @@ export default function InputResi() {
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Jika pengguna mengonfirmasi, lanjutkan menyimpan ke database
                     setIsError(false);
                     const resiRef = ref(getDatabase(), `Service/sandboxDS`);
                     update(resiRef, newData)
@@ -120,69 +120,94 @@ export default function InputResi() {
     const [isError, setIsError] = useState(false);
 
     return(
-        <Wrapper>
+        <>
             <FormCard>
                 <ErrEvent>{isError ? error : ''}</ErrEvent>
-            <Form onSubmit={handleSubmit}>
-                <Label>
-                    No Nota:
-                    <Input type="text" onClick={() => setNotaId(NoNota)} placeholder="Klik Buat No Nota" value={notaId.toUpperCase()} onChange={(e) => setNotaId(e.target.value)} name="noNota" required readOnly/>
-                <Splitter>
-                </Splitter>
-                </Label>
-                <Splitter>
-                <Label>
-                    Nama User:
-                    <Input type="text" placeholder="Masukan Nama User" name="namaUser" required/>
-                </Label>
-                <Label>
-                    No Hp User:
-                    <Input type="number" placeholder="08xxxxxx" name="noHpUser" required/>
-                </Label>
-                <Label>
-                    Tanggal Masuk:
-                    <Input type="datetime-local" placeholder="Tanggal Masuk" name="tglMasuk" required/>
-                </Label>
-                </Splitter>
-                <Splitter>
-                <Label>
-                    Merk Hp:
-                    <Input type="text" placeholder="Masukan Tipe HP LENGKAP" name="merkHp" required/>
-                </Label>
-                <Label>
-                    Keluhan:
-                    <Input type="text" placeholder="Curhat Keluhan User" name="keluhan" required/>
-                </Label>
-                <Label>
-                    Imei:
-                    <Input type="text" placeholder="No Imei (*#06#)" name="imei"/>
-                </Label>
-                </Splitter>
-                <Splitter>
-                <Label>
-                Lokasi:
-                    <Select placeholder="Lokasi" name="lokasi" required>
-                        <option>Cikaret</option>
-                        <option>Sukahati</option>
-                    </Select>
-                </Label>
-                <Label>
-                    Estimasi Harga:
-                    <Input type="number" placeholder="Masukan estimasi Harga" onChange={(e) => setHargaBaru(parseInt(e.target.value))} name="harga" required/>
-                </Label>
-                <Label>
-                Penerima:
-                    <Select placeholder="Penerima Service" value={UserName} name="penerima" required>
-                        <option>{UserName}</option>
-                    </Select>
-                </Label>
-                </Splitter>
-                <ButtonGroup>
-                    <Buttons type="submit">Submit</Buttons>
-                </ButtonGroup>
-            </Form>
+                    <Form onSubmit={handleSubmit}>
+                        <Flex gap={'middle'} vertical>
+                            <Row>
+                                <Col span={12}>
+                                    <Label>
+                                        NO NOTA:
+                                        <Input type="text" onClick={() => setNotaId(NoNota)} placeholder="Klik Buat No Nota" value={notaId.toUpperCase()} onChange={(e) => setNotaId(e.target.value)} name="noNota" required readOnly/>
+                                    </Label>
+                                </Col>
+                                <Col span={12}>
+                                    <Label>
+                                        TANGGAL MASUK:
+                                        <Input type="datetime-local" placeholder="Tanggal Masuk" name="tglMasuk" required/>
+                                    </Label>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={12}>
+                                    <Label>
+                                        NAMA PELANGGAN:
+                                        <Input type="text" placeholder="Masukan Nama User" name="namaUser" required/>
+                                    </Label>
+                                </Col>
+                                <Col span={12}>
+                                <Label>
+                                    NOMOR PELANGGAN:
+                                    <Input type="number" placeholder="08xxxxxx" name="noHpUser" required/>
+                                </Label>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={12}>
+                                    <Label>
+                                        MEREK HP:
+                                        <Input type="text" placeholder="Masukan Tipe HP LENGKAP" name="merkHp" required/>
+                                    </Label>
+                                </Col>
+                                <Col span={12}>
+                                <Label>
+                                    IMEI:
+                                    <Input type="text" placeholder="No Imei (*#06#)" name="imei"/>
+                                </Label>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={12}>
+                                <Label>
+                                LOKASI:
+                                    <Select placeholder="Lokasi" name="lokasi" required>
+                                        <option>Cikaret</option>
+                                        <option>Sukahati</option>
+                                    </Select>
+                                </Label>
+                                </Col>
+                                <Col span={12}>
+                                    <Label>
+                                        ESTIMASI HARGA:
+                                        <Input type="number" placeholder="Masukan estimasi Harga" onChange={(e) => setHargaBaru(parseInt(e.target.value))} name="harga" required/>
+                                    </Label>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={12}>
+                                    <Label>
+                                        KERUSAKAN:
+                                        <TextArea placeholder="Curhat Kerusakan User" name="keluhan" required/>
+                                    </Label>
+                                </Col>
+                                <Col span={12}>
+                                    <Label>
+                                    PENERIMA:
+                                        <Select placeholder="Penerima Service" value={UserName} name="penerima" required>
+                                            <option>{UserName}</option>
+                                        </Select>
+                                    </Label>
+                                </Col>
+                            </Row>
+                        <ButtonGroup>
+                            <Buttons type="submit">SUBMIT</Buttons>
+                        </ButtonGroup>
+                        </Flex>
+                    </Form>
             </FormCard>
-        </Wrapper>
+            
+        </>
     )
 
 }
@@ -190,15 +215,6 @@ export default function InputResi() {
 const ErrEvent = styled.div`
 color: red;
 `
-
-const Wrapper = styled.div`
-    position: relative;
-    display: flex;
-    width: 100%; 
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-`;
 
 const FormCard = styled.div`
     background: rgb(var(--cardBackground));
@@ -216,18 +232,6 @@ const Form = styled.form`
     max-width: 100%;
 `;
 
-const Splitter = styled.div` 
-    display: flex;
-    max-width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    @media (max-width: 512px) {
-        flex-direction: column;
-    }
-`
-
 const Label = styled.label`
     display: flex;
     flex-direction: column;
@@ -235,7 +239,7 @@ const Label = styled.label`
     margin-bottom: 1rem;
 `;
 
-const Input = styled.input`
+const Input = styled(Inputs)`
     padding: 0.5rem;
     border-radius: 5px;
     font-size: 1.5rem;
@@ -246,6 +250,16 @@ const Input = styled.input`
     background: rgb(var(--inputBackground));
     border: none;
     color: rgb(var(--text));
+
+    &:focus {
+        background: rgb(var(--inputBackground));
+    }
+    &:hover {
+        background: rgb(var(--inputBackground));
+    }
+    &::placeholder {
+        color: rgb(var(--text));
+    }
 `;
 
 const Buttons = styled(Button)`

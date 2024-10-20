@@ -432,7 +432,6 @@ export default function Admin() {
                         setSTotalData(countTotal)
                         setIsLoading(false);
                           setDataResiBak(sortedArray);
-                          console.log(sortedArray)
                         return setDataResi(sortedArray);
                     }).catch((err) => {
                         console.error(err);
