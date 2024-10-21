@@ -55,7 +55,7 @@ const Columns: TableProps<DataRes>["columns"] = [
         width: 90,
         render: (_, { Lokasi, Keluhan }) => (
             <>
-                <Tag style={Keluhan?.length > 56 ? {textAlign: 'left', width: '1060%', padding: '1rem', fontWeight: 'bold'} : {textAlign: 'left', width: '1060%', fontWeight: 'bold'}} color={Lokasi === 'Cikaret' ? 'geekblue' : 'volcano'}>{Lokasi.toLocaleUpperCase()}</Tag>
+                <Tag style={Keluhan?.length > 120 ? {textAlign: 'left', width: '1330%', padding: '1rem', fontWeight: 'bold'} : {textAlign: 'left', width: '1330%', fontWeight: 'bold'}} color={Lokasi === 'Cikaret' ? 'geekblue' : 'volcano'}>{Lokasi.toLocaleUpperCase()}</Tag>
             </>
         ),
     },
@@ -81,7 +81,7 @@ const Columns: TableProps<DataRes>["columns"] = [
         title: "KERUSAKAN",
         dataIndex: "Keluhan",
         key: "Keluhan",
-        width: 400,
+        width: 600,
         align: "start",
         render: (_, {Keluhan}) => (<div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{Keluhan?.toLocaleUpperCase()}</div>),
     },
@@ -273,6 +273,7 @@ const StyledRow = styled.tr<{ status: string; tglKeluar: string | null }>`
     if (status === "sukses") return "#12D200";
     if (status === "process") return "#EDE835";
     if (status === "process" && tglKeluar === 'null') return "#F57E7E";
+    if (status === 'cancel' && tglKeluar === 'null') return "#E4B0B0";
     if (status === 'cancel') return "#DB3759";
     if (status === 'claim garansi') return "gray";
     return "rgb(var(--background))";

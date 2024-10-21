@@ -8,6 +8,7 @@ import { getAuth } from "firebase/auth";
 import { Button, Input as Inputs} from "antd";
 import { SearchOutlined } from '@ant-design/icons';
 import Table from "../components/Table";
+import { DataSnapshot, onValue } from "firebase/database";
 
 interface DataRes {
     NoNota: string;
@@ -370,12 +371,16 @@ export default function Admin() {
     };
     
     useEffect(() => {
-        const fetchData = () => {
+        /*const fetchData = () => {
+        };*/
             const authG:any = getAuth();
             const DB = ref(getDatabase());
             setIsLoading(true);
                 const userRole = authG.currentUser.email.split('@')[0];
                 const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
+
+                const processRealtimeData = (datas: DataSnapshot) => {
+
                 if(userRole === 'user'){
                     setIsAdmin(false);
                     get(child(DB, "Service/sandboxDS")).then(async(datas) => {
@@ -465,9 +470,14 @@ export default function Admin() {
                         }
                     })
                 }
-    
-        };
-        fetchData();
+
+            }
+            const Unsubs = onValue(DB, processRealtimeData, (error) => {
+                console.error("error while fetching data", error);
+                setIsLoading(false);
+            });
+        return () => Unsubs();
+            //fetchData();
     },[localDate])
 
     return(
