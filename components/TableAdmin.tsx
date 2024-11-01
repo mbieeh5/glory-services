@@ -55,7 +55,7 @@ const Columns: TableProps<DataRes>["columns"] = [
         width: 90,
         render: (_, { Lokasi, Keluhan }) => (
             <>
-                <Tag style={Keluhan?.length > 120 ? {textAlign: 'left', width: '1330%', padding: '1rem', fontWeight: 'bold'} : {textAlign: 'left', width: '1330%', fontWeight: 'bold'}} color={Lokasi === 'Cikaret' ? 'geekblue' : 'volcano'}>{Lokasi.toLocaleUpperCase()}</Tag>
+                <Tag style={Keluhan?.length > 100 ? {textAlign: 'left', width: '1370%', padding: '1rem', fontWeight: 'bold'} : {textAlign: 'left', width: '1370%', fontWeight: 'bold'}} color={Lokasi === 'Cikaret' ? 'geekblue' : 'volcano'}>{Lokasi.toLocaleUpperCase()}</Tag>
             </>
         ),
     },
@@ -81,7 +81,7 @@ const Columns: TableProps<DataRes>["columns"] = [
         title: "KERUSAKAN",
         dataIndex: "Keluhan",
         key: "Keluhan",
-        width: 600,
+        width: 645,
         align: "start",
         render: (_, {Keluhan}) => (<div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{Keluhan?.toLocaleUpperCase()}</div>),
     },
@@ -212,21 +212,33 @@ const Table: React.FC<TableComponentProps> = ({ data }) => {
             dataSource={data} 
             rowKey="NoNota"
             size={"small"}
-            pagination={false}
+            pagination={{
+                defaultPageSize: 50,
+                pageSizeOptions: ['50', '100', '200'],
+                showSizeChanger: true,
+                itemRender: (page, type, originalElement) => {
+                    return (
+                        <SpanPagination>
+                            {originalElement}
+                        </SpanPagination>
+                    )
+                }
+            }}
             scroll={{ x: 0 , y: 130 * 5 }}
             expandable={{
                 expandedRowRender: (record) => 
                     <WrapperExpandable status={record?.status || ""} tglKeluar={record?.TglKeluar || null}>
                         <Tag style={{display: 'flex'}} color={'default'}>NO NOTA <div style={{marginLeft: '56px'}}>:</div> <div style={{marginLeft: '1%'}}> {record.NoNota} </div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>HARGA USER <div style={{marginLeft: '34px'}}>:</div> <div style={{marginLeft: '1%'}}>Rp {parseInt(record.Harga).toLocaleString('id-ID')}</div></Tag>
-                        <Tag style={{display: 'flex'}} color={'default'}>IMEI <div style={{marginLeft: '83px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Imei.length > 5 ? record.Imei : "IMEI KOSONG"}</div></Tag>
+                        <Tag style={{display: 'flex'}} color={'default'}>IMEI <div style={{marginLeft: '83px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Imei?.length > 5 ? record.Imei : "IMEI KOSONG"}</div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>PERBAIKAN <div style={{marginLeft: '41px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Kerusakan ? record.Kerusakan.toLocaleUpperCase() : "BELUM DI PERBAIKI"}</div></Tag>
                         {record.sparepart ? <Tag style={{display: 'flex'}} color={'default'}>SPAREPARTS <div style={{marginLeft: '34px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.sparepart?.map((a, i) => {return (<Tag color={'volcano'} key={i}>{a.Sparepart}({a.TypeOrColor}) Rp {parseInt(a.HargaSparepart).toLocaleString('id-ID')}</Tag>)})}</div></Tag> : <></>}
                         <Tag style={{display: 'flex'}} color={'default'}>NAMA USER <div style={{marginLeft: '39px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.NamaUser?.toLocaleUpperCase()}</div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>NO HP USER <div style={{marginLeft: '38px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.NoHpUser}</div></Tag>
-                        {record.Teknisi ? <Tag style={{display: 'flex'}} color={'default'}>TEKNISI <div style={{marginLeft: '62px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Teknisi}</div></Tag> : <></> }
+                        {record.Teknisi ? <Tag style={{display: 'flex'}} color={'default'}>TEKNISI <div style={{marginLeft: '62px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Teknisi.toLocaleUpperCase()}</div></Tag> : <></> }
                         {record.Teknisi === 'Ibnu' ? <Tag style={{display: 'flex'}} color={'default'}>HARGA IBNU <div style={{marginLeft: '36px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.HargaIbnu ? `Rp ${parseInt(record.HargaIbnu).toLocaleString('id-ID')}` : 0} </div></Tag> : <></>}
                         <Tag style={{display: 'flex'}} color={'default'}>PENERIMA <div style={{marginLeft: '48px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Penerima?.toLocaleUpperCase()}</div></Tag>
+                        <Tag style={{display: 'flex'}} color={'default'}>LOKASI <div style={{marginLeft: '66px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Lokasi.toLocaleUpperCase()}</div></Tag>
                         <Tag style={{display: 'flex'}} color={'default'}>TANGGAL KELUAR <div style={{marginLeft: '6px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.TglKeluar ? dateFormater(record.TglKeluar) : "BELUM DI AMBIL"}</div></Tag>
                         <Tag style={{display: 'flex'}} color={record.status === 'sukses' ? 'green-inverse' : record.status === 'process' ? 'gold-inverse' : 'volcano-inverse'}>{record.status.toLocaleUpperCase()}</Tag>
                     </WrapperExpandable>
@@ -239,7 +251,7 @@ const Table: React.FC<TableComponentProps> = ({ data }) => {
                         const record = rest["data-row-key"] ? data.find((d) => d.NoNota === rest["data-row-key"]) : undefined
                         return (
                             <StyledRow status={record?.status || ""} tglKeluar={record?.TglKeluar || null} {...rest}>
-                                <>{children}</>
+                                {children}
                             </StyledRow>
                             );
                         },
@@ -249,6 +261,10 @@ const Table: React.FC<TableComponentProps> = ({ data }) => {
         </>
         )
 };
+
+const SpanPagination = styled.span`
+  font-weight: bold;
+`
 
 const WrapperExpandable = styled.div<{status: string, tglKeluar: string | null}>`
   display: flex;
@@ -276,6 +292,7 @@ const StyledRow = styled.tr<{ status: string; tglKeluar: string | null }>`
     if (status === 'cancel' && tglKeluar === 'null') return "#E4B0B0";
     if (status === 'cancel') return "#DB3759";
     if (status === 'claim garansi') return "gray";
+    if (status === 'garansi') return "gray";
     return "rgb(var(--background))";
   }};
   font-size: 12px;

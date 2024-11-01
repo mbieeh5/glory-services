@@ -1,5 +1,5 @@
 /* eslint-disable import/order */
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { child, get, getDatabase, ref } from "@firebase/database";
 import styled, {keyframes} from "styled-components";
 import BasicSection2 from "components/BasicSection2";
@@ -7,8 +7,9 @@ import BasicSection3 from "components/BasicSection3";
 import { getAuth } from "firebase/auth";
 import { Button, Input as Inputs} from "antd";
 import { SearchOutlined } from '@ant-design/icons';
-import Table from "../components/Table";
+import Table from "../components/TableAdmin";
 import { DataSnapshot, onValue } from "firebase/database";
+import TableModerator from "components/TableModerator";
 
 interface DataRes {
     NoNota: string;
@@ -33,33 +34,122 @@ interface DataRes {
     status: string;
 }
 
-interface SparepartData {
-    Sparepart: string;
-    HargaSparepart: any;
-    TypeOrColor: string;
-}
+
+interface State {
+    DataResi: DataRes[];
+    dataResiBak: DataRes[];
+    isActivatedBtn: string;
+    sparepartSelected: string;
+    isAdmin: boolean;
+    isLoading: boolean;
+    isFinish: string;
+    isKeyword: string;
+    teknisiSelected: string;
+    penerimaSelected: string;
+    lokasiSelected: string;
+    statusSelected: string;
+    tglMskAwal: string;
+    tglMskAkhir: string;
+    tglKeluar: string;
+    sBerhasil: number;
+    sPending: number;
+    sTotalData: number;
+    sBatal: number;
+  }
+  
+  const initialState: State = {
+    DataResi: [],
+    dataResiBak: [],
+    isActivatedBtn: 'total',
+    sparepartSelected: '',
+    isAdmin: false,
+    isLoading: false,
+    isFinish: 'null',
+    isKeyword: '',
+    teknisiSelected: '',
+    penerimaSelected: '',
+    lokasiSelected: '',
+    statusSelected: '',
+    tglMskAwal: '',
+    tglMskAkhir: '',
+    tglKeluar: '',
+    sBerhasil: 0,
+    sPending: 0,
+    sTotalData: 0,
+    sBatal: 0,
+  };
+  
+  // Define action types
+  type Action =
+    | { type: 'SET_DATA_RESI'; payload: DataRes[] }
+    | { type: 'SET_DATA_RESI_BAK'; payload: DataRes[] }
+    | { type: 'SET_IS_ACTIVATED_BTN'; payload: string }
+    | { type: 'SET_SPAREPART_SELECTED'; payload: string }
+    | { type: 'SET_IS_ADMIN'; payload: boolean }
+    | { type: 'SET_IS_LOADING'; payload: boolean }
+    | { type: 'SET_IS_FINISH'; payload: string }
+    | { type: 'SET_IS_KEYWORD'; payload: string }
+    | { type: 'SET_TEKNISI_SELECTED'; payload: string }
+    | { type: 'SET_PENERIMA_SELECTED'; payload: string }
+    | { type: 'SET_LOKASI_SELECTED'; payload: string }
+    | { type: 'SET_STATUS_SELECTED'; payload: string }
+    | { type: 'SET_TGL_MSK_AWAL'; payload: string }
+    | { type: 'SET_TGL_MSK_AKHIR'; payload: string }
+    | { type: 'SET_TGL_KELUAR'; payload: string }
+    | { type: 'SET_S_BERHASIL'; payload: number }
+    | { type: 'SET_S_PENDING'; payload: number }
+    | { type: 'SET_S_TOTAL_DATA'; payload: number }
+    | { type: 'SET_S_BATAL'; payload: number };
+  
+  // Reducer function
+  function reducer(state: State, action: Action): State {
+    switch (action.type) {
+      case 'SET_DATA_RESI':
+        return { ...state, DataResi: action.payload };
+      case 'SET_DATA_RESI_BAK':
+        return { ...state, dataResiBak: action.payload };
+      case 'SET_IS_ACTIVATED_BTN':
+        return { ...state, isActivatedBtn: action.payload };
+      case 'SET_SPAREPART_SELECTED':
+        return { ...state, sparepartSelected: action.payload };
+      case 'SET_IS_ADMIN':
+        return { ...state, isAdmin: action.payload };
+      case 'SET_IS_LOADING':
+        return { ...state, isLoading: action.payload };
+      case 'SET_IS_FINISH':
+        return { ...state, isFinish: action.payload };
+      case 'SET_IS_KEYWORD':
+        return { ...state, isKeyword: action.payload };
+      case 'SET_TEKNISI_SELECTED':
+        return { ...state, teknisiSelected: action.payload };
+      case 'SET_PENERIMA_SELECTED':
+        return { ...state, penerimaSelected: action.payload };
+      case 'SET_LOKASI_SELECTED':
+        return { ...state, lokasiSelected: action.payload };
+      case 'SET_STATUS_SELECTED':
+        return { ...state, statusSelected: action.payload };
+      case 'SET_TGL_MSK_AWAL':
+        return { ...state, tglMskAwal: action.payload };
+      case 'SET_TGL_MSK_AKHIR':
+        return { ...state, tglMskAkhir: action.payload };
+      case 'SET_TGL_KELUAR':
+        return { ...state, tglKeluar: action.payload };
+      case 'SET_S_BERHASIL':
+        return { ...state, sBerhasil: action.payload };
+      case 'SET_S_PENDING':
+        return { ...state, sPending: action.payload };
+      case 'SET_S_TOTAL_DATA':
+        return { ...state, sTotalData: action.payload };
+      case 'SET_S_BATAL':
+        return { ...state, sBatal: action.payload };
+      default:
+        return state;
+    }
+  }
 
 export default function Admin() { 
 
-    const [DataResi, setDataResi] = useState<DataRes[]>([]);
-    const [dataResiBak, setDataResiBak] = useState<DataRes[]>([]);
-    const [isActivatedBtn, setIsActivatedBtn] = useState<string>('total');
-    const [isKeyword, setIsKeyword] = useState<string>('');
-    const [sparepartSelected, setSparepartSelected] = useState<string>('');
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isFinish, setIsFinish] = useState<string>('null');
-    const [teknisiSelected, setTeknisiSelected] = useState<string>('');
-    const [penerimaSelected, setPenerimaSelected] = useState<string>('');
-    const [lokasiSelected, setLokasiSelected] = useState<string>('');
-    const [statusSelected, setStatusSelected] = useState<string>('');
-    const [tglMskAwal, setTglMskAwal] = useState<string>('');
-    const [tglMskAkhir, setTglMskAkhir] = useState<string>('');
-    const [tglKeluar, setTglKeluar] = useState<string>('')
-    const [sBerhasil, setSBerhasil] = useState<number>(0);
-    const [sPending, setSPending] = useState<number>(0);
-    const [sTotalData, setSTotalData] = useState<number>(0);
-    const [sBatal, setSBatal] = useState<number>(0); 
+    const [state, dispatch] = React.useReducer(reducer, initialState);
 
     const today = new Date();
     const day = today.getDate().toString().padStart(2, '0');
@@ -67,22 +157,7 @@ export default function Admin() {
     const year = today.getFullYear();
     const localDate = `${year}-${month}-${day}`;
 
-    const dateFormater = (date:string) => {
-        const TglObj = new Date(date);
-        const tgl = TglObj.getDate();
-        const bln = TglObj.getMonth() + 1;
-        const thn = TglObj.getFullYear();
-        const jam = TglObj.getHours();
-        const mnt = TglObj.getMinutes();
-        const tanggalWaktuBaru = ("0" + tgl).slice(-2) + "/" + ("0" + bln).slice(-2) + "/" + thn + " @" + ("0" + jam).slice(-2) + ":" + ("0" + mnt).slice(-2);
-        if(!isNaN(tgl)){
-            return tanggalWaktuBaru
-        }else{
-            return 'Belum Di Ambil'
-        }
-    }
-
-    /**
+    /*
      * Tambahan untuk status service yang sudah di ambil,
      * memunculkan kembali data servicenya untuk di infokan kembali ke user
      * tambah parameter baru di database untuk per key nya,
@@ -99,28 +174,33 @@ export default function Admin() {
      */
 
     const handleOnFilterButtonTitle = async (params: string) => {
-        setIsActivatedBtn(params);
-        if (dataResiBak.length <= DataResi.length) {
-            setDataResiBak(DataResi);
+        dispatch({type: "SET_IS_ACTIVATED_BTN", payload: params});
+        if (state.dataResiBak.length <= state.DataResi.length) {
+            dispatch({type: "SET_DATA_RESI_BAK", payload: state.DataResi});
         }
         
         if(params === 'berhasil'){
-            const filteredDataResi =  dataResiBak.filter(val => val.status === 'sukses' && val.TglKeluar.length > 5)
-            return setDataResi(filteredDataResi);
+            const filteredDataResi =  state.dataResiBak.filter(val => val.status === 'sukses' && val.TglKeluar.length > 5)
+            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
         }
         if(params === 'pending'){
-            const filteredDataResi =  dataResiBak.filter(val => val.status === 'process' && val.TglKeluar === undefined || val.TglKeluar.length < 5)
-            return setDataResi(filteredDataResi);
+            const filteredDataResi =  state.dataResiBak.filter(val => val.status === 'process' && val.TglKeluar === undefined || val.TglKeluar.length < 5)
+            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
         }
         if(params === 'batal'){
-            const filteredDataResi =  dataResiBak.filter(val => val.status === 'cancel' && val.TglKeluar.length > 5)
-            return setDataResi(filteredDataResi);
+            const filteredDataResi =  state.dataResiBak.filter(val => val.status === 'cancel' && val.TglKeluar.length > 5)
+            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
         }
         if(params === 'total'){
-            const filteredDataResi =  dataResiBak;
-            return setDataResi(filteredDataResi)
+            const filteredDataResi =  state.dataResiBak;
+            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
         }
         return null;
+    }
+
+    const handleChangeKeyword = (e:  React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.toLocaleLowerCase();
+        dispatch({type: "SET_IS_KEYWORD", payload: value});
     }
 
     const TanggalMasukComponent = () => {
@@ -128,261 +208,149 @@ export default function Admin() {
         <SplitterInputTanggal>
             <LabelModal>
                 Tanggal Keluar
-                <Input type="date" value={tglKeluar} onChange={(e) => {setTglKeluar(e.target.value)}}/>
+                <Input type="date" value={state.tglKeluar} onChange={(e) => {dispatch({type: "SET_TGL_KELUAR", payload: e.target.value})}}/>
             </LabelModal>
             <LabelModal>
                 Tanggal Awal
-                <Input type="date" value={tglMskAwal} onChange={(e) => {setTglMskAwal(e.target.value)}}/>
+                <Input type="date" value={state.tglMskAwal} onChange={(e) => {dispatch({type: "SET_TGL_MSK_AWAL", payload: e.target.value})}}/>
             </LabelModal>
             <LabelModal>
                 Tanggal Akhir
-                <Input type="date" value={tglMskAkhir} onChange={(e) => {setTglMskAkhir(e.target.value)}}/>
+                <Input type="date" value={state.tglMskAkhir} onChange={(e) => {dispatch({type: "SET_TGL_MSK_AKHIR", payload: e.target.value})}}/>
             </LabelModal> 
             <LabelModal> 
                 Pencarian :
-                <Input placeholder="Masukan Kata Kunci" onChange={(e) => {setIsKeyword(e.target.value.toLocaleLowerCase())}}/>
+                <Input type='text' placeholder="Masukan Kata Kunci" value={state.isKeyword} onChange={handleChangeKeyword} autoFocus />
             </LabelModal>
             <Buttons shape="circle" icon={<SearchOutlined />} onClick={() => {filteredData()}} />
         </SplitterInputTanggal>
         )
     };
 
-    const filteredData = () => {
-        setIsLoading(true)
-        setDataResi([]);
-        setTimeout(() => {
-            const DB = ref(getDatabase());
-                get(child(DB, `Service/sandboxDS`))
-                .then(async (ss) => {
-                    const dataSS = ss.val() || {};
-                    const Array:DataRes[] = Object.values(dataSS);
-                    let countSuccess = 0;
-                    let countPending = 0;
-                    let countCancel = 0;
-                    let countTotal = 0; 
-                    if (tglMskAwal && tglMskAkhir) {
-                        const filterData = Array.filter(items => {
-                            const masukAwal = new Date(tglMskAwal).setHours(0, 0, 0, 0);
-                            const masukAkhir = new Date(tglMskAkhir).setHours(23, 59, 59, 999);
-                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
-                            const isTanggalMasukValid = tglMasuk >= masukAwal && tglMasuk <= masukAkhir;
-                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = (!statusSelected || 
-                                items.status?.toLowerCase().includes(statusSelected.toLowerCase())) ||
-                                (statusSelected.toLowerCase() === 'belum diambil' && items.TglKeluar === 'null');    
+    const filterDataResi = (
+        array: DataRes[],
+        filters: {
+            teknisi?: string;
+            penerima?: string;
+            status?: string;
+            keyword?: string;
+            sparepart?: string;
+            tglMskAwal?: Date;
+            tglMskAkhir?: Date;
+            tglKeluar?: Date;
+            lokasi?: string;
+        }
+    ) => {
+        return array.filter((item) => {
+            const { teknisi, penerima, status, keyword, sparepart, tglMskAwal, tglMskAkhir, tglKeluar, lokasi } = filters;
 
-                                if(isKeyword === ""){
-                                    return  isTeknisiValid && isPenerimaValid && isStatusValid && isTanggalMasukValid
-                                }
-    
-                                const isKerusakanValid = items.Kerusakan?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                                const isMerkHPValid = items.MerkHp?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                                const isNoNotaValid = items.NoNota?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                                const isImeiValid = items.Imei?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                                const isNoHpValid = items.NoHpUser?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                                
-                                const isHargaUser = typeof items.Harga === 'number'
-                                    ? items.Harga.toString().includes(isKeyword)
-                                    : typeof items.Harga === 'string'
-                                    ? items.Harga.includes(isKeyword)
-                                    : false;
-                            
-                                const isKeywordValid = isKerusakanValid || isMerkHPValid || isNoNotaValid || isImeiValid || isNoHpValid || isHargaUser;
-    
-                                return (
-                                    isTanggalMasukValid &&
-                                    isTeknisiValid &&
-                                    isPenerimaValid && 
-                                    isStatusValid && 
-                                    isKeywordValid
-                                );
-                        });
-                        const sorterData = filterData.sort((a, b) => {
-                            const dateA:any = new Date(a.TglMasuk);
-                            const dateB:any = new Date(b.TglMasuk);
-                            return dateA - dateB;
-                        });
-                        const converter = sorterData.map((item:any) => {
-                            if(item.status === 'sudah diambil'){
-                                item.status = 'sukses';
-                            }
-                            return item
-                        });
-                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
-                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
-                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
-                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
-                        
-                        setDataResi(converter);
-                    }else if(sparepartSelected){
-                        const filterData = Array.filter(items => {
-                            const sparepartArray: SparepartData[] = Object.values(items.sparepart || {});
-                        
-                            const isSparepartValid = sparepartArray.some(sparepartItem => {
-                                return !sparepartSelected || sparepartItem.Sparepart?.toLowerCase().includes(sparepartSelected.toLowerCase());
-                            });
-                        
-                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                            
-                            if(isKeyword === ""){
-                                return isSparepartValid && isTeknisiValid && isPenerimaValid && isStatusValid
-                            }
+            const dateInRange = (date: string, start?: Date, end?: Date) => {
+                const d = new Date(date).setHours(0, 0, 0, 0);
+                const s = start ? new Date(start).setHours(0, 0, 0, 0) : d;
+                const e = end ? new Date(end).setHours(23, 59, 59, 999) : d;
+                return d >= s && d <= e;
+            };
 
-                            const isKerusakanValid = items.Kerusakan?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isMerkHPValid = items.MerkHp?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isNoNotaValid = items.NoNota?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isImeiValid = items.Imei?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isNoHpValid = items.NoHpUser?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            
-                            const isHargaUser = typeof items.Harga === 'number'
-                                ? items.Harga.toString().includes(isKeyword)
-                                : typeof items.Harga === 'string'
-                                ? items.Harga.includes(isKeyword)
-                                : false;
-                        
-                            const isKeywordValid = isKerusakanValid || isMerkHPValid || isNoNotaValid || isImeiValid || isNoHpValid || isHargaUser;
+            const matches = (field: string | undefined, value: string | undefined) =>
+                !value || field?.toLowerCase().includes(value.toLowerCase());
 
-                            return (
-                                isSparepartValid && 
-                                isTeknisiValid && 
-                                isPenerimaValid && 
-                                isStatusValid && 
-                                isKeywordValid
-                            );
-                        });                        
-                        const sorterData = filterData.sort((a, b) => {
-                            const dateA:any = new Date(a.TglMasuk);
-                            const dateB:any = new Date(b.TglMasuk);
-                            return dateA - dateB;
-                        });
-                        const converter = sorterData.map((item:any) => {
-                            if(item.status === 'sudah diambil'){
-                                item.status = 'sukses';
-                            }
-                            return item
-                        });
-                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
-                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
-                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
-                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
+            const hasSparepart = sparepart
+                ? Object.values(item.sparepart || {}).some((sp) =>
+                    sp.Sparepart?.toLowerCase().includes(sparepart.toLowerCase())
+                )
+                : true;
 
-                        setDataResi(converter);
-                    }else if(tglKeluar){
-                        const filterData = Array.filter(items => {
-                            const tanggalKeluarAwal = new Date(tglKeluar).setHours(0, 0, 0, 0);
-                            const tanggalKeluarAkhir = new Date(tglKeluar).setHours(23, 59, 59, 999);
-                            const tanggalKeluar = new Date(items.TglKeluar).setHours(0, 0, 0, 0);
-                            const isTanggalKeluarValid = tanggalKeluar >= tanggalKeluarAwal && tanggalKeluar <= tanggalKeluarAkhir;
-                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = !statusSelected || items.status?.toLowerCase().includes(statusSelected.toLowerCase());
-                            return isTanggalKeluarValid && isTeknisiValid && isPenerimaValid && isStatusValid;
-                        });
-                        const sorterData = filterData.sort((a, b) => {
-                            const dateA:any = new Date(a.TglMasuk);
-                            const dateB:any = new Date(b.TglMasuk);
-                            return dateA - dateB;
-                        });
-                        const converter = sorterData.map((item:any) => {
-                            if(item.status === 'sudah diambil'){
-                                item.status = 'sukses';
-                            }
-                            return item
-                        });
-                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
-                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
-                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
-                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
-                        setDataResi(converter);
-                    }else if(isKeyword){
-                        const filterData = Array.filter(items => {
-                            const isKerusakanValid = items.Kerusakan?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isMerkHPValid = items.MerkHp?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isNoNotaValid = items.NoNota?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isHargaUser = typeof items.Harga === 'number'
-                                                ? items.Harga.toString().includes(isKeyword)
-                                                : typeof items.Harga === 'string'
-                                                ? items.Harga.includes(isKeyword)
-                                                : false;
-                            const isImeiValid = items.Imei?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
-                            const isNoHpValid = items.NoHpUser?.toLocaleLowerCase().includes(isKeyword.toLocaleLowerCase());
+                const keywordMatch = keyword ?
+                (['Kerusakan', 'Keluhan', 'MerkHp', 'NoNota', 'Imei', 'NoHpUser', 'Harga'] as const).some((key) => {
+                    const field = item[key as keyof DataRes];
+                    return typeof field === 'string' && field.toLowerCase().includes(keyword.toLowerCase());
+                }) 
+                : true;
 
-                            return isKerusakanValid || isMerkHPValid || isNoNotaValid || isImeiValid || isNoHpValid || isHargaUser;
-                        })
-                        const sorterData = filterData.sort((a, b) => {
-                            const dateA:any = new Date(a.TglMasuk);
-                            const dateB:any = new Date(b.TglMasuk);
-                            return dateA - dateB;
-                        });
-                        const converter = sorterData.map((item:any) => {
-                            if(item.status === 'sudah diambil'){
-                                item.status = 'sukses';
-                            }
-                            return item
-                        });
-                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
-                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
-                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
-                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
-
-                        setDataResi(converter);
-                    }else{
-                        const filterData = Array.filter(items => {
-                            const tglMasuk = new Date(items.TglMasuk).setHours(0, 0, 0, 0);
-                            const isTanggalMasukValid = (!tglMskAwal || tglMasuk >= new Date(tglMskAwal).setHours(0, 0, 0, 0)) && (!tglMskAkhir || tglMasuk <= new Date(tglMskAkhir).setHours(23, 59, 59, 999));
-                            const isTeknisiValid = !teknisiSelected || items.Teknisi?.toLowerCase().includes(teknisiSelected.toLowerCase());
-                            const isPenerimaValid = !penerimaSelected || items.Penerima?.toLowerCase().includes(penerimaSelected.toLowerCase());
-                            const isStatusValid = (!statusSelected || 
-                                items.status?.toLowerCase().includes(statusSelected.toLowerCase())) ||
-                                (statusSelected.toLowerCase() === 'belum diambil' && items.TglKeluar === 'null');                              
-                            const isLokasiValid = !lokasiSelected || items.Lokasi?.toLowerCase().includes(lokasiSelected.toLowerCase());
-                            return isTanggalMasukValid && isTeknisiValid && isPenerimaValid && isStatusValid && isLokasiValid;
-                        });
-                        const sorterData = filterData.sort((a, b) => {
-                            const dateA:any = new Date(a.TglMasuk);
-                            const dateB:any = new Date(b.TglMasuk);
-                            return dateB - dateA;
-                        });
-                        const converter = sorterData.map((item:any) => {
-                            if(item.status === 'sudah diambil'){
-                                item.status = 'sukses';
-                            }
-                            return item;
-                        });
-                        countSuccess = converter.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
-                        countPending = converter.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
-                        countCancel = converter.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
-                        countTotal = converter.filter(item => item.status !== 'claim garansi').length;
-                        setDataResi(converter);
-                    }              
-                    setSBerhasil(countSuccess);
-                    setSBatal(countCancel);
-                    setSPending(countPending);      
-                    setSTotalData(countTotal);      
-                setIsLoading(false);
-                }).catch((error) => {
-                    console.error(error)
-                    setIsLoading(false);
-                })
-        })
+            return (
+                dateInRange(item.TglMasuk, tglMskAwal, tglMskAkhir) &&
+                dateInRange(item.TglKeluar, tglKeluar, tglKeluar) &&
+                matches(item.Teknisi, teknisi) &&
+                matches(item.Penerima, penerima) &&
+                matches(item.Lokasi, lokasi) &&
+                (matches(item.status, status) || (status === 'belum diambil' && item.TglKeluar === 'null')) &&
+                hasSparepart && keywordMatch
+            );
+        });
     };
-    
+
+    const sortData = (data: DataRes[]) => {
+        return data.sort((a, b) => new Date(a.TglMasuk).getTime() - new Date(b.TglMasuk).getTime());
+    };
+
+    const convertStatus = (data: DataRes[]) => {
+        return data.map((item) => ({
+            ...item,
+            status: item.status === 'sudah diambil' ? 'sukses' : item.status,
+        }));
+    };
+
+    const calculateCounts = (data: DataRes[]) => {
+        const countSuccess = data.filter((item) => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+        const countPending = data.filter(
+            (item) =>
+                (item.TglKeluar === 'null' || item.TglKeluar === undefined) &&
+                (item.status === 'sukses' || item.status === 'process')
+        ).length;
+        const countCancel = data.filter((item) => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+        const countTotal = data.filter((item) => item.status !== 'claim garansi').length;
+
+        return { countSuccess, countPending, countCancel, countTotal };
+    };
+
+    const filteredData = async () => {        
+        try {
+            dispatch({type: 'SET_IS_LOADING', payload: true});
+            dispatch({type: 'SET_DATA_RESI', payload: []});
+            const DB = ref(getDatabase());
+            const snapshot = await get(child(DB, `Service/sandboxDS`));
+            const dataSS = snapshot.val() || {};
+            const array: DataRes[] = Object.values(dataSS);
+
+            const filterOptions = {
+                teknisi: state.teknisiSelected,
+                penerima: state.penerimaSelected,
+                status: state.statusSelected,
+                keyword: state.isKeyword,
+                sparepart: state.sparepartSelected,
+                tglMskAwal: state.tglMskAwal ? new Date(state.tglMskAwal) : undefined,
+                tglMskAkhir: state.tglMskAkhir ? new Date(state.tglMskAkhir) : undefined,
+                tglKeluar: state.tglKeluar ? new Date(state.tglKeluar) : undefined,
+                lokasi: state.lokasiSelected,
+            };
+
+            const filtered = filterDataResi(array, filterOptions);
+            const sorted = sortData(filtered);
+            const converted = convertStatus(sorted);
+            const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(converted);
+
+            dispatch({ type: 'SET_DATA_RESI', payload: converted });
+            dispatch({ type: 'SET_S_BERHASIL', payload: countSuccess });
+            dispatch({ type: 'SET_S_BATAL', payload: countCancel });
+            dispatch({ type: 'SET_S_PENDING', payload: countPending });
+            dispatch({ type: 'SET_S_TOTAL_DATA', payload: countTotal });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            dispatch({ type: 'SET_IS_LOADING', payload: false });
+            window.scrollTo(0,0);
+        }
+    };
+
     useEffect(() => {
-        /*const fetchData = () => {
-        };*/
             const authG:any = getAuth();
             const DB = ref(getDatabase());
-            setIsLoading(true);
+            dispatch({type: "SET_IS_LOADING", payload: true})
                 const userRole = authG.currentUser.email.split('@')[0];
                 const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
-
                 const processRealtimeData = (datas: DataSnapshot) => {
-
                 if(userRole === 'user'){
-                    setIsAdmin(false);
+                    dispatch({type:'SET_IS_ADMIN', payload: false})
                     get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                         const Data = datas.val() || {};
                         const Array:DataRes[] = Object.values(Data);
@@ -392,19 +360,20 @@ export default function Admin() {
                         );
                         const converter = PendingData.filter(items => items.status === "sudah diambil" ? items.status = 'sukses' : items.status)
                             if(converter.length > 0){
-                                setIsFinish('Yang Belum Selesai')
-                                setIsLoading(false);
-                                return setDataResi(converter); 
+                                dispatch({type:'SET_IS_FINISH', payload: 'Yang Belum Selesai'});
+                                dispatch({type: "SET_IS_LOADING", payload: false})
+                                return dispatch({type: "SET_DATA_RESI", payload: converter});
                             }
                             else{
-                                setIsLoading(false);
-                                return setIsFinish('Mu Sudah Selesai')
+                                dispatch({type: "SET_IS_LOADING", payload: false})
+                                return dispatch({type:'SET_IS_FINISH', payload: 'Sudah Selesai'});
+
                             }
                     }).catch((err) => {
                         console.error(err);
                     })
                 }else if(userRole === 'admin'){
-                    setIsAdmin(true);
+                    dispatch({type:'SET_IS_ADMIN', payload: true})
                     get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                         const Data = datas.val() || {};
                         const Array:DataRes[] = Object.values(Data).map((item: any) => {
@@ -431,18 +400,18 @@ export default function Admin() {
                         const countTotal = sortedArray.filter(item => 
                             item.status !== 'claim garansi'
                           ).length;
-                        setSBerhasil(countSuccess);
-                        setSBatal(countCancel);
-                        setSPending(countPending);
-                        setSTotalData(countTotal)
-                        setIsLoading(false);
-                          setDataResiBak(sortedArray);
-                        return setDataResi(sortedArray);
+                        dispatch({ type: 'SET_S_BERHASIL', payload: countSuccess });
+                        dispatch({ type: 'SET_S_BATAL', payload: countCancel });
+                        dispatch({ type: 'SET_S_PENDING', payload: countPending });
+                        dispatch({ type: 'SET_S_TOTAL_DATA', payload: countTotal });
+                        dispatch({ type: "SET_IS_LOADING", payload: false });
+                        dispatch({ type: 'SET_DATA_RESI_BAK', payload: sortedArray});
+                        return dispatch({ type: 'SET_DATA_RESI', payload: sortedArray });
                     }).catch((err) => {
                         console.error(err);
                     })
                 }else if(userRole === 'mod'){
-                    setIsAdmin(false);
+                    dispatch({type:'SET_IS_ADMIN', payload: false})
                     get(child(DB, "Service/sandboxDS"))
                     .then(async(ss) => {
                         if(ss.exists()){
@@ -458,32 +427,30 @@ export default function Admin() {
                                     const dateB:any = new Date(b.TglMasuk);
                                     return dateB - dateA ;
                                 });
-                                setIsFinish('Yang Belum Selesai')
-                                setIsLoading(false);
-                                return setDataResi(sortedData); 
+                                dispatch({type:'SET_IS_FINISH', payload: 'Yang Belum Selesai'});
+                                dispatch({type: "SET_IS_LOADING", payload: false})
+                                return dispatch({ type: 'SET_DATA_RESI', payload: sortedData }); 
                             }
                             else{
-                                setIsLoading(false);
-                                return setIsFinish('Mu Sudah Selesai')
+                                dispatch({type: "SET_IS_LOADING", payload: false})
+                                return dispatch({type:'SET_IS_FINISH', payload: 'Sudah Selesai'});
                             }
     
                         }
                     })
                 }
-
             }
             const Unsubs = onValue(DB, processRealtimeData, (error) => {
                 console.error("error while fetching data", error);
-                setIsLoading(false);
+                dispatch({type: "SET_IS_LOADING", payload: false})
             });
         return () => Unsubs();
-            //fetchData();
     },[localDate])
 
     return(
         <>
         <MainWrapper>
-            {isLoading ? 
+            {state.isLoading ? 
             <>
             <Wrapper>
                 <WrapperLoading>
@@ -491,142 +458,44 @@ export default function Admin() {
                 </WrapperLoading>
             </Wrapper>
             </> : <>
-            {isAdmin ? 
+            {state.isAdmin ? 
             <>
             <BasicSection2>
                 <Title onClick={() => {handleOnFilterButtonTitle('berhasil')}}
                   style={{
-                    color: isActivatedBtn === 'berhasil' ? 'green' : 'rgb(var(--Text))',
-                    fontSize: isActivatedBtn === 'berhasil' ? '2.5rem' : '2rem',
-                    textDecorationLine: isActivatedBtn === 'berhasil' ? 'underline' : 'none',
-                  }}>BERHASIL : {sBerhasil} |</Title>
+                    color: state.isActivatedBtn === 'berhasil' ? 'green' : 'rgb(var(--Text))',
+                    fontSize: state.isActivatedBtn === 'berhasil' ? '2.5rem' : '2rem',
+                    textDecorationLine: state.isActivatedBtn === 'berhasil' ? 'underline' : 'none',
+                  }}>BERHASIL : {state.sBerhasil} |</Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('pending')}}
                 style={{
-                    color: isActivatedBtn === 'pending' ? 'yellow' : 'rgb(var(--Text))',
-                    fontSize: isActivatedBtn === 'pending' ? '2.5rem' : '2rem',
-                    textDecorationLine: isActivatedBtn === 'pending' ? 'underline' : 'none',
-                  }}>PENDING : {sPending} |</Title>
+                    color: state.isActivatedBtn === 'pending' ? 'yellow' : 'rgb(var(--Text))',
+                    fontSize: state.isActivatedBtn === 'pending' ? '2.5rem' : '2rem',
+                    textDecorationLine: state.isActivatedBtn === 'pending' ? 'underline' : 'none',
+                  }}>PENDING : {state.sPending} |</Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('batal')}}
                 style={{
-                    color: isActivatedBtn === 'batal' ? 'red' : 'rgb(var(--Text))',
-                    fontSize: isActivatedBtn === 'batal' ? '2.5rem' : '2rem',
-                    textDecorationLine: isActivatedBtn === 'batal' ? 'underline' : 'none',
-                  }}>BATAL : {sBatal} |</Title>
+                    color: state.isActivatedBtn === 'batal' ? 'red' : 'rgb(var(--Text))',
+                    fontSize: state.isActivatedBtn === 'batal' ? '2.5rem' : '2rem',
+                    textDecorationLine: state.isActivatedBtn === 'batal' ? 'underline' : 'none',
+                  }}>BATAL : {state.sBatal} |</Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('total')}}
                 style={{
-                    color: isActivatedBtn === 'total' ? 'rgb(var(--Text))' : 'rgb(var(--Text))',
-                    fontSize: isActivatedBtn === 'total' ? '2rem' : '2rem',
-                    textDecorationLine: isActivatedBtn === 'total' ? 'none' : 'none',
-                  }}>TOTAL : {sTotalData}</Title>
-
-
-            {/*
-             
-            <TableContainer>
-                        <Table>
-                        <THead>
-                                <tr>
-                                    <TableHeader>No Nota</TableHeader>
-                                    <TableHeader>Tanggal Masuk</TableHeader>
-                                    <TableHeader>Tanggal Keluar</TableHeader>
-                                    <TableHeader>Merk HP</TableHeader>
-                                    <TableHeader>Kerusakan</TableHeader>
-                                    <TableHeader>Spareparts</TableHeader>
-                                    <TableHeader>Harga Sparepart</TableHeader>
-                                    <TableHeader>Harga User</TableHeader>
-                                    <TableHeader>Imei</TableHeader>
-                                    <TableHeader>Nama user</TableHeader>
-                                    <TableHeader>Nomor HP User</TableHeader>
-                                    <TableHeader>Lokasi</TableHeader>
-                                    <TableHeader>Teknisi</TableHeader>
-                                    <TableHeader>Penerima</TableHeader>
-                                    <TableHeader>Status</TableHeader>
-                                </tr>
-                             </THead>
-                        {DataResi.map((a, i) => {
-                            const ConvertNumber = (noHP:string) => {
-                                if(noHP.startsWith('0')){
-                                    return '62' + noHP.slice(1);
-                                }
-                                return noHP
-                            }
-                            const noHpConverter = ConvertNumber(a.NoHpUser);
-                            const spareparts:any = a.sparepart || {};
-                            let sparepartList = [];
-                            let totalSparepartPrice = 0;
-
-                            for(let key in spareparts){
-                                if(spareparts.hasOwnProperty(key)){
-                                    const part = spareparts[key];
-                                    sparepartList.push(`${part.Sparepart}(${part.TypeOrColor})`);
-                                    totalSparepartPrice += parseInt(part.HargaSparepart || "0")
-                                }
-                            }
-
-                            return(
-                                <tbody key={i}>
-                                    <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                    <TableData>
-                                    <TableDataA
-                                            href={`https://wa.me/${noHpConverter}?text=Nota Services ${a.NoNota}, dibuat oleh ${
-                                            a.Lokasi === 'Cikaret' 
-                                                ? `CKRT-${a.Penerima}` 
-                                                : a.Lokasi === 'Sukahati' 
-                                                ? `SKHT-${a.Penerima}` 
-                                                : 'null'
-                                            }.%0A%0A Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${
-                                            a.MerkHp
-                                            } dengan kerusakan ${
-                                            a.Kerusakan
-                                            } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
-                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Hubungi kami lebih mudah, simpan nomor ini!* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
-                                            `}
-                                            target="_blank"
-                                        >
-                                            {a.NoNota}
-                                        </TableDataA>
-                                        </TableData>
-                                        <TableData>{dateFormater(a.TglMasuk)}</TableData>
-                                        <TableData>{dateFormater(a.TglKeluar)}</TableData>
-                                        <TableData>{a.MerkHp}</TableData>
-                                        <TableData>{a.Kerusakan}</TableData>
-                                        <TableData>{sparepartList.join(', ')}</TableData>
-                                        <TableData>{a.HargaIbnu && parseInt(a.HargaIbnu) !== 0 
-                                            ? parseInt(a.HargaIbnu).toLocaleString() 
-                                            : (totalSparepartPrice !== 0 
-                                                ? totalSparepartPrice.toLocaleString() 
-                                                : 0)
-                                            }</TableData>
-                                        <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
-                                        <TableData>
-                                        {a.Imei}
-                                        </TableData>
-                                        <TableData>{a.NamaUser}</TableData>
-                                        <TableData><TableDataA href={`https://wa.me/${noHpConverter}`} target="_blank">{a.NoHpUser}</TableDataA></TableData>
-                                        <TableData>{a.Lokasi}</TableData>
-                                        <TableData>{a.Teknisi || a.status}</TableData>
-                                        <TableData>{a.Penerima}</TableData>
-                                        <TableData>{a.status}</TableData>
-                                    </TableRow>
-                                </tbody>
-                                )
-                            })}
-                    </Table>
-            </TableContainer>
-
-        */}
+                    color: state.isActivatedBtn === 'total' ? 'rgb(var(--Text))' : 'rgb(var(--Text))',
+                    fontSize: state.isActivatedBtn === 'total' ? '2rem' : '2rem',
+                    textDecorationLine: state.isActivatedBtn === 'total' ? 'none' : 'none',
+                  }}>TOTAL : {state.sTotalData}</Title>
             </BasicSection2>
-
                <WrapperAntTable>
-                    <Table data={DataResi} />
+                    <Table data={state.DataResi} />
                 </WrapperAntTable>
             <Wrapper2>{/* BAGIAN FILTER ETC */}
                 <Search>
                                 <Splitter>
                                     <div>
                                     <LabelModal>Sparepart:
-                                    <SelectModal placeholder="Sparepart" value={sparepartSelected} onChange={(e) => {setSparepartSelected(e.target.value)}}>
-                                        <option value={""}>SEMUA</option>
+                                    <SelectModal placeholder="Sparepart" value={state.sparepartSelected} onChange={(e) => {dispatch({type: "SET_SPAREPART_SELECTED", payload: e.target.value})}}>
+                                        <option value={""}>Semua</option>
                                         <option>ANT CABLE</option>
                                         <option>BAZEL HP</option>
                                         <option>BACKDOOR</option>
@@ -649,7 +518,7 @@ export default function Admin() {
                                     </div>
                                     <div>
                                         <LabelModal>Teknisi:
-                                            <SelectModal value={teknisiSelected} onChange={(e) => {setTeknisiSelected(e.target.value)}}>
+                                            <SelectModal value={state.teknisiSelected} onChange={(e) => {dispatch({type: "SET_TEKNISI_SELECTED", payload: e.target.value})}}>
                                                 <option value="">Semua</option>
                                                 <option value="amri">Amri</option>
                                                 <option value="ibnu">Ibnu</option>
@@ -659,7 +528,7 @@ export default function Admin() {
                                     </div>
                                     <div>
                                         <LabelModal>Penerima:
-                                            <SelectModal value={penerimaSelected} onChange={(e) => {setPenerimaSelected(e.target.value)}}>
+                                            <SelectModal value={state.penerimaSelected} onChange={(e) => {dispatch({type: "SET_PENERIMA_SELECTED", payload: e.target.value})}}>
                                                 <option value="">Semua</option>
                                                 <option value="reni">Reni</option>
                                                 <option value="sindi">Sindi</option>
@@ -671,7 +540,7 @@ export default function Admin() {
                                     </div>
                                     <div>
                                         <LabelModal> Lokasi:
-                                            <SelectModal value={lokasiSelected} onChange={(e) => {setLokasiSelected(e.target.value)}}>
+                                            <SelectModal value={state.lokasiSelected} onChange={(e) => {dispatch({type: "SET_LOKASI_SELECTED", payload: e.target.value})}}>
                                                 <option value="">Semua</option>
                                                 <option value="Cikaret">Cikaret</option>
                                                 <option value="Sukahati">Sukahati</option>
@@ -680,7 +549,7 @@ export default function Admin() {
                                     </div>
                                     <div>
                                         <LabelModal>Status:
-                                            <SelectModal value={statusSelected} onChange={(e) => {setStatusSelected(e.target.value)}}>
+                                            <SelectModal value={state.statusSelected} onChange={(e) => {dispatch({type: "SET_STATUS_SELECTED", payload: e.target.value})}}>
                                                 <option value="">Semua</option>
                                                 <option value="belum diambil">Belum Diambil</option>
                                                 <option value="cancel">Cancel</option>
@@ -690,15 +559,23 @@ export default function Admin() {
                                             </SelectModal>
                                         </LabelModal>
                                     </div>
+                                    
                                 </Splitter>
                                 <TanggalMasukComponent />
+                                
                 </Search>
             </Wrapper2>
 
            </> : 
             <>{/* BAGIAN MOD & USER */}
             <MainWrapper>
-                <BasicSection3 title={`Service ${isFinish}`}>
+                <BasicSection3 title={`Service ${state.isFinish}`}>
+                </BasicSection3>
+                <div style={{padding: '1rem'}}>
+                    <TableModerator data={state.DataResi}/>
+                </div>
+              
+                    {/*
                         <Wrapper>
                             <Tables>
                                 <thead>
@@ -714,7 +591,7 @@ export default function Admin() {
                                     <TableHeader>Status</TableHeader>
                                     </tr>
                                 </thead>
-                            {DataResi.map((a, i) => {
+                            {state.DataResi.map((a, i) => {
                                 const ConvertNumber = (noHP:string) => {
                                     if(noHP.startsWith('0')){
                                         return '62' + noHP.slice(1);
@@ -770,8 +647,9 @@ export default function Admin() {
                                     )
                                 })}
                         </Tables>
-                </Wrapper>
-                </BasicSection3>
+                        </Wrapper>
+                    */}          
+              
             </MainWrapper>
             </>}
             </>}        
@@ -783,7 +661,7 @@ export default function Admin() {
 const MainWrapper = styled.div`
 margin-top: 1rem;
 `
-
+/*
 const Tables = styled.table`
   width: 100%;
   font-size: 12px;
@@ -817,6 +695,28 @@ const TableRow = styled.tr<{status : string, tglKeluar: string}>`
         }};
 `;
 
+const TableHeader = styled.th`
+padding: 10px;
+text-align: center;
+background-color: blue;
+white-space: nowrap;
+width: 150px;
+color: rgb(var(--textSecondary));
+`;
+
+const TableData = styled.td`
+padding: 10px;
+border-bottom: 1px solid #ddd;
+width: 150px;
+white-space: nowrap;
+color: black;
+`;
+
+const TableDataA = styled.a`
+color: black;
+`;
+
+*/
 const Buttons = styled(Button)`
   background-color: #007bff;
   color: white;
@@ -837,28 +737,6 @@ const Buttons = styled(Button)`
     max-width: 95%;
     margin: auto;
     `
-
-const TableHeader = styled.th`
-  padding: 10px;
-  text-align: center;
-  background-color: blue;
-  white-space: nowrap;
-  width: 150px;
-  color: rgb(var(--textSecondary));
-  `;
-  
-  const TableData = styled.td`
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  width: 150px; /* Sesuaikan lebar kolom */
-  white-space: nowrap;
-  color: black;
-`;
-  
-  const TableDataA = styled.a`
-  color: black;
-  `;
-
 const spin = keyframes`
   0% {
     transform: rotate(0deg);
