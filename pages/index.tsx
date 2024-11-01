@@ -400,7 +400,6 @@ export default function Admin() {
                             const getMonth = dateFilter.getMonth();
                             const dateLocal = new Date(localDate);
                             const getMonth2 = dateLocal.getMonth();
-                            dispatch({type: 'SET_IS_BULAN', payload: monthToday})
                             if(state.isBulan){
                                 const monthItems = parseInt(items.TglMasuk.slice(5,7))
                                 const monthState = parseInt(state.isBulan.slice(5,7));
