@@ -39,6 +39,7 @@ interface State {
     DataResi: DataRes[];
     dataResiBak: DataRes[];
     isActivatedBtn: string;
+    isBulan: string;
     sparepartSelected: string;
     isAdmin: boolean;
     isLoading: boolean;
@@ -60,6 +61,7 @@ interface State {
   const initialState: State = {
     DataResi: [],
     dataResiBak: [],
+    isBulan: '',
     isActivatedBtn: 'total',
     sparepartSelected: '',
     isAdmin: false,
@@ -85,6 +87,7 @@ interface State {
     | { type: 'SET_DATA_RESI_BAK'; payload: DataRes[] }
     | { type: 'SET_IS_ACTIVATED_BTN'; payload: string }
     | { type: 'SET_SPAREPART_SELECTED'; payload: string }
+    | { type: 'SET_IS_BULAN'; payload: string }
     | { type: 'SET_IS_ADMIN'; payload: boolean }
     | { type: 'SET_IS_LOADING'; payload: boolean }
     | { type: 'SET_IS_FINISH'; payload: string }
@@ -110,6 +113,8 @@ interface State {
         return { ...state, dataResiBak: action.payload };
       case 'SET_IS_ACTIVATED_BTN':
         return { ...state, isActivatedBtn: action.payload };
+      case 'SET_IS_BULAN':
+        return { ...state, isBulan: action.payload };
       case 'SET_SPAREPART_SELECTED':
         return { ...state, sparepartSelected: action.payload };
       case 'SET_IS_ADMIN':
@@ -156,6 +161,7 @@ export default function Admin() {
     const month = (today.getMonth() + 1).toString().padStart(2, '0');
     const year = today.getFullYear();
     const localDate = `${year}-${month}-${day}`;
+    const monthToday = `${year+"-"+month}`
 
     /*
      * Tambahan untuk status service yang sudah di ambil,
@@ -220,7 +226,7 @@ export default function Admin() {
             </LabelModal> 
             <LabelModal> 
                 Pencarian :
-                <Input type='text' placeholder="Masukan Kata Kunci" value={state.isKeyword} onChange={handleChangeKeyword} autoFocus />
+                <Input type='text' placeholder="Masukan Kata Kunci" value={state.isKeyword} onChange={handleChangeKeyword} autoFocus/>
             </LabelModal>
             <Buttons shape="circle" icon={<SearchOutlined />} onClick={() => {filteredData()}} />
         </SplitterInputTanggal>
@@ -303,49 +309,56 @@ export default function Admin() {
         return { countSuccess, countPending, countCancel, countTotal };
     };
 
-    const filteredData = async () => {        
-        try {
-            dispatch({type: 'SET_IS_LOADING', payload: true});
-            dispatch({type: 'SET_DATA_RESI', payload: []});
-            const DB = ref(getDatabase());
-            const snapshot = await get(child(DB, `Service/sandboxDS`));
-            const dataSS = snapshot.val() || {};
-            const array: DataRes[] = Object.values(dataSS);
+    const filteredData = async () => {
+            try {
+                dispatch({ type: 'SET_IS_LOADING', payload: true });
+                dispatch({ type: 'SET_DATA_RESI', payload: [] });
+                const DB = ref(getDatabase());
+                const snapshot = await get(child(DB, `Service/sandboxDS`));
+                const dataSS = snapshot.val() || {};
+                const array: DataRes[] = Object.values(dataSS);
+    
+                const filterOptions = {
+                    teknisi: state.teknisiSelected,
+                    penerima: state.penerimaSelected,
+                    status: state.statusSelected,
+                    keyword: state.isKeyword,
+                    sparepart: state.sparepartSelected,
+                    tglMskAwal: state.tglMskAwal ? new Date(state.tglMskAwal) : undefined,
+                    tglMskAkhir: state.tglMskAkhir ? new Date(state.tglMskAkhir) : undefined,
+                    tglKeluar: state.tglKeluar ? new Date(state.tglKeluar) : undefined,
+                    lokasi: state.lokasiSelected,
+                };
+    
+                const filtered = filterDataResi(array, filterOptions);
+                const sorted = sortData(filtered);
+                const converted = convertStatus(sorted);
+                const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(converted);
+    
+                dispatch({ type: 'SET_DATA_RESI', payload: converted });
+                dispatch({ type: 'SET_DATA_RESI_BAK', payload: converted })
+                dispatch({ type: 'SET_S_BERHASIL', payload: countSuccess });
+                dispatch({ type: 'SET_S_BATAL', payload: countCancel });
+                dispatch({ type: 'SET_S_PENDING', payload: countPending });
+                dispatch({ type: 'SET_S_TOTAL_DATA', payload: countTotal });
+            } catch (error) {
+                console.error(error);
+            } finally {
+                dispatch({ type: 'SET_IS_LOADING', payload: false });
+                window.scrollTo(0, 0);
+            }
+        };
 
-            const filterOptions = {
-                teknisi: state.teknisiSelected,
-                penerima: state.penerimaSelected,
-                status: state.statusSelected,
-                keyword: state.isKeyword,
-                sparepart: state.sparepartSelected,
-                tglMskAwal: state.tglMskAwal ? new Date(state.tglMskAwal) : undefined,
-                tglMskAkhir: state.tglMskAkhir ? new Date(state.tglMskAkhir) : undefined,
-                tglKeluar: state.tglKeluar ? new Date(state.tglKeluar) : undefined,
-                lokasi: state.lokasiSelected,
-            };
 
-            const filtered = filterDataResi(array, filterOptions);
-            const sorted = sortData(filtered);
-            const converted = convertStatus(sorted);
-            const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(converted);
-
-            dispatch({ type: 'SET_DATA_RESI', payload: converted });
-            dispatch({ type: 'SET_S_BERHASIL', payload: countSuccess });
-            dispatch({ type: 'SET_S_BATAL', payload: countCancel });
-            dispatch({ type: 'SET_S_PENDING', payload: countPending });
-            dispatch({ type: 'SET_S_TOTAL_DATA', payload: countTotal });
-        } catch (error) {
-            console.error(error);
-        } finally {
-            dispatch({ type: 'SET_IS_LOADING', payload: false });
-            window.scrollTo(0,0);
-        }
-    };
+    const handleBulanOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        dispatch({type: "SET_IS_BULAN", payload: value})
+    }
 
     useEffect(() => {
-            const authG:any = getAuth();
-            const DB = ref(getDatabase());
-            dispatch({type: "SET_IS_LOADING", payload: true})
+        const authG:any = getAuth();
+        const DB = ref(getDatabase());
+        dispatch({type: "SET_IS_LOADING", payload: true})
                 const userRole = authG.currentUser.email.split('@')[0];
                 const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
                 const processRealtimeData = (datas: DataSnapshot) => {
@@ -387,6 +400,13 @@ export default function Admin() {
                             const getMonth = dateFilter.getMonth();
                             const dateLocal = new Date(localDate);
                             const getMonth2 = dateLocal.getMonth();
+                            dispatch({type: 'SET_IS_BULAN', payload: monthToday})
+                            if(state.isBulan){
+                                const monthItems = parseInt(items.TglMasuk.slice(5,7))
+                                const monthState = parseInt(state.isBulan.slice(5,7));
+                                console.log({monthState, monthItems})
+                                return monthItems === monthState;
+                            }
                             return getMonth === getMonth2
                         })
                         const sortedArray = FilteredArray.sort((a, b) => {
@@ -445,7 +465,7 @@ export default function Admin() {
                 dispatch({type: "SET_IS_LOADING", payload: false})
             });
         return () => Unsubs();
-    },[localDate])
+    },[localDate, state.isBulan, monthToday])
 
     return(
         <>
@@ -461,6 +481,9 @@ export default function Admin() {
             {state.isAdmin ? 
             <>
             <BasicSection2>
+                <Title>
+                    <Input type="month" value={state.isBulan} onChange={handleBulanOnChange}/>
+                </Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('berhasil')}}
                   style={{
                     color: state.isActivatedBtn === 'berhasil' ? 'green' : 'rgb(var(--Text))',
