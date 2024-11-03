@@ -10,6 +10,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import Table from "../components/TableAdmin";
 import { DataSnapshot, onValue } from "firebase/database";
 import TableModerator from "components/TableModerator";
+import TableCallback from "components/TableCallback";
 
 interface DataRes {
     NoNota: string;
@@ -32,12 +33,14 @@ interface DataRes {
     Teknisi: string;
     Lokasi: string;
     status: string;
+    sudahDikabarin?: boolean;
 }
 
 
 interface State {
     DataResi: DataRes[];
     dataResiBak: DataRes[];
+    data7Hari: DataRes[];
     isActivatedBtn: string;
     isBulan: string;
     sparepartSelected: string;
@@ -61,6 +64,7 @@ interface State {
   const initialState: State = {
     DataResi: [],
     dataResiBak: [],
+    data7Hari: [],
     isBulan: '',
     isActivatedBtn: 'total',
     sparepartSelected: '',
@@ -85,6 +89,7 @@ interface State {
   type Action =
     | { type: 'SET_DATA_RESI'; payload: DataRes[] }
     | { type: 'SET_DATA_RESI_BAK'; payload: DataRes[] }
+    | { type: 'SET_DATA_7HARI'; payload: DataRes[] }
     | { type: 'SET_IS_ACTIVATED_BTN'; payload: string }
     | { type: 'SET_SPAREPART_SELECTED'; payload: string }
     | { type: 'SET_IS_BULAN'; payload: string }
@@ -111,6 +116,8 @@ interface State {
         return { ...state, DataResi: action.payload };
       case 'SET_DATA_RESI_BAK':
         return { ...state, dataResiBak: action.payload };
+      case 'SET_DATA_7HARI':
+        return { ...state, data7Hari: action.payload };
       case 'SET_IS_ACTIVATED_BTN':
         return { ...state, isActivatedBtn: action.payload };
       case 'SET_IS_BULAN':
@@ -353,12 +360,50 @@ export default function Admin() {
     const handleBulanOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         dispatch({type: "SET_IS_BULAN", payload: value})
+
+        dispatch({ type: "SET_IS_LOADING", payload: true });
+        const DB = ref(getDatabase());
+        if(state.isBulan === monthToday || state.isBulan){
+            get(child(DB, "Service/sandboxDS")).then(async(datas) => {
+                const Data = datas.val() || {};
+                const Array:DataRes[] = Object.values(Data).map((item: any) => {
+                    if(item.status === 'sudah diambil'){
+                        item.status = 'sukses';
+                    }
+                    return item;
+                });
+                const filteredArray = Array.filter(items => {
+                    const monthItems = items.TglMasuk.slice(5,7);
+                    const monthState = value.slice(5,7);
+                    return monthItems === monthState;
+                });
+                const sortedArray = filteredArray.sort((a, b) => {
+                    const dateA:any = new Date(a.TglMasuk);
+                    const dateB:any = new Date(b.TglMasuk);
+                    return dateA - dateB;
+                })
+                const countSuccess = sortedArray.filter(item => item.status === 'sukses' && item.TglKeluar.length > 5).length;
+                const countPending = sortedArray.filter(item => item.TglKeluar === 'null' || item.TglKeluar === undefined && item.status === 'sukses' || item.status === 'process').length;
+                const countCancel = sortedArray.filter(item => item.status === 'cancel' && item.TglKeluar.length > 5).length;
+                const countTotal = sortedArray.filter(item => item.status !== 'claim garansi').length;
+                dispatch({ type: 'SET_S_BERHASIL', payload: countSuccess });
+                dispatch({ type: 'SET_S_BATAL', payload: countCancel });
+                dispatch({ type: 'SET_S_PENDING', payload: countPending });
+                dispatch({ type: 'SET_S_TOTAL_DATA', payload: countTotal });
+                dispatch({ type: "SET_IS_LOADING", payload: false });
+                dispatch({ type: 'SET_DATA_RESI_BAK', payload: sortedArray});
+
+                return dispatch({ type: 'SET_DATA_RESI', payload: sortedArray });
+            }).catch((err) => {
+                console.error(err);
+            })
+        }
     }
 
     useEffect(() => {
         const authG:any = getAuth();
         const DB = ref(getDatabase());
-        dispatch({type: "SET_IS_LOADING", payload: true})
+        dispatch({type: "SET_IS_LOADING", payload: true});
                 const userRole = authG.currentUser.email.split('@')[0];
                 const userName = authG.currentUser.email.split('@')[1].replace('.com', '');
                 const processRealtimeData = (datas: DataSnapshot) => {
@@ -387,6 +432,8 @@ export default function Admin() {
                     })
                 }else if(userRole === 'admin'){
                     dispatch({type:'SET_IS_ADMIN', payload: true})
+                    dispatch({type: "SET_IS_BULAN", payload: monthToday});
+                    dispatch({ type: "SET_IS_LOADING", payload: false });
                     get(child(DB, "Service/sandboxDS")).then(async(datas) => {
                         const Data = datas.val() || {};
                         const Array:DataRes[] = Object.values(Data).map((item: any) => {
@@ -400,12 +447,6 @@ export default function Admin() {
                             const getMonth = dateFilter.getMonth();
                             const dateLocal = new Date(localDate);
                             const getMonth2 = dateLocal.getMonth();
-                            if(state.isBulan){
-                                const monthItems = parseInt(items.TglMasuk.slice(5,7))
-                                const monthState = parseInt(state.isBulan.slice(5,7));
-                                console.log({monthState, monthItems})
-                                return monthItems === monthState;
-                            }
                             return getMonth === getMonth2
                         })
                         const sortedArray = FilteredArray.sort((a, b) => {
@@ -436,6 +477,28 @@ export default function Admin() {
                         if(ss.exists()){
                             const datas = ss.val() || {};
                             const Array:DataRes[] = Object.values(datas);
+                            
+
+                            const recentDataSuccess = Array.filter((item) => {
+                                const tglKeluar = item.TglKeluar ? new Date(item.TglKeluar) : null;
+                                const noHpValid = item.NoHpUser?.length <= 5 ? null : item.NoHpUser; 
+                                const sudahDikabarin = item.sudahDikabarin === true
+                                let datenow = new Date(localDate);
+                                datenow.setDate(datenow.getDate() - 7);
+
+                                const DateNowComparator = datenow.toLocaleDateString();
+                                const tglKeluarComparator = tglKeluar?.toLocaleDateString();
+                                return (
+                                    (item.status === 'sudah diambil') &&
+                                    tglKeluarComparator === DateNowComparator && noHpValid && !sudahDikabarin
+                                );
+                            })
+
+                            const dateSorter = sortData(recentDataSuccess);
+                            const converterStatus = dateSorter.filter(items => items.status === 'sudah diambil' ? items.status = 'belum dikabarin' : items.status);
+                            
+                            dispatch({type: "SET_DATA_7HARI", payload: converterStatus})
+
                             const PendingData = Array.filter(items => 
                                 (items.TglKeluar === undefined || items.TglKeluar === 'null' || items.TglKeluar?.split('T')[0] === localDate)
                             );
@@ -464,7 +527,7 @@ export default function Admin() {
                 dispatch({type: "SET_IS_LOADING", payload: false})
             });
         return () => Unsubs();
-    },[localDate, state.isBulan, monthToday])
+    },[localDate, monthToday])
 
     return(
         <>
@@ -481,7 +544,7 @@ export default function Admin() {
             <>
             <BasicSection2>
                 <Title>
-                    <Input type="month" value={state.isBulan} onChange={handleBulanOnChange}/>
+                    <InputBulan type="month" value={state.isBulan} onChange={handleBulanOnChange}/>
                 </Title>
                 <Title onClick={() => {handleOnFilterButtonTitle('berhasil')}}
                   style={{
@@ -589,88 +652,17 @@ export default function Admin() {
             </Wrapper2>
 
            </> : 
-            <>{/* BAGIAN MOD & USER */}
+            <>
+            {/* BAGIAN MOD & USER */}
             <MainWrapper>
-                <BasicSection3 title={`Service ${state.isFinish}`}>
-                </BasicSection3>
+                <BasicSection3 title={`SERVICE ${state.isFinish.toLocaleUpperCase()}`} />
                 <div style={{padding: '1rem'}}>
                     <TableModerator data={state.DataResi}/>
                 </div>
-              
-                    {/*
-                        <Wrapper>
-                            <Tables>
-                                <thead>
-                                    <tr>
-                                    <TableHeader>No Nota</TableHeader>
-                                    <TableHeader>Tanggal Masuk</TableHeader>
-                                    <TableHeader>Tanggal Keluar</TableHeader>
-                                    <TableHeader>Merk HP</TableHeader>
-                                    <TableHeader>Kerusakan</TableHeader>
-                                    <TableHeader>Spareparts</TableHeader>
-                                    <TableHeader>Harga User</TableHeader>
-                                    <TableHeader>Lokasi</TableHeader>
-                                    <TableHeader>Status</TableHeader>
-                                    </tr>
-                                </thead>
-                            {state.DataResi.map((a, i) => {
-                                const ConvertNumber = (noHP:string) => {
-                                    if(noHP.startsWith('0')){
-                                        return '62' + noHP.slice(1);
-                                    }
-                                    return noHP
-                                    
-                                }
-
-                                const noHpConverter = ConvertNumber(a.NoHpUser);
-
-                                const spareparts:any = a.sparepart || {};
-                                let sparepartList = [];
-    
-                                for(let key in spareparts){
-                                    if(spareparts.hasOwnProperty(key)){
-                                        const part = spareparts[key];
-                                        sparepartList.push(`${part.Sparepart}(${part.TypeOrColor})`);
-                                    }
-                                }
-                                    return (
-                                    <tbody key={i}>
-                                        <TableRow status={a.status} tglKeluar={a.TglKeluar}>
-                                        <TableData>
-                                        <TableDataA
-                                            href={`https://wa.me/${noHpConverter}?text=Nota Services ${a.NoNota}, dibuat oleh ${
-                                            a.Lokasi === 'Cikaret' 
-                                                ? `CKRT-${a.Penerima}` 
-                                                : a.Lokasi === 'Sukahati' 
-                                                ? `SKHT-${a.Penerima}` 
-                                                : 'null'
-                                            }.%0A%0A Haii Ka ${a.NamaUser}, ini dari Glory Cell, mau infokan untuk handphone ${
-                                            a.MerkHp
-                                            } dengan kerusakan ${
-                                            a.Kerusakan
-                                            } sudah selesai dan bisa diambil sekarang ya. Untuk Pengambilan Handphonenya dimohon bawa kembali nota servicenya ya kak, dan ini untuk invoicenya. Terimakasih%0A%0Ahttps://struk.rraf-project.site/struk?noNota=${a.NoNota}
-                                            %0A%0A *Glory Cell* %0A *Jl. Raya Cikaret No 002B-C* %0A *Hubungi kami lebih mudah, simpan nomor ini!* 08999081100 %0A *Follow IG Kami :* @glorycell.official 
-                                            `}
-                                            target="_blank"
-                                        >
-                                            {a.NoNota}
-                                        </TableDataA>
-                                        </TableData>
-                                        <TableData>{dateFormater(a.TglMasuk)}</TableData>
-                                        <TableData>{dateFormater(a.TglKeluar)}</TableData>
-                                        <TableData>{a.MerkHp}</TableData>
-                                        <TableData>{a.Kerusakan}</TableData>
-                                        <TableData>{sparepartList.join(', ')}</TableData>
-                                        <TableData>{parseInt(a.Harga).toLocaleString()}</TableData>
-                                        <TableData>{a.Lokasi}</TableData>
-                                        <TableData>{a.status}</TableData>                                      
-                                        </TableRow>
-                                    </tbody>
-                                    )
-                                })}
-                        </Tables>
-                        </Wrapper>
-                    */}          
+                <BasicSection3 title={`${("Infokan Kembali User Yang Telah 7Hari Services").toLocaleUpperCase()}`} />
+                <div style={{padding: '1rem'}}>
+                    <TableCallback data={state.data7Hari}/>
+                </div>
               
             </MainWrapper>
             </>}
@@ -683,62 +675,7 @@ export default function Admin() {
 const MainWrapper = styled.div`
 margin-top: 1rem;
 `
-/*
-const Tables = styled.table`
-  width: 100%;
-  font-size: 12px;
-  border-collapse: collapse;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
-`;
 
-const TableRow = styled.tr<{status : string, tglKeluar: string}>`
-    background-color: ${props => {
-        if (props.status === 'sukses' && (props.tglKeluar === 'null' || props.tglKeluar === '')) {
-            return 'cyan';
-          }
-        if (props.status === 'cancel' && (props.tglKeluar === 'null' || props.tglKeluar === '')) {
-            return '#FE9900';
-        }
-        if (props.status === 'claim garansi' && (props.tglKeluar === 'null' || props.tglKeluar === '')){
-            return 'gray'
-        }
-          switch (props.status) {
-            case 'sukses':
-              return 'green'; 
-            case 'claim garansi':
-                return 'white';
-            case 'cancel':
-              return 'red';
-            default:
-              return 'yellow';
-          }
-        }};
-`;
-
-const TableHeader = styled.th`
-padding: 10px;
-text-align: center;
-background-color: blue;
-white-space: nowrap;
-width: 150px;
-color: rgb(var(--textSecondary));
-`;
-
-const TableData = styled.td`
-padding: 10px;
-border-bottom: 1px solid #ddd;
-width: 150px;
-white-space: nowrap;
-color: black;
-`;
-
-const TableDataA = styled.a`
-color: black;
-`;
-
-*/
 const Buttons = styled(Button)`
   background-color: #007bff;
   color: white;
@@ -790,6 +727,29 @@ const Spinner = styled.div`
 `;
 
 
+const InputBulan = styled(Inputs)`
+    background-color: rgb(var(--modalBackground));
+    color: rgb(var(--Text));
+    border: none; 
+    text-align:center;
+    font-size: 2rem;
+    
+  &::placeholder {
+    color: rgb(var(--Text));
+    text-align: center;
+    }
+
+    &:hover {
+        color: rgb(var(--Background));
+    }
+    
+    &:focus {
+        border-color: #ff4d4f;
+        color: rgb(var(--Background));
+        background-color: rgb(var(--modalBackground));
+        box-shadow: 0 0 5px rgba(255, 77, 79, 0.5); 
+  }
+`;
 const Input = styled(Inputs)`
     background-color: rgb(var(--modalBackground));
     color: rgb(var(--Text));

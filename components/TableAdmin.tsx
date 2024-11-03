@@ -20,6 +20,7 @@ interface DataRes {
   Teknisi: string;
   Lokasi: string;
   status: string;
+  sudahDikabarin?: boolean;
 }
 
 interface SparepartData {
@@ -250,7 +251,7 @@ const Table: React.FC<TableComponentProps> = ({ data }) => {
                         const {children, ...rest} = props;
                         const record = rest["data-row-key"] ? data.find((d) => d.NoNota === rest["data-row-key"]) : undefined
                         return (
-                            <StyledRow status={record?.status || ""} tglKeluar={record?.TglKeluar || null} {...rest}>
+                            <StyledRow status={record?.status || ""} tglKeluar={record?.TglKeluar || null} sudahDikabarin={record?.sudahDikabarin || null} {...rest}>
                                 {children}
                             </StyledRow>
                             );
@@ -283,17 +284,17 @@ font-weight: bold;
 
 
 
-const StyledRow = styled.tr<{ status: string; tglKeluar: string | null }>`
-  background-color: ${({ status, tglKeluar }) => {
+const StyledRow = styled.tr<{ status: string; tglKeluar: string | null; sudahDikabarin: boolean | null }>`
+  background-color: ${({ status, tglKeluar, sudahDikabarin }) => {
     if (status === "sukses" && tglKeluar === "null") return "#5EE7EC";
-    if (status === "sukses") return "#12D200";
+    if (status === "sukses" && sudahDikabarin === true) return "#12D200";
     if (status === "process") return "#EDE835";
     if (status === "process" && tglKeluar === 'null') return "#F57E7E";
     if (status === 'cancel' && tglKeluar === 'null') return "#E4B0B0";
     if (status === 'cancel') return "#DB3759";
     if (status === 'claim garansi') return "gray";
     if (status === 'garansi') return "gray";
-    return "rgb(var(--background))";
+    return "#D0B4FA";
   }};
   font-size: 12px;
 `;

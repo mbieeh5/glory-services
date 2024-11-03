@@ -23,7 +23,6 @@ const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: bold;
   line-height: 1.1;
-  margin-bottom: 4rem;
   letter-spacing: -0.03em;
   color: rgb(var(--Text));
   ${media('<=tablet')} {
@@ -38,7 +37,6 @@ const ContentContainer = styled.div`
 `;
 
 const BasicSectionWrapper = styled(Container)`
-  padding-bottom: 1rem;
   padding-top: 2rem;
   text-align: center;
   ${media('<=desktop')} {
