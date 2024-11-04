@@ -170,22 +170,6 @@ export default function Admin() {
     const localDate = `${year}-${month}-${day}`;
     const monthToday = `${year+"-"+month}`
 
-    /*
-     * Tambahan untuk status service yang sudah di ambil,
-     * memunculkan kembali data servicenya untuk di infokan kembali ke user
-     * tambah parameter baru di database untuk per key nya,
-     * if(dikabarin === undefined && status === "sukses" && tglKeluar.length > 5)
-     * template from <TableDataA 
-     *      {   Pelanggan Yth, Terimakasih telah mempercayakan Service Handphone anda kepada GloryCell.
-     *           Kami ingin tau perkembangan dari perbaikan yang kami lakukan, Sebagai bentuk Pelayanan dari kami
-     *           jika ada keluhan, silahkan hubungi kami kembali. 
-     *          Simpan nomor kami untuk bantuan instan dan informasi penting seputar produk dan layanan langsung di chat Anda!
-     *       }
-     * 
-     * Muncul Data Warna Ungu on All Users
-     * 
-     */
-
     const handleOnFilterButtonTitle = async (params: string) => {
         dispatch({type: "SET_IS_ACTIVATED_BTN", payload: params});
         if (state.dataResiBak.length <= state.DataResi.length) {

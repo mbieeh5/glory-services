@@ -82,7 +82,6 @@ const Columns: TableProps<DataRes>["columns"] = [
                             'success'
                         );
                     }else {
-                        update(notaRef, {sudahDikabarin: true})
                         window.open(`https://wa.me/${noHpConverter}?text=Pelanggan Yth, Terimakasih telah mempercayakan Service Handphone anda kepada GloryCell.
                         Kami ingin tau perkembangan dari perbaikan yang kami lakukan, Sebagai bentuk Pelayanan dari kami jika ada keluhan, silahkan hubungi kami kembali.%0A
                         Simpan nomor kami untuk bantuan instan dan informasi penting seputar produk dan layanan langsung di chat Anda!`, "_blank");
