@@ -226,15 +226,17 @@ const Columns: TableProps<DataRes>["columns"] = [
 
 interface TableComponentProps {
   data: DataRes[];
+  isLoading: boolean;
 }
 
-const TableModerator: React.FC<TableComponentProps> = ({ data }) => {
+const TableModerator: React.FC<TableComponentProps> = ({ data, isLoading}) => {
     return (
         <>
             <StyledAntTable
             columns={Columns} 
             dataSource={data} 
             rowKey="NoNota"
+            loading={isLoading}
             size={"small"}
             pagination={false}
             scroll={{ x: 0 , y: 130 * 5 }}

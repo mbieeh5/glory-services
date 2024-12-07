@@ -133,9 +133,10 @@ const Columns: TableProps<DataRes>["columns"] = [
 
 interface TableComponentProps {
   data: DataRes[];
+  isLoading: boolean;
 }
 
-const TableCallback: React.FC<TableComponentProps> = ({ data }) => {
+const TableCallback: React.FC<TableComponentProps> = ({ data, isLoading }) => {
     return (
         <>
             <StyledAntTable
@@ -143,6 +144,7 @@ const TableCallback: React.FC<TableComponentProps> = ({ data }) => {
             dataSource={data} 
             rowKey="NoNota"
             size={"small"}
+            loading={isLoading}
             pagination={false}
             scroll={{ x: 0 , y: 130 * 5 }}
             expandable={{

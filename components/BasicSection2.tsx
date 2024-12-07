@@ -21,12 +21,14 @@ export default function BasicSection2({ children }: PropsWithChildren<BasicSecti
 
 const ContentContainer = styled.div`
   display: absolute;
+  align-items: center;
+  flex-direction: row;
+  gap: 0px;
 
 `;
 
 const BasicSectionWrapper = styled(Container)`
   padding-bottom: 1rem;
-  padding-top: 1px;
   text-align: center;
   ${media('<=desktop')} {
     flex-direction: column;

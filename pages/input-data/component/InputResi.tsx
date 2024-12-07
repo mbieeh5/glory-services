@@ -172,8 +172,8 @@ export default function InputResi() {
                                 <Label>
                                 LOKASI:
                                     <Select placeholder="Lokasi" name="lokasi" required>
-                                        <option>Cikaret</option>
-                                        <option>Sukahati</option>
+                                        <option value={'Cikaret'}>Cikaret</option>
+                                        <option value={'Sukahati'}>Sukahati</option>
                                     </Select>
                                 </Label>
                                 </Col>
