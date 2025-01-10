@@ -4,7 +4,7 @@ import styled from "styled-components";
 import React, { ReactNode,} from "react";
 import BasicSection2 from "./BasicSection2";
 import {Input as Inputs} from "antd";
-import {DataSnapshot,get, getDatabase, onValue,orderByChild,  query,  ref,   } from "firebase/database";
+import {DataSnapshot,endAt,get, getDatabase, onValue,orderByChild,  query,  ref, startAt,   } from "firebase/database";
 import { debounce } from "lodash";
 
 interface DataRes {
@@ -31,6 +31,7 @@ interface SparepartData {
   Sparepart: string;
   HargaSparepart: string;
   TypeOrColor: string;
+  Garansi? : string;
 };
 
 interface State {
@@ -46,6 +47,7 @@ interface State {
     countPending: number; 
     countCancel: number; 
     countTotal: number;
+    uniqueDateFilter: {text: string, value: string}[];
 };
 
 const initialState: State = {
@@ -60,7 +62,8 @@ const initialState: State = {
     countSuccess: 0,
     countPending: 0,
     countCancel: 0,
-    countTotal: 0
+    countTotal: 0,
+    uniqueDateFilter: [],
 };
 
 type Action = 
@@ -77,6 +80,7 @@ type Action =
 | { type: 'SET_COUNT_PENDING'; payload: number}
 | { type: 'SET_COUNT_CANCEL'; payload: number}
 | { type: 'SET_COUNT_TOTAL'; payload: number}
+| { type: 'SET_UNIQUE_DATE_FILTER'; payload: {text: string, value: string}[]};
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -90,6 +94,8 @@ function reducer(state: State, action: Action): State {
             return {...state, forSearchData: action.payload};
         case 'SET_FOR_SEARCH':
             return {...state, forSearch: action.payload};
+        case 'SET_UNIQUE_DATE_FILTER':
+            return {...state, uniqueDateFilter: action.payload};
         case 'SET_IS_ACTIVATED_BTN':
             return {...state, isActivatedBtn: action.payload};
         case 'SET_IS_LOADING':
@@ -137,44 +143,88 @@ const calculateCounts = (data: DataRes[]) => {
     return { countSuccess, countPending, countCancel, countTotal };
 };
 
-const today = new Date();
-const day = today.getDate().toString().padStart(2, '0');
-const month = (today.getMonth() + 1).toString().padStart(2, '0');
-const year = today.getFullYear();
-const localDate = `${year}-${month}-${day}`;
-const dateLocal = new Date(localDate);
-const currentMonth = new Date().getMonth() + 1;
-const defaultMonthFilter = currentMonth < 10 ? `0${currentMonth}` : `${currentMonth}`;
+const warrantyChecker = (data: string, TglKeluar: string) => {
+    const TglKeluarValid = TglKeluar.length > 5 ? TglKeluar : '0';
+    const TanggalFormater = (Dates: string, DatesAfter: number) => {
+            const TglKeluarA = new Date(Dates);
+            const TglKeluarSG = new Date(TglKeluarA);
+            TglKeluarSG.setDate(TglKeluarSG.getDate() + DatesAfter);
+            const getDay = TglKeluarSG.getDate() < 10 ? `0${TglKeluarSG.getDate()}` : TglKeluarSG.getDate();
+            const getMonth = TglKeluarSG.getMonth();
+            const getYear = TglKeluarSG.getFullYear();
+            if(new Date() > TglKeluarSG){
+                return `${data} (${getDay}/${getMonth + 1}/${getYear}) (SUDAH KADALUARSA)`;
+            }
+        return `${data.replace('-', ' ')} (${getDay}/${getMonth + 1}/${getYear})`;
+    }
 
+    if(TglKeluarValid === '0'){
+        return 'Garansi Belum Dimulai';
+    }
+
+    if(data === '7-HARI' || data === '7-HARI-1'){
+
+        return TanggalFormater(TglKeluar, 7);
+    }
+    if(data === '30-HARI' || data === '30-HARI-1'){
+
+        return TanggalFormater(TglKeluar, 30);
+    }
+    if(data === '90-HARI' || data === '90-HARI-1'){
+
+        return TanggalFormater(TglKeluar, 90);
+    }
+    if(data === '120-HARI' || data === '120-HARI-1'){
+
+        return TanggalFormater(TglKeluar, 120);
+    }
+    return 'NON GARANSI'
+}
+
+const today = new Date();
+//const day = today.getDate().toString().padStart(2, '0');
+//const month = (today.getMonth() + 1).toString().padStart(2, '0');
+const year = today.getFullYear();
+//const localDate = `${year}-${month}-${day}`;
+//const dateLocal = new Date(localDate);
+const currentMonth = new Date().getMonth() + 1;
+const defaultMonthFilter = currentMonth < 10 ? `0${currentMonth}-${year}` : `${currentMonth}-${year}`;
 
 
 
 const Table: React.FC = () => {
 
     const [state, dispatch] = React.useReducer(reducer, initialState);
-
     
     const handleOnFilterButtonTitle = async (params: string) => {
         dispatch({type: "SET_IS_ACTIVATED_BTN", payload: params});
         if (state.DataResiBak1.length <= state.DataResi.length) {
             dispatch({type: "SET_DATA_RESI_BAK", payload: state.DataResi});
         }
+        const sortedArray = (data:DataRes[]) => {
+            const sortedData = data.sort((a,b) => {
+                const dateA:any = new Date(a.TglMasuk);
+                const dateB:any = new Date(b.TglMasuk);
+                return dateA - dateB;
+            });
+            return sortedData;
+        }
         
         if(params === 'berhasil'){
             const filteredDataResi =  state.DataResiBak1.filter(val => val.status === 'sukses' && val.TglKeluar.length > 5)
-            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
+            return dispatch({type: 'SET_DATA_RESI', payload: sortedArray(filteredDataResi)}); 
         }
         if(params === 'pending'){
             const filteredDataResi =  state.DataResiBak1.filter(val => val.status === 'process' && val.TglKeluar === undefined || val.TglKeluar.length < 5)
-            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
+            return dispatch({type: 'SET_DATA_RESI', payload: sortedArray(filteredDataResi)}); 
         }
         if(params === 'batal'){
             const filteredDataResi =  state.DataResiBak1.filter(val => val.status === 'cancel' && val.TglKeluar.length > 5)
-            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
+            return dispatch({type: 'SET_DATA_RESI', payload: sortedArray(filteredDataResi)}); 
         }
         if(params === 'total'){
             const filteredDataResi =  state.DataResiBak1;
-            return dispatch({type: 'SET_DATA_RESI', payload: filteredDataResi}); 
+            return dispatch({type: 'SET_DATA_RESI', payload: sortedArray(filteredDataResi)}); 
         }
         return null;
     }
@@ -185,7 +235,8 @@ const Table: React.FC = () => {
             dispatch({type: "SET_IS_FILTERED_CHECK", payload: true})
             const filterData:DataRes[] = state.DataResiBak1.filter((item) => {
                 const month = new Date(item.TglMasuk).getMonth() + 1;
-                const formattedmonth = month < 10 ? `0${month}` : `${month}`;
+                const  year = new Date(item.TglMasuk).getFullYear();
+                const formattedmonth = month < 10 ? `0${month}-${year}` : `${month}-${year}`;
                 return filters.TglMasuk.includes(formattedmonth);
             });
             const sortedArray = filterData.sort((a,b) => {
@@ -209,11 +260,15 @@ const Table: React.FC = () => {
     React.useEffect(() => {
         const DB = ref(getDatabase());
         const DB2 = getDatabase();
+        const currentYear = new Date().getFullYear();
+        const lastYear = currentYear - 1;
         dispatch({type: 'SET_IS_LOADING', payload: true})
         const processRealtimeData = (datas: DataSnapshot) => {
             const dbRef = query(
                 ref(DB2, 'Service/sandboxDS'),
-                orderByChild('TglMasuk')
+                orderByChild('TglMasuk'),
+                startAt(`${lastYear}-01-01`),
+                endAt(`${currentYear}-12-31`)
             );
             get(dbRef).then(async(datas) => {
                 const Data = datas.val() || {};
@@ -223,19 +278,40 @@ const Table: React.FC = () => {
                         }
                         return item;
                     });
-                    const FilteredData = ArrayData.filter(items => {
+                const uniqueFilterOptions = ArrayData.reduce((acc, Item) => {
+                    const date = new Date(Item.TglMasuk);
+                    const month = date.toLocaleString('default', { month: 'long' });
+                    const year = date.getFullYear();
+                    const monthYear = `${month}(${year})`;
+                    const value = `${date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : date.getMonth() + 1}-${year}`;
+                    if(!acc.find(option => option.value === value)){
+                        acc.push({text: monthYear, value});
+                    }
+                    return acc;
+
+                }, [] as {text: string, value: string}[]).sort((a,b) => {
+                    const [monthA, yearA] = a.value.split('-').map((v, i) => (i === 0 ? parseInt(v) : parseInt(v)));
+                    const [monthB, yearB] = b.value.split('-').map((v, i) => (i === 0 ? parseInt(v) : parseInt(v)));
+                    if(yearA !== yearB) {
+                        return yearA - yearB
+                    };
+                    return monthA - monthB;
+                });
+
+                    /*const FilteredData = ArrayData.filter(items => {
                         const dateFilter = new Date(items.TglMasuk);
                         const getMonth = dateFilter.getMonth();
                         const getMonth2 = dateLocal.getMonth();
                         return getMonth === getMonth2;
-                    });
-                const sortedArray = FilteredData.sort((a,b) => {
+                    });*/
+                const sortedArray = ArrayData.sort((a,b) => {
                     const dateA:any = new Date(a.TglMasuk);
                     const dateB:any = new Date(b.TglMasuk);
                     return dateB - dateA;
-                })
+                });
                 const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(sortedArray)
                 dispatch({type: "SET_COUNT_CANCEL", payload: countCancel})
+                dispatch({type: "SET_UNIQUE_DATE_FILTER", payload: uniqueFilterOptions})
                 dispatch({type: "SET_COUNT_PENDING", payload: countPending})
                 dispatch({type: "SET_COUNT_SUCCESS", payload: countSuccess})
                 dispatch({type: "SET_COUNT_TOTAL", payload: countTotal})
@@ -281,25 +357,13 @@ const Table: React.FC = () => {
         key: "TglMasuk",
         width: 165,
         align: "center",
-        filters: [
-            { text: "January", value: '01' },
-            { text: "February", value: '02' },
-            { text: "March", value: '03' },
-            { text: "April", value: '04' },
-            { text: "May", value: '05' },
-            { text: "June", value: '06' },
-            { text: "July", value: '07' },
-            { text: "August", value: '08' },
-            { text: "September", value: '09' },
-            { text: "October", value: '10' },
-            { text: "November", value: '11' },
-            { text: "December", value: '12' },
-        ],
+        filters: state.uniqueDateFilter,
         defaultFilteredValue: [defaultMonthFilter],
-        onFilter: (value, record) => {
+        onFilter: (value, record) => { 
             const month = new Date(record.TglMasuk).getMonth() + 1;
-            const formattedMonth = month < 10 ? `0${month}` : `${month}`;
-            return formattedMonth === value;
+            const year = new Date(record.TglMasuk).getFullYear();
+            const formattedValue = `${month < 10 ? `0${month}` : `${month}`}-${year}`;
+            return value === formattedValue;
         },
         render: (date) => {
             return(
@@ -310,12 +374,12 @@ const Table: React.FC = () => {
         },
     },
     {
-    title: "MEREK HP",
-    dataIndex: "MerkHp",
-    key: "MerkHp",
-    width: 165,  
-    align: "center",
-    render: (_, {MerkHp}) =>( <div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{MerkHp.toLocaleUpperCase()}</div>),
+        title: "MEREK HP",
+        dataIndex: "MerkHp",
+        key: "MerkHp",
+        width: 165,  
+        align: "center",
+        render: (_, {MerkHp}) =>( <div style={{textAlign: 'left', width: '100%', fontWeight: 'bold'}} color={'default'}>{MerkHp.toLocaleUpperCase()}</div>),
     },
     {
         title: "KERUSAKAN",
@@ -401,7 +465,16 @@ const Table: React.FC = () => {
                             <Tag style={{display: 'flex'}} color={'default'}>HARGA USER <div style={{marginLeft: '34px'}}>:</div> <div style={{marginLeft: '1%'}}>Rp {parseInt(record.Harga).toLocaleString('id-ID')}</div></Tag>
                             <Tag style={{display: 'flex'}} color={'default'}>IMEI <div style={{marginLeft: '83px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Imei?.length > 5 ? record.Imei : "IMEI KOSONG"}</div></Tag>
                             <Tag style={{display: 'flex'}} color={'default'}>PERBAIKAN <div style={{marginLeft: '41px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Kerusakan ? record.Kerusakan.toLocaleUpperCase() : "BELUM DI PERBAIKI"}</div></Tag>
-                            {record.sparepart ? <Tag style={{display: 'flex'}} color={'default'}>SPAREPARTS <div style={{marginLeft: '34px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.sparepart?.map((a, i) => {return (<Tag color={'volcano'} key={i}>{a.Sparepart}({a.TypeOrColor}) Rp {parseInt(a.HargaSparepart).toLocaleString('id-ID')}</Tag>)})}</div></Tag> : <></>}
+                            {record.sparepart &&
+                            record.sparepart.map((a,i) => {
+                                const colorizeTag = a.Garansi === 'NON-GARANSI' || warrantyChecker(a.Garansi ? a.Garansi : 'null', record.TglKeluar).includes("SUDAH KADALUARSA") ? 'volcano' : 'green';
+                                return (
+                                    <>
+                                        <Tag style={{display: 'flex'}} color={'default'}>SPAREPARTS {i+1} <div style={{marginLeft: '34px'}}>:</div> <div style={{marginLeft: '1%'}}><Tag color={colorizeTag} style={{display: 'flex', flexDirection: "column", margin: '1px'}} key={i}>{a.Sparepart}({a.TypeOrColor}) Rp {parseInt(a.HargaSparepart).toLocaleString('id-ID')} | { a.Garansi === 'NON-GARANSI' ? "NON-GARANSI" : `GARANSI : ${warrantyChecker(a.Garansi ? a.Garansi : 'null', record.TglKeluar)}`}</Tag></div></Tag> 
+                                    </>
+                                )
+                            })
+                            }
                             <Tag style={{display: 'flex'}} color={'default'}>NAMA USER <div style={{marginLeft: '39px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.NamaUser?.toLocaleUpperCase()}</div></Tag>
                             <Tag style={{display: 'flex'}} color={'default'}>NO HP USER <div style={{marginLeft: '38px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.NoHpUser}</div></Tag>
                             {record.Teknisi ? <Tag style={{display: 'flex'}} color={'default'}>TEKNISI <div style={{marginLeft: '62px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Teknisi.toLocaleUpperCase()}</div></Tag> : <></> }

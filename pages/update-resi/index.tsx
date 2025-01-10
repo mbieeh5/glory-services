@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 import { child, get, getDatabase, ref, update } from "firebase/database";
-import { useState } from "react";
+import React, { useState } from "react";
 import {Col, Flex, Input as Inputs, Row } from 'antd'
 import styled, {keyframes} from "styled-components";
 import BasicSection3 from "components/BasicSection3";
@@ -19,20 +19,20 @@ interface DataRes {
     Kerusakan: string;
     Keluhan: string;
     Penerima: string;
-    Harga: number;
-    Sparepart: any;
+    Harga: string;
+    sparepart: SparepartInterface[];
     Imei: any;
     Lokasi: string;
     Teknisi: string;
     HargaIbnu: number;
     status: string;
 }
-
-interface SparepartInterface {Sparepart:string; TypeOrColor:string; HargaSparepart:any;}
+interface SparepartInterface {Sparepart:string; TypeOrColor:string; HargaSparepart:any; Garansi?:string;}
 
 export default function UpdateResi() {
     const [noNotaSearch, setNoNotaSearch] = useState("");
     const [cekNotaSearch, setCekNotaSearch] = useState<DataRes[]>([]);
+    const [ClaimGaransiID, setClaimGaransiID] = useState<string>("");
     const [isLoading, setIsloading] = useState<Boolean>(false);
     const [isSearch, setIsSearch] = useState(false);
     const [isCekNota, setIsCekNota] = useState<Boolean>(false);
@@ -50,7 +50,7 @@ export default function UpdateResi() {
     const fakeKey = 1;
     
     const addForms = () => {
-        setSparepart([...sparepart, {Sparepart: "", TypeOrColor: "", HargaSparepart:0}])
+        setSparepart([...sparepart, {Sparepart: "", TypeOrColor: "", HargaSparepart:0, Garansi: 'NON-GARANSI'}])
     };
     const removeForms = (index:number) => {
         setSparepart(sparepart.filter((_,i) => i !== index));
@@ -90,6 +90,7 @@ export default function UpdateResi() {
                                 const initialDataSparepart = Object.keys(sparepartDatas).map((key)=> ({
                                     Sparepart: sparepartDatas[key].Sparepart || "",
                                     TypeOrColor: sparepartDatas[key].TypeOrColor || "",
+                                    Garansi: sparepartDatas[key].Garansi || "",
                                     HargaSparepart: sparepartDatas[key].HargaSparepart || "",
                                 }));
                                 setSparepart(initialDataSparepart);
@@ -123,6 +124,7 @@ export default function UpdateResi() {
         }
         return e;
     };
+
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const formData = new FormData(e.target) || "Null";
@@ -150,12 +152,13 @@ export default function UpdateResi() {
                 const partName = formData.get(`sparepart-${index}`)?.toString() || "null";
                 const typeOrColor = formData.get(`typeOrColor-${index}`)?.toString() || "-";
                 const hargaSparepart = formData.get(`hargaSparepart-${index}`)?.toString() || "null";
-    
+                const garansi = formData.get(`garansi-${index}`)?.toString() || "null";
                 if (partName !== 'null') {
                     spareparts[index] = {
                         Sparepart: partName,
                         TypeOrColor: typeOrColor,
                         HargaSparepart: hargaSparepart,
+                        Garansi: garansi,
                     };
                 }
             }
@@ -199,6 +202,7 @@ export default function UpdateResi() {
                 //Update database jika konfirmasi
                 
                 const notaRef = ref(getDatabase(), `Service/sandboxDS/`);
+                console.log(newData)
                 update(notaRef, newData)
                     .then(() => {
                         Swal.fire('Berhasil!', 'Resi Berhasil di Update', 'success');
@@ -266,6 +270,30 @@ export default function UpdateResi() {
                 setIsloading(false)
             },1500)
         }
+
+    }
+    const ClaimGaransi = () => {
+        if(ClaimGaransiID.length < 3){
+            Swal.fire('Gagal!', 'NO Nota Tidak ditemukan', 'error')
+            setIsCekNota(false);
+        }else{
+            setIsloading(true);
+            setTimeout(() => {
+                const DB = ref(getDatabase());
+                get(child(DB, `Service/sandboxDS/${ClaimGaransiID}`))
+                .then(async (ss) => {
+                    if(ss.exists()){
+                        const datas = ss.val() || {};
+                        const Array:DataRes[] = Object.values({datas});
+                        console.table(Array);
+                    }else{
+                        return Swal.fire('Gagal!', 'NO Nota Tidak ditemukan', 'error');
+                    }
+                    setIsCekNota(true);
+                })
+                setIsloading(false)
+            },1500)
+        }
     }
 
     return (
@@ -281,7 +309,6 @@ export default function UpdateResi() {
             </> : 
             
             <>
-            
             <SearchWrapper>
                 <LabelSearch>
                     Cari Service:
@@ -291,233 +318,257 @@ export default function UpdateResi() {
             </SearchWrapper>
             <ErrorText>{isError}</ErrorText>
             <Divider />
-            <WrapperContent>
-                {isSearch ? (
+            {isSearch && (
+                <WrapperContent>
                     <BasicSection3 title="Update Data Service">
-                <Wrapper2>
-                    {serviceDataToEdit.map((a) => {
+                        <Wrapper2>
+                            {serviceDataToEdit.map((a) => {
 
-                        /* TGL KELUAR === TGL HARI INI, CAN EDIT IS TRUE */
-                        if(a.status === "sudah diambil" && a.TglKeluar.length > 5){
-                                alert(`Status Service ${a.status} data tidak bisa di ubah!`)
-                                return window.location.reload();
-                            }else if(a.status === "cancel" && a.TglKeluar.length > 5) {
-                                alert(`Status Service ${a.status} data tidak bisa di ubah!`)
-                                return window.location.reload();
-                            }else {
+                                /* TGL KELUAR === TGL HARI INI, CAN EDIT IS TRUE */
+                                if(a.status === "sudah diambil" && a.TglKeluar.length > 5){
+                                        alert(`Status Service ${a.status} data tidak bisa di ubah!`)
+                                        return window.location.reload();
+                                    }else if(a.status === "cancel" && a.TglKeluar.length > 5) {
+                                        alert(`Status Service ${a.status} data tidak bisa di ubah!`)
+                                        return window.location.reload();
+                                    }else {
 
-                            return(
-                        <FormCard key={fakeKey}>
-                        <Form onSubmit={handleSubmit}>
-                            <Flex vertical>
-                                <Row>
-                                    <Col span={24}>
-                                        <Label>
-                                            NO NOTA:
-                                            <Input type="text" placeholder="Resi ID" value={a.NoNota} name="noNota" readOnly/>
-                                        </Label>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={12}>
-                                        <Label>
-                                            TANGGAL MASUK:
-                                            <Input type="datetime-local" placeholder="null" value={a.TglMasuk} name="tanggalMasuk" readOnly/>
-                                        </Label>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Label>
-                                            TANGGAL KELUAR:
-                                            <Input type="datetime-local" placeholder="null" name="tanggalKeluar"/>
-                                        </Label>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={12}>
-                                        <Label>
-                                            NAMA PELANGGAN:
-                                            <Input type="text" value={a.NamaUser} name="namaUser" readOnly/>
-                                        </Label>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Label>
-                                            NO PELANGGAN:
-                                            <Input type="text" value={isNoHpUser} onChange={(e) => {handleChangeNoHp(e.target.value)}} name="noHpUser" required/>
-                                        </Label>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={12}>
-                                        <Label>
-                                            HARGA AWAL:
-                                            <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
-                                        </Label>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Label>
-                                            HARGA AKHIR:
-                                            <Input type="number" placeholder="Harga Akhir" name="hargaAkhir" required/>
-                                        </Label>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={12}>
-                                        <Label>
-                                            MEREK HP:
-                                            <Input type="text" value={isMerkHp} onChange={(e) => {setIsMerkHp(e.target.value)}}  name="merkHp" required/>
-                                        </Label>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Label>
-                                            IMEI:
-                                            <Input type="text" value={isImei} onChange={(e) => {setIsImei(e.target.value)}} placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
-                                        </Label>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={12}>
-                                        <Label>
-                                            LOKASI:
-                                            <Select placeholder="Lokasi Service"  name="lokasi" required>
-                                                <option>{a.Lokasi}</option>
-                                            </Select>
-                                        </Label>
-                                    </Col>
-                                    <Col span={12}>
-                                    <Label>
-                                        TEKNISI:
-                                        <Select placeholder="Kerjaan Siapa ?" value={isTeknisiUpdate} onChange={(e) => {IbnuController(e.target.value)}}  name="teknisi" required>
-                                            <option>Amri</option>
-                                            <option>Ibnu</option>
-                                            <option>Rafi</option>
-                                        </Select>
-                                    </Label>
-                                    </Col>
-                                    {isIbnu && 
-                                    <Col span={12}>
-                                        <Label>
-                                            HARGA IBNU: 
-                                            <Input type="number" placeholder="Harga Ibnu Tanya Amri" name="hargaIbnu" required />
-                                        </Label>
-                                    </Col>}
-                                    <Col span={12}>
-                                        <Label>
-                                        STATUS:
-                                            <Select name='status' required>
-                                            <option value={'sudah diambil'}>sukses</option>
-                                            <option value={'sudah diambil'}>sudah diambil</option>
-                                            <option value={'garansi'}>claim garansi</option>
-                                            <option value={'process'}>process</option>
-                                            <option value={'cancel'}>cancel</option>
-                                            </Select>
-                                        </Label>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Label>
-                                            PENERIMA:
-                                            <Input type="text" value={a.Penerima} name="penerima" readOnly/>
-                                        </Label>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={12}>
-                                        <Label>
-                                            KERUSAKAN:
-                                            <TextArea autoSize placeholder="Kerusakannya apa" value={isKeluhan} onChange={(e) => {handleChangeKeluhan(e.target.value)}} name="keluhan" readOnly/>
-                                        </Label>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Label>
-                                            PERBAIKAN:
-                                            <TextArea autoSize placeholder="apa yang di benerin" value={isKerusakan} onChange={(e) => {handleChangeKerusakan(e.target.value)}} name="kerusakan" required/>
-                                        </Label>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                {sparepart.map((spareparts, i) => (
-                                    <Col span={12}  key={i}>
-                                        <SplitterSparepart>
-                                            <Col span={24}>
-                                            <Label>Sparepart:
-                                                <Select placeholder="Sparepart"  name={`sparepart-${i}`} value={spareparts.Sparepart}
-                                                    onChange={(e)=> {
-                                                        const newSpareparts = [...sparepart];
-                                                        newSpareparts[i].Sparepart = e.target.value;
-                                                        setSparepart(newSpareparts);
-                                                    }}
-                                                    >
-                                                        <option>ANT CABLE</option>
-                                                        <option>BAZEL HP</option>
-                                                        <option>BACKDOOR</option>
-                                                        <option>BATERAI</option>
-                                                        <option>BUZZER</option>
-                                                        <option>CON T/C</option>
-                                                        <option>FLEXI BOARD</option>
-                                                        <option>FLEXI CON SIM</option>
-                                                        <option>FLEXI FINGERPRINT</option>
-                                                        <option>FLEXI O/F</option>
-                                                        <option>FLEXI O/F + VOL</option>
-                                                        <option>FLEXI VOL</option>
-                                                        <option>LCD</option>
-                                                        <option>MIC</option>
-                                                        <option>MIDDLE FRAME LCD</option>
-                                                        <option>SIMLOCK</option>
-                                                        <option>SPEAKER</option>
-                                                        <option>TOMBOL LUAR</option>
-                                                    </Select>
-                                                    </Label>
-                                            </Col>
-                                            <Col span={24}>
-                                                    <Label>
-                                                        Merk/Warna Sparepart:
-                                                        <Input type="text" 
-                                                        placeholder="Warna & Merk" 
-                                                        name={`typeOrColor-${i}`}
-                                                        value={spareparts.TypeOrColor}
-                                                        onChange={(e) => {
-                                                            const newSpareparts = [...sparepart];
-                                                            newSpareparts[i].TypeOrColor = e.target.value;
-                                                            setSparepart(newSpareparts);
-                                                        }}
-                                                        />
-                                                    </Label>
-                                            </Col>
+                                    return(
+                                <FormCard key={fakeKey}>
+                                <Form onSubmit={handleSubmit}>
+                                    <Flex vertical>
+                                        <Row>
                                             <Col span={24}>
                                                 <Label>
-                                                        Harga Sparepart:
-                                                        <Input type="number" 
-                                                        placeholder="Harga Sparepart" 
-                                                        name={`hargaSparepart-${i}`} 
-                                                        value={spareparts.HargaSparepart}
-                                                        onChange={(e) => {
-                                                            const newSpareparts = [...sparepart];
-                                                            newSpareparts[i].HargaSparepart = e.target.value;
-                                                            setSparepart(newSpareparts);
-                                                        }}
-                                                        />
+                                                    NO NOTA:
+                                                    <Input type="text" placeholder="Resi ID" value={a.NoNota} name="noNota" readOnly/>
                                                 </Label>
                                             </Col>
-                                                <Buttons2 type="button" onClick={() => {removeForms(i)}}>Hapus</Buttons2>
-                                        </SplitterSparepart>
-                                    </Col>
-                                ))}
-                                </Row>
-                                <Buttons type="button" onClick={addForms}>+</Buttons>
-                                <Row style={{ paddingTop: '5rem'}}>
-                                    <Col span={24}>
-                                        <Buttons type="submit">Update</Buttons>
-                                    </Col>
-                                </Row>
-                        </Flex>
-                    </Form>
-                    </FormCard>
-                        
-                    )}
-                })}
-                </Wrapper2>
+                                        </Row>
+                                        <Row>
+                                            <Col span={12}>
+                                                <Label>
+                                                    TANGGAL MASUK:
+                                                    <Input type="datetime-local" placeholder="null" value={a.TglMasuk} name="tanggalMasuk" readOnly/>
+                                                </Label>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Label>
+                                                    TANGGAL KELUAR:
+                                                    <Input type="datetime-local" placeholder="null" name="tanggalKeluar"/>
+                                                </Label>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={12}>
+                                                <Label>
+                                                    NAMA PELANGGAN:
+                                                    <Input type="text" value={a.NamaUser} name="namaUser" readOnly/>
+                                                </Label>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Label>
+                                                    NO PELANGGAN:
+                                                    <Input type="text" value={isNoHpUser} onChange={(e) => {handleChangeNoHp(e.target.value)}} name="noHpUser" required/>
+                                                </Label>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={12}>
+                                                <Label>
+                                                    HARGA AWAL:
+                                                    <Input type="number" value={a.Harga} name="hargaAwal" readOnly/>
+                                                </Label>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Label>
+                                                    HARGA AKHIR:
+                                                    <Input type="number" placeholder="Harga Akhir" name="hargaAkhir" required/>
+                                                </Label>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={12}>
+                                                <Label>
+                                                    MEREK HP:
+                                                    <Input type="text" value={isMerkHp} onChange={(e) => {setIsMerkHp(e.target.value)}}  name="merkHp" required/>
+                                                </Label>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Label>
+                                                    IMEI:
+                                                    <Input type="text" value={isImei} onChange={(e) => {setIsImei(e.target.value)}} placeholder="Masukan Imei 1 (*#06#)" name="imei" required/>
+                                                </Label>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={12}>
+                                                <Label>
+                                                    LOKASI:
+                                                    <Select placeholder="Lokasi Service"  name="lokasi" required>
+                                                        <option>{a.Lokasi}</option>
+                                                    </Select>
+                                                </Label>
+                                            </Col>
+                                            <Col span={12}>
+                                            <Label>
+                                                TEKNISI:
+                                                <Select placeholder="Kerjaan Siapa ?" value={isTeknisiUpdate} onChange={(e) => {IbnuController(e.target.value)}}  name="teknisi" required>
+                                                    <option>Amri</option>
+                                                    <option>Ibnu</option>
+                                                    <option>Rafi</option>
+                                                </Select>
+                                            </Label>
+                                            </Col>
+                                            {isIbnu && 
+                                            <Col span={12}>
+                                                <Label>
+                                                    HARGA IBNU: 
+                                                    <Input type="number" placeholder="Harga Ibnu Tanya Amri" name="hargaIbnu" required />
+                                                </Label>
+                                            </Col>}
+                                            <Col span={12}>
+                                                <Label>
+                                                STATUS:
+                                                    <Select name='status' required>
+                                                    <option value={'sudah diambil'}>sukses</option>
+                                                    <option value={'sudah diambil'}>sudah diambil</option>
+                                                    <option value={'garansi'}>claim garansi</option>
+                                                    <option value={'process'}>process</option>
+                                                    <option value={'cancel'}>cancel</option>
+                                                    </Select>
+                                                </Label>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Label>
+                                                    PENERIMA:
+                                                    <Input type="text" value={a.Penerima} name="penerima" readOnly/>
+                                                </Label>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={12}>
+                                                <Label>
+                                                    KERUSAKAN:
+                                                    <TextArea autoSize placeholder="Kerusakannya apa" value={isKeluhan} onChange={(e) => {handleChangeKeluhan(e.target.value)}} name="keluhan" readOnly/>
+                                                </Label>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Label>
+                                                    PERBAIKAN:
+                                                    <TextArea autoSize placeholder="apa yang di benerin" value={isKerusakan} onChange={(e) => {handleChangeKerusakan(e.target.value)}} name="kerusakan" required/>
+                                                </Label>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                        {sparepart.map((spareparts, i) => (
+                                            <Col span={12}  key={i}>
+                                                <SplitterSparepart>
+                                                    <Col span={24}>
+                                                    <Label>Sparepart:
+                                                        <Select placeholder="Sparepart"  name={`sparepart-${i}`} value={spareparts.Sparepart}
+                                                            onChange={(e)=> {
+                                                                const newSpareparts = [...sparepart];
+                                                                newSpareparts[i].Sparepart = e.target.value;
+                                                                setSparepart(newSpareparts);
+                                                            }}
+                                                            >
+                                                                <option>ANT CABLE</option>
+                                                                <option>BAZEL HP</option>
+                                                                <option>BACKDOOR</option>
+                                                                <option>BATERAI</option>
+                                                                <option>BUZZER</option>
+                                                                <option>CON T/C</option>
+                                                                <option>FLEXI BOARD</option>
+                                                                <option>FLEXI CON SIM</option>
+                                                                <option>FLEXI FINGERPRINT</option>
+                                                                <option>FLEXI O/F</option>
+                                                                <option>FLEXI O/F + VOL</option>
+                                                                <option>FLEXI VOL</option>
+                                                                <option>LCD</option>
+                                                                <option>MIC</option>
+                                                                <option>MIDDLE FRAME LCD</option>
+                                                                <option>SIMLOCK</option>
+                                                                <option>SPEAKER</option>
+                                                                <option>TOMBOL LUAR</option>
+                                                                <option>TIDAK ADA</option>
+                                                            </Select>
+                                                            </Label>
+                                                    </Col>
+                                                    <Col span={24}>
+                                                            <Label>
+                                                                Garansi:
+                                                                <Select 
+                                                                placeholder="Pilih Garansi" 
+                                                                name={`garansi-${i}`}
+                                                                value={spareparts.Garansi ? spareparts.Garansi : 'NON-GARANSI'}
+                                                                onChange={(e) => {
+                                                                    const newSpareparts = [...sparepart];
+                                                                    newSpareparts[i].Garansi = e.target.value;
+                                                                    setSparepart(newSpareparts);
+                                                                }}
+                                                                >
+                                                                    <option value={'NON-GARANSI'}>NON GARANSI</option>
+                                                                    <option value={'7-HARI'}>7-HARI (1MINGGU)</option>
+                                                                    <option value={'30-HARI'}>30 HARI (1 BULAN)</option>
+                                                                    <option value={'90-HARI'}>90 HARI (3 BULAN)</option>
+                                                                    <option value={'120-HARI'}>120 HARI (6 BULAN)</option>
+                                                                </Select>
+                                                            </Label>
+                                                    </Col>
+                                                    <Col span={24}>
+                                                            <Label>
+                                                                Merk/Warna Sparepart:
+                                                                <Input type="text" 
+                                                                placeholder="Warna & Merk" 
+                                                                name={`typeOrColor-${i}`}
+                                                                value={spareparts.TypeOrColor}
+                                                                onChange={(e) => {
+                                                                    const newSpareparts = [...sparepart];
+                                                                    newSpareparts[i].TypeOrColor = e.target.value;
+                                                                    setSparepart(newSpareparts);
+                                                                }}
+                                                                />
+                                                            </Label>
+                                                    </Col>
+                                                    <Col span={24}>
+                                                        <Label>
+                                                                Harga Sparepart:
+                                                                <Input type="number" 
+                                                                placeholder="Harga Sparepart" 
+                                                                name={`hargaSparepart-${i}`} 
+                                                                value={spareparts.HargaSparepart}
+                                                                onChange={(e) => {
+                                                                    const newSpareparts = [...sparepart];
+                                                                    newSpareparts[i].HargaSparepart = e.target.value;
+                                                                    setSparepart(newSpareparts);
+                                                                }}
+                                                                />
+                                                        </Label>
+                                                    </Col>
+                                                        <Buttons2 type="button" onClick={() => {removeForms(i)}}>Hapus</Buttons2>
+                                                </SplitterSparepart>
+                                            </Col>
+                                        ))}
+                                        </Row>
+                                        <Buttons type="button" onClick={addForms}>+</Buttons>
+                                        <Row style={{ paddingTop: '5rem'}}>
+                                            <Col span={24}>
+                                                <Buttons type="submit">Update</Buttons>
+                                            </Col>
+                                        </Row>
+                                </Flex>
+                            </Form>
+                            </FormCard>
+                                
+                            )}
+                            })}
+                        </Wrapper2>
                     </BasicSection3>
-                ) : (
-                <>
+                </WrapperContent>
+            )}
+            <WrapperContent>
+                {!isSearch && (
                     <SearchWrapper>
                         <LabelSearch>
                             Cek Nota:
@@ -525,6 +576,8 @@ export default function UpdateResi() {
                         </LabelSearch>
                             <ButtonSearch onClick={(SearchNota)}>Cari Data</ButtonSearch>
                     </SearchWrapper>
+                    )}
+
                     {isCekNota && (
                     <>
                         {cekNotaSearch.map((a) => {
@@ -549,6 +602,18 @@ export default function UpdateResi() {
                                         <Info>
                                             <LabelCard>Kerusakan:</LabelCard><Value>{a.Kerusakan}</Value>
                                         </Info>
+                                        <Info>
+                                            <LabelCard>Harga:</LabelCard><Value>Rp {parseInt(a.Harga).toLocaleString()}</Value>
+                                        </Info>
+                                        <Info>
+                                            <LabelCard>Sparepart:</LabelCard><Value>{a.sparepart?.map((a,i) => {
+                                                return(
+                                                    <div key={i}>
+                                                        {i+1}. {a.Sparepart} : {parseInt(a.HargaSparepart).toLocaleString()} <br />
+                                                    </div>
+                                                )
+                                            })}</Value>
+                                        </Info>
                                         <Line />
                                         <Info>
                                             <LabelCard>Teknisi:</LabelCard><Value>{a.Teknisi}</Value>
@@ -565,9 +630,19 @@ export default function UpdateResi() {
                         })}
                     </>
                     )}
-                </>
+            </WrapperContent>
+            <Divider />
+            <WrapperContent>
+                {!isSearch && (
+                    <SearchWrapper>
+                        <LabelSearch>
+                            Claim Garansi:
+                            <Input type="text" placeholder="Masukan Nomor Nota" onChange={(e) => {setClaimGaransiID(e.target.value.toLocaleUpperCase())}}/>
+                        </LabelSearch>
+                        <ButtonSearch onClick={(ClaimGaransi)}>Cari Data</ButtonSearch>
+                    </SearchWrapper>
                 )}
-            </WrapperContent>             
+            </WrapperContent>
         </>}
         </Wrapper>
     );
