@@ -4,8 +4,9 @@ import styled from "styled-components";
 import React, { ReactNode,} from "react";
 import BasicSection2 from "./BasicSection2";
 import {Input as Inputs} from "antd";
-import {DataSnapshot,endAt,get, getDatabase, onValue,orderByChild,  query,  ref, startAt,   } from "firebase/database";
+import {DataSnapshot,endAt,get, getDatabase, onValue,orderByChild,  query,  ref, startAt, update,   } from "firebase/database";
 import { debounce } from "lodash";
+import Swal from "sweetalert2";
 
 interface DataRes {
   NoNota: string;
@@ -257,6 +258,40 @@ const Table: React.FC = () => {
         dispatch({type: "SET_IS_LOADING", payload: false});
     }
 
+    const doThePelunasan = async (data: DataRes) => {
+        const dataPelunasan = data;
+        
+        if(dataPelunasan.status && dataPelunasan.TglKeluar?.length > 5 && dataPelunasan.status !== 'process'){
+            const result = await Swal.fire({
+                title: 'Apakah Anda yakin ingin melunasi data ini?',
+                text: `PELUNASAN UNTUK ${dataPelunasan.NoNota}, A/N: ${dataPelunasan.NamaUser}, ${dataPelunasan.MerkHp}, HARGA: ${dataPelunasan.Harga}, TEKNISI: ${dataPelunasan.Teknisi}, LOKASI: ${dataPelunasan.Lokasi}`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, lunasi!',
+                cancelButtonText: 'Batal'
+            });
+            if (result.isConfirmed) {
+                const DB = getDatabase();
+                const currentDate = new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toISOString().slice(0, 16);
+                await update(ref(DB, `Service/sandboxDS/${dataPelunasan.NoNota}`), {status: 'LUNAS', TglDilunasi: currentDate});
+                await Swal.fire({
+                    title: 'Data Berhasil Di Lunasi',
+                    icon: 'success',
+                    timer: 3000,
+                });
+            } else {
+                return;
+            }
+        } else {
+            return Swal.fire({
+                title: 'Data Belum Bisa Di Lunasi',
+                text: 'Pastikan Handphone Sudah diambil atau Tanggal Keluar Sudah Terisi',
+                icon: 'warning',
+                timer: 3000,
+            })
+        }
+    }
+
     React.useEffect(() => {
         const DB = ref(getDatabase());
         const DB2 = getDatabase();
@@ -277,7 +312,7 @@ const Table: React.FC = () => {
                             item.status = 'sukses';
                         }
                         return item;
-                    });
+                    }).filter((item: any) => item.status !== 'LUNAS');
                 const uniqueFilterOptions = ArrayData.reduce((acc, Item) => {
                     const date = new Date(Item.TglMasuk);
                     const month = date.toLocaleString('default', { month: 'long' });
@@ -328,7 +363,6 @@ const Table: React.FC = () => {
         });
     return () => Unsubs();
     },[])
-
 
     const Columns: TableProps<DataRes>["columns"] = [
     {
@@ -483,6 +517,7 @@ const Table: React.FC = () => {
                             <Tag style={{display: 'flex'}} color={'default'}>LOKASI <div style={{marginLeft: '66px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.Lokasi.toLocaleUpperCase()}</div></Tag>
                             <Tag style={{display: 'flex'}} color={'default'}>TANGGAL KELUAR <div style={{marginLeft: '6px'}}>:</div> <div style={{marginLeft: '1%'}}>{record.TglKeluar ? dateFormater(record.TglKeluar) : "BELUM DI AMBIL"}</div></Tag>
                             <Tag style={{display: 'flex'}} color={record.status === 'sukses' ? 'green-inverse' : record.status === 'process' ? 'gold-inverse' : 'volcano-inverse'}>{record.status.toLocaleUpperCase()}</Tag>
+                            <Tag style={{display: 'flex'}} color={'default'}>TANDAI LUNAS <div style={{marginLeft: '24px'}}>:</div> <div style={{marginLeft: '1%'}}><Tag color={record.TglKeluar?.length > 5 ? 'green-inverse' : 'error'} onClick={() => doThePelunasan(record)}>TANDAI LUNAS</Tag></div></Tag>
                         </WrapperExpandable>
                         )
                     }
