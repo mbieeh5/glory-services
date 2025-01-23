@@ -183,11 +183,11 @@ const warrantyChecker = (data: string, TglKeluar: string) => {
 }
 
 const today = new Date();
-//const day = today.getDate().toString().padStart(2, '0');
-//const month = (today.getMonth() + 1).toString().padStart(2, '0');
+const day = today.getDate().toString().padStart(2, '0');
+const month = (today.getMonth() + 1).toString().padStart(2, '0');
 const year = today.getFullYear();
-//const localDate = `${year}-${month}-${day}`;
-//const dateLocal = new Date(localDate);
+const localDate = `${year}-${month}-${day}`;
+const dateLocal = new Date(localDate);
 const currentMonth = new Date().getMonth() + 1;
 const defaultMonthFilter = currentMonth < 10 ? `0${currentMonth}-${year}` : `${currentMonth}-${year}`;
 
@@ -333,18 +333,18 @@ const Table: React.FC = () => {
                     return monthA - monthB;
                 });
 
-                    /*const FilteredData = ArrayData.filter(items => {
+                    const FilteredData = ArrayData.filter(items => {
                         const dateFilter = new Date(items.TglMasuk);
                         const getMonth = dateFilter.getMonth();
                         const getMonth2 = dateLocal.getMonth();
                         return getMonth === getMonth2;
-                    });*/
+                    });
                 const sortedArray = ArrayData.sort((a,b) => {
                     const dateA:any = new Date(a.TglMasuk);
                     const dateB:any = new Date(b.TglMasuk);
                     return dateB - dateA;
                 });
-                const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(sortedArray)
+                const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(FilteredData)
                 dispatch({type: "SET_COUNT_CANCEL", payload: countCancel})
                 dispatch({type: "SET_UNIQUE_DATE_FILTER", payload: uniqueFilterOptions})
                 dispatch({type: "SET_COUNT_PENDING", payload: countPending})
