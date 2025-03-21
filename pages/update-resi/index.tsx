@@ -417,6 +417,7 @@ export default function UpdateResi() {
                                                     <option>Amri</option>
                                                     <option>Ibnu</option>
                                                     <option>Rafi</option>
+                                                    <option>MR X</option>
                                                 </Select>
                                             </Label>
                                             </Col>
