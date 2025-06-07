@@ -413,11 +413,10 @@ export default function UpdateResi() {
                                             <Col span={12}>
                                             <Label>
                                                 TEKNISI:
-                                                <Select placeholder="Kerjaan Siapa ?" value={isTeknisiUpdate} onChange={(e) => {IbnuController(e.target.value)}}  name="teknisi" required>
-                                                    <option>Amri</option>
-                                                    <option>Ibnu</option>
-                                                    <option>Rafi</option>
+                                                <Select placeholder="Kerjaan Siapa ?" value={isTeknisiUpdate} onChange={(e) => {IbnuController(e.target.value)}}  name="teknisi" required>\
                                                     <option>MR X</option>
+                                                    <option>Rafi</option>
+                                                    <option>Ibnu</option>
                                                 </Select>
                                             </Label>
                                             </Col>
@@ -425,7 +424,7 @@ export default function UpdateResi() {
                                             <Col span={12}>
                                                 <Label>
                                                     HARGA IBNU: 
-                                                    <Input type="number" placeholder="Harga Ibnu Tanya Amri" name="hargaIbnu" required />
+                                                    <Input type="number" placeholder="Harga Ibnu Tanya Aldi" name="hargaIbnu" required />
                                                 </Label>
                                             </Col>}
                                             <Col span={12}>
