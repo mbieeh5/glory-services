@@ -67,6 +67,7 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
         const FilteredData = ArrayDataServices.filter(items => {
             const status = items.status === "sudah diambil";
             const bulanAja = bulan.slice(5, 7);
+            const tahunAja = bulan.slice(0,4);
         
             if (items.TglKeluar && items.TglKeluar.length > 6) {
                 if (!bulanAja) {
@@ -74,10 +75,12 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
                     return status;
                 } else {
                     const bulanKeluar = items.TglKeluar.slice(5, 7);
+                    const tahunKeluar = items.TglKeluar.slice(0,4);
                     const tglKeluar = bulanKeluar === bulanAja;
+                    const tahuncocok = tahunKeluar === tahunAja;
                     const imei = items.Imei;
                     const ImeiValid = imei ? imei : null;
-                    return status && tglKeluar && ImeiValid;
+                    return status && tglKeluar && ImeiValid && tahuncocok;
                 }
             }
         
@@ -119,9 +122,9 @@ export default function Statistics({Data, TotalU, TotalP, Target}:any) {
             return acc
         }, {totalPoints: 0, totalUnits: 0})
         
-         await setData(result);
-         await setTotalU(Totals.totalUnits);
-         await setTotalP(Totals.totalPoints);
+          setData(result);
+          setTotalU(Totals.totalUnits);
+          setTotalP(Totals.totalPoints);
     }, [bulan, Target])
     
     

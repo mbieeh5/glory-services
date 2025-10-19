@@ -49,6 +49,7 @@ interface State {
     countCancel: number; 
     countTotal: number;
     uniqueDateFilter: {text: string, value: string}[];
+    currentMonthFilter: string | null;
 };
 
 const initialState: State = {
@@ -65,6 +66,7 @@ const initialState: State = {
     countCancel: 0,
     countTotal: 0,
     uniqueDateFilter: [],
+    currentMonthFilter: null,
 };
 
 type Action = 
@@ -81,7 +83,8 @@ type Action =
 | { type: 'SET_COUNT_PENDING'; payload: number}
 | { type: 'SET_COUNT_CANCEL'; payload: number}
 | { type: 'SET_COUNT_TOTAL'; payload: number}
-| { type: 'SET_UNIQUE_DATE_FILTER'; payload: {text: string, value: string}[]};
+| { type: 'SET_UNIQUE_DATE_FILTER'; payload: {text: string, value: string}[]}
+| { type: 'SET_CURRENT_MONTH_FILTER'; payload: string | null};
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -111,6 +114,8 @@ function reducer(state: State, action: Action): State {
             return {...state, countCancel: action.payload};
         case 'SET_COUNT_TOTAL':
             return {...state, countTotal: action.payload};
+        case 'SET_CURRENT_MONTH_FILTER':
+            return {...state, currentMonthFilter: action.payload};
         default:
             return state;
     }
@@ -196,10 +201,56 @@ const defaultMonthFilter = currentMonth < 10 ? `0${currentMonth}-${year}` : `${c
 const Table: React.FC = () => {
 
     const [state, dispatch] = React.useReducer(reducer, initialState);
-    
+
+    React.useEffect(() => {
+        const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(state.DataResi);
+        dispatch({type: "SET_COUNT_SUCCESS", payload: countSuccess});
+        dispatch({type: "SET_COUNT_PENDING", payload: countPending});
+        dispatch({type: "SET_COUNT_CANCEL", payload: countCancel});
+        dispatch({type: "SET_COUNT_TOTAL", payload: countTotal});
+        console.log("Counts updated based on DataResi:", { countSuccess, countPending, countCancel, countTotal }); // Debug log
+    }, [state.DataResi])
+
+        const applyFilters = (rawData: DataRes[], monthFilter: string | null, statusFilter: string) => {
+        let filteredData = rawData;
+
+        // Terapkan filter bulan dulu
+        if (monthFilter) {
+            filteredData = filteredData.filter((item) => {
+                const month = new Date(item.TglMasuk).getMonth() + 1;
+                const year = new Date(item.TglMasuk).getFullYear();
+                const formattedmonth = month < 10 ? `0${month}-${year}` : `${month}-${year}`;
+                return formattedmonth === monthFilter;
+            });
+        }
+
+        // Terapkan filter status
+        if (statusFilter === 'berhasil') {
+            filteredData = filteredData.filter(val => val.status === 'sukses' && val.TglKeluar && val.TglKeluar.length > 5);
+        } else if (statusFilter === 'pending') {
+            filteredData = filteredData.filter(val => (val.status === 'process' && (val.TglKeluar === undefined || val.TglKeluar === 'null' || val.TglKeluar.length < 5)));
+        } else if (statusFilter === 'batal') {
+            filteredData = filteredData.filter(val => val.status === 'cancel' && val.TglKeluar && val.TglKeluar.length > 5);
+        }
+        // Jika 'total', tidak perlu filter status tambahan, hanya filter bulan yang diterapkan
+
+        // Urutkan
+        const sortedData = filteredData.sort((a,b) => {
+            const dateA: any = new Date(a.TglMasuk);
+            const dateB: any = new Date(b.TglMasuk);
+            return dateA - dateB; // Urut dari terlama ke terbaru
+        });
+
+        return sortedData;
+    };
+
+
     const handleOnFilterButtonTitle = async (params: string) => {
+        console.log("handleOnFilterButtonTitle called with:", params);
         dispatch({type: "SET_IS_ACTIVATED_BTN", payload: params});
-        if (state.DataResiBak1.length <= state.DataResi.length) {
+        const filteredData = applyFilters(state.DataResiBak1, state.currentMonthFilter, params);
+        dispatch({type: 'SET_DATA_RESI', payload: filteredData});
+        /*if (state.DataResiBak1.length <= state.DataResi.length) {
             dispatch({type: "SET_DATA_RESI_BAK", payload: state.DataResi});
         }
         const sortedArray = (data:DataRes[]) => {
@@ -227,37 +278,32 @@ const Table: React.FC = () => {
             const filteredDataResi =  state.DataResiBak1;
             return dispatch({type: 'SET_DATA_RESI', payload: sortedArray(filteredDataResi)}); 
         }
-        return null;
+        return null;*/
     }
 
     const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+        console.log("handleTableChange called with filters:", filters); // Debug log
         dispatch({type: "SET_IS_LOADING", payload: true});
-        if(filters.TglMasuk){
-            dispatch({type: "SET_IS_FILTERED_CHECK", payload: true})
-            const filterData:DataRes[] = state.DataResiBak1.filter((item) => {
-                const month = new Date(item.TglMasuk).getMonth() + 1;
-                const  year = new Date(item.TglMasuk).getFullYear();
-                const formattedmonth = month < 10 ? `0${month}-${year}` : `${month}-${year}`;
-                return filters.TglMasuk.includes(formattedmonth);
-            });
-            const sortedArray = filterData.sort((a,b) => {
-                const dateA:any = new Date(a.TglMasuk);
-                const dateB:any = new Date(b.TglMasuk);
-                return dateA - dateB;
-            })
-            const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(filterData)
-            dispatch({type: "SET_DATA_RESI", payload: sortedArray});
-            dispatch({type: "SET_COUNT_CANCEL", payload: countCancel})
-            dispatch({type: "SET_COUNT_PENDING", payload: countPending})
-            dispatch({type: "SET_COUNT_SUCCESS", payload: countSuccess})
-            dispatch({type: "SET_COUNT_TOTAL", payload: countTotal})
-            dispatch({type: "SET_IS_LOADING", payload: false});
-        }else{
-            dispatch({type: "SET_IS_FILTERED_CHECK", payload: false})
+
+        let newMonthFilter: string | null = state.currentMonthFilter; // Ambil filter bulan sekarang
+
+        if(filters.TglMasuk && filters.TglMasuk.length > 0){
+            dispatch({type: "SET_IS_FILTERED_CHECK", payload: true});
+            newMonthFilter = filters.TglMasuk[0]; // Ambil bulan yang dipilih
+            dispatch({type: "SET_CURRENT_MONTH_FILTER", payload: newMonthFilter}); // Simpan filter bulan baru
+        } else {
+            dispatch({type: "SET_IS_FILTERED_CHECK", payload: false});
+            newMonthFilter = null; // Reset filter bulan
+            dispatch({type: "SET_CURRENT_MONTH_FILTER", payload: newMonthFilter});
         }
+
+        // Terapkan filter bulan dan status saat ini ke data asli
+        const filteredData = applyFilters(state.DataResiBak1, newMonthFilter, state.isActivatedBtn);
+        dispatch({type: "SET_DATA_RESI", payload: filteredData});
+        // useEffect akan handle perhitungan ulang
+
         dispatch({type: "SET_IS_LOADING", payload: false});
     }
-
     const doThePelunasan = async (data: DataRes) => {
         const dataPelunasan = data;
         
@@ -293,6 +339,7 @@ const Table: React.FC = () => {
     }
 
     React.useEffect(() => {
+        console.log("Initial data fetch useEffect running");
         const DB = ref(getDatabase());
         const DB2 = getDatabase();
         const currentYear = new Date().getFullYear();
@@ -351,6 +398,7 @@ const Table: React.FC = () => {
                 dispatch({type: "SET_COUNT_SUCCESS", payload: countSuccess})
                 dispatch({type: "SET_COUNT_TOTAL", payload: countTotal})
                 dispatch({type: 'SET_DATA_RESI', payload: sortedArray})
+
                 dispatch({type: 'SET_DATA_RESI_BAK1', payload: ArrayData})
                 dispatch({type: 'SET_DATA_RESI_BAK2', payload: sortedArray})
                 dispatch({type: 'SET_IS_LOADING', payload: false})
@@ -408,7 +456,7 @@ const Table: React.FC = () => {
         },
     },
     {
-        title: "MEREK HP",
+        title: "MEREK HP",  
         dataIndex: "MerkHp",
         key: "MerkHp",
         width: 165,  
@@ -438,6 +486,7 @@ const Table: React.FC = () => {
                 entry.Keluhan?.toLowerCase().includes(value.toLowerCase()) ||
                 entry.MerkHp?.toLowerCase().includes(value.toLowerCase()) ||
                 entry.Penerima?.toLowerCase().includes(value.toLowerCase()) ||
+                entry.Imei?.toLowerCase().includes(value.toLowerCase()) ||
                 entry.sparepart?.some(sp => sp.Sparepart?.toLocaleLowerCase().includes(value.toLocaleLowerCase()))
             });   
             const { countSuccess, countPending, countCancel, countTotal } = calculateCounts(filteredDatas)
@@ -483,7 +532,7 @@ const Table: React.FC = () => {
         </div>
         <WrapperTable>
             <AntdTable<DataRes> 
-                columns={Columns} 
+                columns={Columns}
                 dataSource={state.DataResi} 
                 loading={state.isLoading}
                 rowKey="NoNota"
