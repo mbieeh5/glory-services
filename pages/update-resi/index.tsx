@@ -509,7 +509,8 @@ export default function UpdateResi() {
                                                                 }}
                                                                 >
                                                                     <option value={'NON-GARANSI'}>NON GARANSI</option>
-                                                                    <option value={'7-HARI'}>7-HARI (1MINGGU)</option>
+                                                                    <option value={'3-HARI'}>3-HARI (3 HARI)</option>
+                                                                    <option value={'7-HARI'}>7-HARI (1 MINGGU)</option>
                                                                     <option value={'30-HARI'}>30 HARI (1 BULAN)</option>
                                                                     <option value={'90-HARI'}>90 HARI (3 BULAN)</option>
                                                                     <option value={'120-HARI'}>120 HARI (6 BULAN)</option>
