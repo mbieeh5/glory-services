@@ -181,8 +181,12 @@ const warrantyChecker = (data: string, TglKeluar: string) => {
         return TanggalFormater(TglKeluar, 90);
     }
     if(data === '120-HARI' || data === '120-HARI-1'){
-
+        
         return TanggalFormater(TglKeluar, 120);
+    }
+    if(data === '365-HARI' || data === '365-HARI-1'){
+
+        return TanggalFormater(TglKeluar, 365);
     }
     return 'NON GARANSI'
 }

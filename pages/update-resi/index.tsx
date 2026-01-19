@@ -59,6 +59,8 @@ export default function UpdateResi() {
         
         if(e.toLowerCase() === 'ibnu'){
             setIsIbnu(true)
+        }else if(e.toLowerCase() === 'unyil'){
+            setIsIbnu(true)
         }else{
             setIsIbnu(false)
         }
@@ -417,6 +419,7 @@ export default function UpdateResi() {
                                                     <option>MR X</option>
                                                     <option>Rafi</option>
                                                     <option>Ibnu</option>
+                                                    <option>Unyil</option>
                                                 </Select>
                                             </Label>
                                             </Col>
@@ -514,6 +517,7 @@ export default function UpdateResi() {
                                                                     <option value={'30-HARI'}>30 HARI (1 BULAN)</option>
                                                                     <option value={'90-HARI'}>90 HARI (3 BULAN)</option>
                                                                     <option value={'120-HARI'}>120 HARI (6 BULAN)</option>
+                                                                    <option value={'365-HARI'}>365 HARI (1 TAHUN)</option>
                                                                 </Select>
                                                             </Label>
                                                     </Col>
