@@ -6,7 +6,7 @@ import NotFoundIllustration from 'components/NotFoundIllustration';
 export default function NotFoundPage() {
   return (
     <>
-        <Head>
+        <Head> 
             <title>Home</title>
         </Head>
     <Wrapper>
